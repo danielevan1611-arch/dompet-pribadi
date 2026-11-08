@@ -52,11 +52,12 @@
     }
   </script>
 
-  <!-- Lucide Icons & Chart.js & Tesseract.js & Supabase Client -->
+  <!-- Lucide Icons & Chart.js & Tesseract.js & Supabase Client & GSAP Motion -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <style>
     /* Apple HIG Smooth Scroll, Safe Areas, and Tactile Touch */
@@ -74,9 +75,20 @@
       background-color: #1C1C1E;
       border: 1px solid rgba(255, 255, 255, 0.07);
     }
+    .ios-card-specular {
+      position: relative;
+      background: #1C1C1E;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+      transition: all 0.22s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .ios-card-specular:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
     .ios-card-interactive:active {
-      transform: scale(0.985);
-      transition: transform 0.12s cubic-bezier(0.25, 1, 0.5, 1);
+      transform: scale(0.975);
+      transition: transform 0.1s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .ios-header {
       background: rgba(0, 0, 0, 0.82);
@@ -86,9 +98,28 @@
     }
     .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #2C2C2E; border-radius: 4px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-[#000000] text-white min-h-screen flex flex-col selection:bg-[#007AFF] selection:text-white pb-24 sm:pb-12">
+
+  <!-- ================= APPLE DYNAMIC ISLAND HUD ================= -->
+  <aside id="dynamicIslandHUD" aria-live="polite" class="hidden fixed top-3 sm:top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] opacity-0 -translate-y-4 scale-90 pointer-events-none">
+    <div class="px-4 py-2 rounded-full bg-black/92 backdrop-blur-2xl border border-white/[0.16] shadow-2xl flex items-center gap-2.5 text-xs text-white">
+      <span id="dynamicIslandIcon" class="flex items-center justify-center shrink-0">
+        <i data-lucide="check" class="w-4 h-4 text-[#34C759]"></i>
+      </span>
+      <span id="dynamicIslandText" class="font-medium tracking-tight whitespace-nowrap">Berhasil</span>
+    </div>
+  </aside>
 
   <!-- ================= APPLE iOS NAVIGATION BAR ================= -->
   <header class="sticky top-0 z-40 ios-header px-4 py-3 sm:px-6">
@@ -106,22 +137,25 @@
         </div>
       </div>
 
-      <!-- iOS Segmented Control (Role Switcher) -->
+      <!-- iOS Segmented Control with Sliding Pill -->
       <div class="flex items-center gap-2">
-        <div class="inline-flex p-1 rounded-full bg-[#1C1C1E] border border-white/10 text-xs font-medium">
-          <button id="btnRoleA" class="px-3 py-1 rounded-full transition-all text-white bg-[#2C2C2E] shadow-sm font-medium">
+        <div id="segmentedControlTrack" class="relative inline-flex p-1 rounded-full bg-[#1C1C1E] border border-white/10 text-xs font-medium">
+          <!-- Active Sliding Indicator Pill -->
+          <div id="rolePillIndicator" class="absolute top-1 bottom-1 rounded-full bg-[#2C2C2E] shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] pointer-events-none" style="left: 4px; width: 62px;"></div>
+          
+          <button id="btnRoleA" class="relative z-10 px-3 py-1 rounded-full text-white transition-colors duration-200 font-medium">
             Kamu
           </button>
-          <button id="btnRoleShared" class="px-3 py-1 rounded-full transition-all text-[#8E8E93] hover:text-white font-medium">
+          <button id="btnRoleShared" class="relative z-10 px-3 py-1 rounded-full text-[#8E8E93] hover:text-white transition-colors duration-200 font-medium">
             Bersama
           </button>
-          <button id="btnRoleB" class="px-3 py-1 rounded-full transition-all text-[#8E8E93] hover:text-white font-medium">
+          <button id="btnRoleB" class="relative z-10 px-3 py-1 rounded-full text-[#8E8E93] hover:text-white transition-colors duration-200 font-medium">
             Pacar
           </button>
         </div>
 
         <!-- Apple Settings Button -->
-        <button id="btnOpenSettings" title="Pengaturan & Pairing" class="w-8 h-8 rounded-full bg-[#1C1C1E] hover:bg-[#2C2C2E] border border-white/10 text-[#8E8E93] hover:text-white flex items-center justify-center transition-colors">
+        <button id="btnOpenSettings" title="Pengaturan & Pairing" class="w-8 h-8 rounded-full bg-[#1C1C1E] hover:bg-[#2C2C2E] border border-white/10 text-[#8E8E93] hover:text-white flex items-center justify-center transition-transform active:scale-90">
           <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
         </button>
       </div>
