@@ -2,7 +2,7 @@
  * DompetKu - Self-Contained App Bundle (Dompet Payment Admin Dashboard Edition)
  * Runs seamlessly on both file:/// (double-click) and http:// / https:// (web server & Vercel)
  * Features Apple Ecosystem Typography (New York Serif + San Francisco Sans), Multi-View SPA routing,
- * Indonesian PB1 Split Bill, Financial Calendar, ATM Card Wallets, and Dynamic Island HUD.
+ * Real-Time Market & Investment Dashboard (IHSG, Gold, Crypto), PB1 Split Bill, Financial Calendar, and Dynamic Island HUD.
  */
 
 (() => {
@@ -14,6 +14,7 @@
   let prevIncome = 0;
   let prevExpense = 0;
   let prevCoupleKas = 0;
+  let prevMarketPortfolio = 0;
 
   function isReducedMotion() {
     return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -111,14 +112,6 @@
     }
 
     return [...walletsList];
-  }
-
-  function getVisibleWallets(walletsList) {
-    return walletsList || [];
-  }
-
-  function getVisibleTransactions(txList) {
-    return txList || [];
   }
 
   // ================= 2. INITIAL SEED MOCK DATA =================
@@ -267,7 +260,229 @@
     }
   ];
 
-  // ================= 3. NATURAL LANGUAGE QUICK PARSER =================
+  // ================= 3. MARKET & INVESTMENT INSTRUMENTS =================
+  const INITIAL_MARKET_INSTRUMENTS = [
+    {
+      symbol: 'IHSG',
+      name: 'Indeks Saham Gabungan',
+      category: 'stock',
+      priceIDR: 7285.40,
+      change24h: 0.42,
+      high24h: 7310.20,
+      low24h: 7260.10,
+      sparkline: [7265, 7272, 7268, 7290, 7280, 7295, 7285.4],
+      icon: 'activity',
+      badge: 'IDX'
+    },
+    {
+      symbol: 'BBCA',
+      name: 'Bank Central Asia Tbk',
+      category: 'stock',
+      priceIDR: 10250,
+      change24h: 1.23,
+      high24h: 10300,
+      low24h: 10125,
+      sparkline: [10150, 10175, 10200, 10175, 10225, 10275, 10250],
+      icon: 'building-2',
+      badge: 'Saham'
+    },
+    {
+      symbol: 'BBRI',
+      name: 'Bank Rakyat Indonesia Tbk',
+      category: 'stock',
+      priceIDR: 4680,
+      change24h: -0.64,
+      high24h: 4740,
+      low24h: 4650,
+      sparkline: [4720, 4710, 4730, 4700, 4670, 4660, 4680],
+      icon: 'landmark',
+      badge: 'Saham'
+    },
+    {
+      symbol: 'BMRI',
+      name: 'Bank Mandiri (Persero) Tbk',
+      category: 'stock',
+      priceIDR: 6550,
+      change24h: 0.77,
+      high24h: 6600,
+      low24h: 6475,
+      sparkline: [6500, 6525, 6500, 6550, 6525, 6575, 6550],
+      icon: 'landmark',
+      badge: 'Saham'
+    },
+    {
+      symbol: 'TLKM',
+      name: 'Telkom Indonesia Tbk',
+      category: 'stock',
+      priceIDR: 2820,
+      change24h: -1.05,
+      high24h: 2870,
+      low24h: 2800,
+      sparkline: [2860, 2850, 2840, 2830, 2810, 2830, 2820],
+      icon: 'radio',
+      badge: 'Saham'
+    },
+    {
+      symbol: 'ASII',
+      name: 'Astra International Tbk',
+      category: 'stock',
+      priceIDR: 5050,
+      change24h: 0.50,
+      high24h: 5125,
+      low24h: 5000,
+      sparkline: [5025, 5000, 5050, 5075, 5025, 5075, 5050],
+      icon: 'car',
+      badge: 'Saham'
+    },
+    {
+      symbol: 'ANTAM',
+      name: 'Emas Batangan Antam',
+      category: 'gold',
+      priceIDR: 1485000,
+      unit: 'gram',
+      change24h: 0.68,
+      high24h: 1490000,
+      low24h: 1478000,
+      sparkline: [1475000, 1478000, 1480000, 1482000, 1486000, 1484000, 1485000],
+      icon: 'coins',
+      badge: 'Logam Mulia'
+    },
+    {
+      symbol: 'XAU',
+      name: 'Spot Gold Dunia',
+      category: 'gold',
+      priceUSD: 2684.50,
+      priceIDR: 42549325,
+      unit: 'oz',
+      change24h: 0.85,
+      high24h: 2692.00,
+      low24h: 2668.20,
+      sparkline: [2670, 2675, 2672, 2680, 2688, 2682, 2684.5],
+      icon: 'gem',
+      badge: 'XAU/USD'
+    },
+    {
+      symbol: 'BTC',
+      name: 'Bitcoin',
+      category: 'crypto',
+      priceUSD: 96425,
+      priceIDR: 1542800000,
+      change24h: 3.15,
+      high24h: 97200,
+      low24h: 93400,
+      sparkline: [93800, 94500, 95100, 94800, 96000, 96800, 96425],
+      icon: 'circle-dollar-sign',
+      badge: 'Crypto'
+    },
+    {
+      symbol: 'ETH',
+      name: 'Ethereum',
+      category: 'crypto',
+      priceUSD: 3410,
+      priceIDR: 54560000,
+      change24h: 2.40,
+      high24h: 3480,
+      low24h: 3310,
+      sparkline: [3320, 3360, 3390, 3370, 3430, 3450, 3410],
+      icon: 'layers',
+      badge: 'Crypto'
+    },
+    {
+      symbol: 'SOL',
+      name: 'Solana',
+      category: 'crypto',
+      priceUSD: 220,
+      priceIDR: 3520000,
+      change24h: 5.80,
+      high24h: 228,
+      low24h: 206,
+      sparkline: [208, 212, 215, 218, 225, 222, 220],
+      icon: 'zap',
+      badge: 'Crypto'
+    },
+    {
+      symbol: 'BNB',
+      name: 'BNB Chain',
+      category: 'crypto',
+      priceUSD: 645,
+      priceIDR: 10320000,
+      change24h: 1.10,
+      high24h: 655,
+      low24h: 638,
+      sparkline: [640, 642, 641, 646, 648, 644, 645],
+      icon: 'shield',
+      badge: 'Crypto'
+    },
+    {
+      symbol: 'XRP',
+      name: 'Ripple',
+      category: 'crypto',
+      priceUSD: 2.30,
+      priceIDR: 36800,
+      change24h: 4.25,
+      high24h: 2.45,
+      low24h: 2.18,
+      sparkline: [2.20, 2.24, 2.28, 2.25, 2.35, 2.32, 2.30],
+      icon: 'repeat',
+      badge: 'Crypto'
+    }
+  ];
+
+  // Sample personal asset portfolio holdings for Daniel (Feature 1B)
+  const INITIAL_HOLDINGS = [
+    { id: 'hold_1', symbol: 'ANTAM', type: 'gold', units: 15, buyPrice: 1410000 },
+    { id: 'hold_2', symbol: 'BBCA', type: 'stock', units: 25, buyPrice: 9850 },
+    { id: 'hold_3', symbol: 'BTC', type: 'crypto', units: 0.035, buyPrice: 1350000000 },
+    { id: 'hold_4', symbol: 'ETH', type: 'crypto', units: 0.75, buyPrice: 48000000 }
+  ];
+
+  function calculateAssetValuation({ type, units, buyPrice, currentPrice }) {
+    const numUnits = Number(units) || 0;
+    const numBuyPrice = Number(buyPrice) || 0;
+    const numCurrentPrice = Number(currentPrice) || 0;
+
+    let multiplier = 1;
+    if (type === 'stock') multiplier = 100; // 1 lot = 100 shares
+
+    const totalCost = numUnits * multiplier * numBuyPrice;
+    const currentValue = numUnits * multiplier * numCurrentPrice;
+    const pnlNominal = currentValue - totalCost;
+    const pnlPercentage = totalCost > 0 ? (pnlNominal / totalCost) * 100 : 0;
+
+    return { totalCost, currentValue, pnlNominal, pnlPercentage };
+  }
+
+  function calculatePortfolioSummary(holdingsList = [], priceMap = {}) {
+    let totalCost = 0;
+    let totalValuation = 0;
+
+    holdingsList.forEach(holding => {
+      const curPrice = priceMap[holding.symbol] !== undefined ? priceMap[holding.symbol] : holding.buyPrice;
+      const val = calculateAssetValuation({
+        type: holding.type,
+        units: holding.units,
+        buyPrice: holding.buyPrice,
+        currentPrice: curPrice
+      });
+      totalCost += val.totalCost;
+      totalValuation += val.currentValue;
+    });
+
+    const totalPnlNominal = totalValuation - totalCost;
+    const totalPnlPercentage = totalCost > 0 ? (totalPnlNominal / totalCost) * 100 : 0;
+
+    return { totalCost, totalValuation, totalPnlNominal, totalPnlPercentage };
+  }
+
+  function generateNextTick(currentPrice, volatility = 0.0015) {
+    const deltaFactor = 1 + (Math.random() * 2 - 1) * volatility;
+    const newPrice = currentPrice * deltaFactor;
+    if (newPrice > 1000) return Math.round(newPrice);
+    if (newPrice > 10) return Math.round(newPrice * 100) / 100;
+    return Math.round(newPrice * 1000) / 1000;
+  }
+
+  // ================= 4. NATURAL LANGUAGE QUICK PARSER =================
   function parseQuickInput(text, walletsList, defaultWalletId) {
     if (!text || typeof text !== 'string') {
       return { amount: 0, category: 'Lainnya', note: '', walletId: defaultWalletId };
@@ -276,10 +491,8 @@
     const trimmed = text.trim();
     let amount = 0;
     let category = 'Makanan & Minuman';
-    let note = trimmed;
     let targetWalletId = defaultWalletId;
 
-    // Multiplier Regex: 15k, 25rb, 1.2jt
     const multiplierMatch = trimmed.match(/(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|jt|juta)\b/i);
     if (multiplierMatch) {
       const numStr = multiplierMatch[1].replace(',', '.');
@@ -294,12 +507,10 @@
     } else {
       const plainNumMatch = trimmed.match(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)(?:\b|$)/i);
       if (plainNumMatch) {
-        const rawNum = plainNumMatch[1].replace(/\./g, '');
-        amount = parseInt(rawNum, 10);
+        amount = parseInt(plainNumMatch[1].replace(/\./g, ''), 10);
       }
     }
 
-    // Category Detection
     const lower = trimmed.toLowerCase();
     if (lower.match(/\b(makan|kopi|minum|sarapan|siang|malam|cafe|bakso|ayam|mie|snack|resto|food|burger|pizza)\b/)) {
       category = 'Makanan & Minuman';
@@ -315,7 +526,6 @@
       category = 'Gaji & Pendapatan';
     }
 
-    // Wallet Detection
     if (walletsList && walletsList.length > 0) {
       for (const w of walletsList) {
         const wName = (w.name || '').toLowerCase();
@@ -326,7 +536,6 @@
       }
     }
 
-    // Clean note
     let cleanNote = trimmed
       .replace(/(\d+(?:[.,]\d+)?)\s*(k|rb|ribu|jt|juta)\b/gi, '')
       .replace(/(?:rp\.?\s*)?(\d{1,3}(?:\.\d{3})+|\d+)/gi, '')
@@ -335,57 +544,7 @@
 
     if (!cleanNote) cleanNote = category;
 
-    return {
-      amount,
-      category,
-      note: cleanNote,
-      walletId: targetWalletId
-    };
-  }
-
-  // ================= 4. RECEIPT & OCR SCANNER =================
-  function extractPaymentDetailsFromText(rawText) {
-    if (!rawText || typeof rawText !== 'string') {
-      return { amount: 0, note: 'Struk Belanja', category: 'Lainnya' };
-    }
-
-    let detectedAmount = 0;
-    const amountRegexes = [
-      /(?:total|tagihan|jumlah|bayar|grand total|rp)\s*[:.]?\s*(?:rp\.?\s*)?([\d.,]+)/i,
-      /([\d.,]+)\s*(?:total|dibayar)/i
-    ];
-
-    for (const regex of amountRegexes) {
-      const match = rawText.match(regex);
-      if (match && match[1]) {
-        const clean = match[1].replace(/[,.]00$/, '').replace(/\D/g, '');
-        const val = parseInt(clean, 10);
-        if (val > 1000 && val < 500000000) {
-          detectedAmount = val;
-          break;
-        }
-      }
-    }
-
-    return {
-      amount: detectedAmount,
-      note: 'Struk Kasir Resto',
-      category: 'Makanan & Minuman'
-    };
-  }
-
-  async function scanReceiptWithTesseract(file, progressCallback) {
-    if (!window.Tesseract) {
-      throw new Error('Tesseract OCR library tidak tersedia');
-    }
-    const { data: { text } } = await window.Tesseract.recognize(file, 'ind+eng', {
-      logger: m => {
-        if (progressCallback && m.status === 'recognizing text') {
-          progressCallback(Math.round(m.progress * 100));
-        }
-      }
-    });
-    return extractPaymentDetailsFromText(text);
+    return { amount, category, note: cleanNote, walletId: targetWalletId };
   }
 
   // ================= 5. CHARTS CONTROLLER =================
@@ -411,9 +570,7 @@
 
     const colors = ['#00D2D3', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#3B82F6'];
 
-    if (donutChartInstance) {
-      donutChartInstance.destroy();
-    }
+    if (donutChartInstance) donutChartInstance.destroy();
 
     const ctx = canvas.getContext('2d');
     donutChartInstance = new window.Chart(ctx, {
@@ -453,16 +610,11 @@
     txList.forEach(t => {
       const d = new Date(t.date);
       const dayIdx = d.getDay();
-      if (t.type === 'income') {
-        incomeData[dayIdx] += Number(t.amount);
-      } else {
-        expenseData[dayIdx] += Number(t.amount);
-      }
+      if (t.type === 'income') incomeData[dayIdx] += Number(t.amount);
+      else expenseData[dayIdx] += Number(t.amount);
     });
 
-    if (barChartInstance) {
-      barChartInstance.destroy();
-    }
+    if (barChartInstance) barChartInstance.destroy();
 
     const ctx = canvas.getContext('2d');
     barChartInstance = new window.Chart(ctx, {
@@ -470,18 +622,8 @@
       data: {
         labels: days,
         datasets: [
-          {
-            label: 'Income',
-            data: incomeData,
-            backgroundColor: '#10B981',
-            borderRadius: 6
-          },
-          {
-            label: 'Expense',
-            data: expenseData,
-            backgroundColor: '#FF3B30',
-            borderRadius: 6
-          }
+          { label: 'Income', data: incomeData, backgroundColor: '#10B981', borderRadius: 6 },
+          { label: 'Expense', data: expenseData, backgroundColor: '#FF3B30', borderRadius: 6 }
         ]
       },
       options: {
@@ -496,10 +638,7 @@
           }
         },
         scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: '#8E8E93', font: { size: 10 } }
-          },
+          x: { grid: { display: false }, ticks: { color: '#8E8E93', font: { size: 10 } } },
           y: {
             grid: { color: 'rgba(255,255,255,0.05)' },
             ticks: {
@@ -519,15 +658,10 @@
     transactionsList.forEach(t => {
       if (!t.date) return;
       const dateKey = t.date.split('T')[0];
-      if (!daily[dateKey]) {
-        daily[dateKey] = { income: 0, expense: 0, count: 0 };
-      }
+      if (!daily[dateKey]) daily[dateKey] = { income: 0, expense: 0, count: 0 };
       const amt = Number(t.amount) || 0;
-      if (t.type === 'income') {
-        daily[dateKey].income += amt;
-      } else {
-        daily[dateKey].expense += amt;
-      }
+      if (t.type === 'income') daily[dateKey].income += amt;
+      else daily[dateKey].expense += amt;
       daily[dateKey].count += 1;
     });
     return daily;
@@ -537,10 +671,9 @@
     const firstDay = new Date(year, monthIndex, 1);
     const lastDay = new Date(year, monthIndex + 1, 0);
     const totalDays = lastDay.getDate();
-    const startDayOfWeek = firstDay.getDay(); // 0 = Sun
+    const startDayOfWeek = firstDay.getDay();
 
     const days = [];
-    // Padding before 1st of month
     for (let p = 0; p < startDayOfWeek; p++) {
       days.push({ dayNumber: null, dateString: null, isPadding: true });
     }
@@ -548,10 +681,9 @@
     for (let d = 1; d <= totalDays; d++) {
       const monthStr = String(monthIndex + 1).padStart(2, '0');
       const dayStr = String(d).padStart(2, '0');
-      const dateString = `${year}-${monthStr}-${dayStr}`;
       days.push({
         dayNumber: d,
-        dateString,
+        dateString: `${year}-${monthStr}-${dayStr}`,
         isPadding: false
       });
     }
@@ -559,7 +691,7 @@
     return days;
   }
 
-  // ================= 7. SMART SPLIT BILL ENGINE (PB1 RESTO TAX) =================
+  // ================= 7. SMART SPLIT BILL ENGINE =================
   function calculateSplitBill({ items = [], participants = [], servicePercent = 5, taxPercent = 10 }) {
     const subtotal = items.reduce((sum, item) => sum + (Number(item.price || 0) * (Number(item.quantity) || 1)), 0);
     const serviceCharge = Math.round(subtotal * (servicePercent / 100));
@@ -569,14 +701,7 @@
 
     const breakdown = {};
     participants.forEach(p => {
-      breakdown[p] = {
-        name: p,
-        items: [],
-        itemSubtotal: 0,
-        serviceCharge: 0,
-        tax: 0,
-        totalOwed: 0
-      };
+      breakdown[p] = { name: p, items: [], itemSubtotal: 0, serviceCharge: 0, tax: 0, totalOwed: 0 };
     });
 
     items.forEach(item => {
@@ -586,19 +711,9 @@
 
       assigned.forEach(p => {
         if (!breakdown[p]) {
-          breakdown[p] = {
-            name: p,
-            items: [],
-            itemSubtotal: 0,
-            serviceCharge: 0,
-            tax: 0,
-            totalOwed: 0
-          };
+          breakdown[p] = { name: p, items: [], itemSubtotal: 0, serviceCharge: 0, tax: 0, totalOwed: 0 };
         }
-        breakdown[p].items.push({
-          name: item.name,
-          share: Math.round(sharePerPerson)
-        });
+        breakdown[p].items.push({ name: item.name, share: Math.round(sharePerPerson) });
         breakdown[p].itemSubtotal += sharePerPerson;
       });
     });
@@ -613,15 +728,7 @@
       }
     });
 
-    return {
-      subtotal,
-      servicePercent,
-      serviceCharge,
-      taxPercent,
-      tax,
-      grandTotal,
-      breakdown
-    };
+    return { subtotal, servicePercent, serviceCharge, taxPercent, tax, grandTotal, breakdown };
   }
 
   function formatWhatsAppBillSummary({ splitResult, bankAccount = '', placeName = 'Resto / Cafe' }) {
@@ -660,8 +767,11 @@
 
   let wallets = [];
   let transactions = [];
+  let marketInstruments = [...INITIAL_MARKET_INSTRUMENTS];
+  let personalHoldings = [];
+  let currentMarketFilter = 'all';
+  let tickerStreamTimer = null;
 
-  // Split bill state
   let splitParticipants = ['Daniel', 'Sarah', 'Budi'];
   let splitItems = [
     { id: '1', name: 'Nasi Goreng Spesial', price: 45000, quantity: 1, assignedTo: ['Daniel'] },
@@ -675,6 +785,7 @@
 
   const STORAGE_WALLETS = 'dompetku_wallets_v2';
   const STORAGE_TXS = 'dompetku_txs_v2';
+  const STORAGE_HOLDINGS = 'dompetku_market_portfolio_v2';
 
   function initApp() {
     loadData();
@@ -682,6 +793,7 @@
     setupEventListeners();
     setupRouting();
     renderAll();
+    startRealTimeMarketEngine();
     switchView('dashboard');
     if (window.lucide) window.lucide.createIcons();
   }
@@ -690,12 +802,16 @@
     try {
       const savedWallets = localStorage.getItem(STORAGE_WALLETS);
       const savedTxs = localStorage.getItem(STORAGE_TXS);
+      const savedHoldings = localStorage.getItem(STORAGE_HOLDINGS);
+
       wallets = savedWallets ? JSON.parse(savedWallets) : [...INITIAL_WALLETS];
       transactions = savedTxs ? JSON.parse(savedTxs) : [...INITIAL_TRANSACTIONS];
+      personalHoldings = savedHoldings ? JSON.parse(savedHoldings) : [...INITIAL_HOLDINGS];
     } catch (err) {
       console.error('Error loading local state:', err);
       wallets = [...INITIAL_WALLETS];
       transactions = [...INITIAL_TRANSACTIONS];
+      personalHoldings = [...INITIAL_HOLDINGS];
     }
   }
 
@@ -703,6 +819,7 @@
     try {
       localStorage.setItem(STORAGE_WALLETS, JSON.stringify(wallets));
       localStorage.setItem(STORAGE_TXS, JSON.stringify(transactions));
+      localStorage.setItem(STORAGE_HOLDINGS, JSON.stringify(personalHoldings));
     } catch (err) {
       console.error('Error saving local state:', err);
     }
@@ -710,13 +827,9 @@
 
   function updateUserProfileDisplay() {
     const greetingEl = document.getElementById('sidebarUserName');
-    if (greetingEl) {
-      greetingEl.textContent = `Hi, ${userName}`;
-    }
+    if (greetingEl) greetingEl.textContent = `Hi, ${userName}`;
     const nameInput = document.getElementById('settingInputUserName');
-    if (nameInput) {
-      nameInput.value = userName;
-    }
+    if (nameInput) nameInput.value = userName;
   }
 
   // SPA VIEW SWITCHER
@@ -728,6 +841,7 @@
       wallet: document.getElementById('viewMyWallet'),
       transactions: document.getElementById('viewTransactions'),
       splitbill: document.getElementById('viewSplitBill'),
+      market: document.getElementById('viewMarket'),
       settings: document.getElementById('viewSettings')
     };
 
@@ -736,6 +850,7 @@
       wallet: 'My Wallet & Accounts',
       transactions: 'Transactions & Calendar',
       splitbill: 'Smart Split Bill (PB1 & Resto Tax)',
+      market: 'Market & Investment Dashboard',
       settings: 'Settings & Personal Profile'
     };
 
@@ -780,17 +895,14 @@
       }
     });
 
-    // Trigger view-specific renders
-    if (viewName === 'wallet') {
-      renderMyWalletScreen();
-    } else if (viewName === 'transactions') {
+    // View specific renders
+    if (viewName === 'wallet') renderMyWalletScreen();
+    else if (viewName === 'transactions') {
       renderCalendar();
       renderTransactions(transactions);
-    } else if (viewName === 'splitbill') {
-      renderSplitBill();
-    } else if (viewName === 'dashboard') {
-      renderDashboard();
-    }
+    } else if (viewName === 'splitbill') renderSplitBill();
+    else if (viewName === 'market') renderMarketDashboard();
+    else if (viewName === 'dashboard') renderDashboard();
 
     if (window.lucide) window.lucide.createIcons();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -814,33 +926,30 @@
     document.getElementById('btnOpenSettings')?.addEventListener('click', () => switchView('settings'));
   }
 
-  // RENDER MASTER
   function renderAll() {
     renderDashboard();
     renderMyWalletScreen();
     renderCalendar();
     renderTransactions(transactions);
     renderSplitBill();
+    renderMarketDashboard();
   }
 
   // ================= VIEW 1: DASHBOARD =================
   function renderDashboard() {
     const netWorth = wallets.reduce((acc, w) => acc + Number(w.balance || 0), 0);
 
-    // KPI Net Worth
     const kpiNetWorth = document.getElementById('kpiNetWorth');
     if (kpiNetWorth) {
       animateNumber(kpiNetWorth, prevNetWorth, netWorth, { duration: 450 });
       prevNetWorth = netWorth;
     }
 
-    // Visual ATM Card Balance on Dashboard
     const atmCardBalance = document.getElementById('atmCardBalance');
     if (atmCardBalance) {
       animateNumber(atmCardBalance, prevNetWorth, netWorth, { duration: 450 });
     }
 
-    // Monthly Income & Expense
     const now = new Date();
     const curMonth = now.getMonth();
     const curYear = now.getFullYear();
@@ -868,7 +977,6 @@
       prevExpense = monthExpense;
     }
 
-    // Bank Reserve (BCA + Mandiri)
     const bankReserves = wallets.filter(w => w.type === 'bank').reduce((acc, w) => acc + Number(w.balance || 0), 0);
     const kpiCoupleKas = document.getElementById('kpiCoupleKas');
     if (kpiCoupleKas) {
@@ -876,16 +984,10 @@
       prevCoupleKas = bankReserves;
     }
 
-    // Populate Quick Transfer Selects
     populateTransferSelects('quickTransferFrom', 'quickTransferTo');
-
-    // Spendings Progress Bars
     updateSpendingsCategoryBars();
-
-    // Render Recent 5 Transactions
     renderDashboardRecentTxs();
 
-    // Charts
     const donutCanvas = document.getElementById('categoryDonutCanvas');
     const barCanvas = document.getElementById('cashflowBarCanvas');
     if (donutCanvas) updateDonutChart(donutCanvas, transactions);
@@ -893,11 +995,7 @@
   }
 
   function updateSpendingsCategoryBars() {
-    let food = 0;
-    let transport = 0;
-    let shopping = 0;
-    let bills = 0;
-
+    let food = 0, transport = 0, shopping = 0, bills = 0;
     transactions.filter(t => t.type === 'expense').forEach(t => {
       const cat = t.category || '';
       const amt = Number(t.amount) || 0;
@@ -966,7 +1064,7 @@
     selFrom.innerHTML = '';
     selTo.innerHTML = '';
 
-    wallets.forEach((w, idx) => {
+    wallets.forEach(w => {
       const optFrom = document.createElement('option');
       optFrom.value = w.id;
       optFrom.textContent = `${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`;
@@ -1006,7 +1104,6 @@
             <span class="text-[10px] font-mono tracking-widest px-2 py-0.5 rounded bg-white/10 text-white/90 uppercase">${typeLabel}</span>
           </div>
 
-          <!-- EMV Chip SVG -->
           <div class="my-auto">
             <svg class="w-10 h-7 text-amber-200/80 drop-shadow" viewBox="0 0 24 20" fill="currentColor">
               <rect x="1" y="1" width="22" height="18" rx="3" fill="#D4AF37"/>
@@ -1063,11 +1160,9 @@
       return;
     }
 
-    // Execute transfer
     fromWallet.balance -= amountVal;
     toWallet.balance += amountVal;
 
-    // Record internal transfer transaction
     const transferTx = {
       id: `tx_${Date.now()}_transfer`,
       walletId: toWallet.id,
@@ -1100,9 +1195,7 @@
     if (!grid) return;
     grid.innerHTML = '';
 
-    const year = 2026;
-    const monthIndex = 10; // November (0-indexed)
-    const days = getMonthCalendarDays(year, monthIndex);
+    const days = getMonthCalendarDays(2026, 10);
     const dailyAggregates = aggregateTransactionsByDate(transactions);
 
     days.forEach(day => {
@@ -1135,11 +1228,7 @@
       `;
 
       cell.addEventListener('click', () => {
-        if (selectedCalendarDate === dateKey) {
-          selectedCalendarDate = null; // Toggle off
-        } else {
-          selectedCalendarDate = dateKey;
-        }
+        selectedCalendarDate = selectedCalendarDate === dateKey ? null : dateKey;
         renderCalendar();
         renderTransactions(transactions);
       });
@@ -1163,7 +1252,6 @@
 
     let filtered = [...txList];
 
-    // Filter by Calendar Date if selected
     if (selectedCalendarDate) {
       filtered = filtered.filter(t => t.date && t.date.startsWith(selectedCalendarDate));
       if (tableTitle) {
@@ -1179,10 +1267,7 @@
       if (tableTitle) tableTitle.textContent = 'Daftar Transaksi';
     }
 
-    if (filterCat) {
-      filtered = filtered.filter(t => t.category === filterCat);
-    }
-
+    if (filterCat) filtered = filtered.filter(t => t.category === filterCat);
     if (searchTerm) {
       filtered = filtered.filter(t =>
         (t.note && t.note.toLowerCase().includes(searchTerm)) ||
@@ -1191,12 +1276,10 @@
     }
 
     filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-
     if (countLabel) countLabel.textContent = `Menampilkan ${filtered.length} transaksi`;
 
     if (filtered.length === 0) {
-      const emptyMsg = `<tr><td colspan="7" class="py-8 text-center text-xs text-[#8E8E93]">Tidak ada transaksi ditemukan.</td></tr>`;
-      if (tableBody) tableBody.innerHTML = emptyMsg;
+      if (tableBody) tableBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-xs text-[#8E8E93]">Tidak ada transaksi ditemukan.</td></tr>`;
       if (mobileCards) mobileCards.innerHTML = `<div class="py-6 text-center text-xs text-[#8E8E93]">Tidak ada transaksi ditemukan.</div>`;
       return;
     }
@@ -1208,7 +1291,6 @@
       const w = wallets.find(item => item.id === tx.walletId);
       const wName = w ? w.name : 'Dompet';
 
-      // Desktop Table Row
       if (tableBody) {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-[#1E1E2D]/80 transition-colors border-b border-white/[0.04] text-xs';
@@ -1238,7 +1320,6 @@
         tableBody.appendChild(tr);
       }
 
-      // Mobile Card
       if (mobileCards) {
         const mCard = document.createElement('div');
         mCard.className = 'p-3.5 rounded-2xl bg-[#171724] border border-white/5 space-y-2';
@@ -1270,8 +1351,7 @@
     document.querySelectorAll('.btn-delete-tx').forEach(btn => {
       btn.addEventListener('click', e => {
         e.stopPropagation();
-        const id = btn.getAttribute('data-delete-id');
-        deleteTransaction(id);
+        deleteTransaction(btn.getAttribute('data-delete-id'));
       });
     });
   }
@@ -1293,140 +1373,96 @@
     showDynamicIslandHUD('trash-2', 'Transaksi dihapus & saldo dipulihkan', '#FF3B30');
   }
 
-  function exportTransactionsToCsv() {
-    if (!transactions || transactions.length === 0) {
-      showDynamicIslandHUD('alert-circle', 'Tidak ada data transaksi untuk diekspor', '#F59E0B');
-      return;
-    }
-
-    const headers = ['ID', 'Tanggal', 'Tipe', 'Kategori', 'Deskripsi', 'Nominal', 'Dompet'];
-    const rows = transactions.map(t => {
-      const w = wallets.find(item => item.id === t.walletId);
-      const wName = w ? w.name : '';
-      return [
-        t.id,
-        `"${t.date}"`,
-        t.type,
-        `"${(t.category || '').replace(/"/g, '""')}"`,
-        `"${(t.note || '').replace(/"/g, '""')}"`,
-        t.amount,
-        `"${wName.replace(/"/g, '""')}"`
-      ].join(',');
-    });
-
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `dompet_transaksi_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    showDynamicIslandHUD('download', 'Tabel transaksi berhasil diekspor ke CSV!', '#10B981');
-  }
-
   // ================= VIEW 4: SMART SPLIT BILL =================
   function renderSplitBill() {
-    renderSplitParticipantsList();
-    renderSplitItemsTable();
-    updateSplitCalculation();
-  }
-
-  function renderSplitParticipantsList() {
     const container = document.getElementById('splitParticipantsList');
-    if (!container) return;
-    container.innerHTML = '';
-
-    splitParticipants.forEach((p, idx) => {
-      const chip = document.createElement('div');
-      chip.className = 'px-3 py-1.5 rounded-xl bg-[#13141F] border border-white/10 flex items-center gap-2 text-xs text-white';
-      chip.innerHTML = `
-        <span class="w-5 h-5 rounded-full bg-[#00D2D3]/20 text-[#00D2D3] flex items-center justify-center text-[10px] font-bold">${p.charAt(0)}</span>
-        <span>${escapeHtml(p)}</span>
-        ${splitParticipants.length > 1 ? `<button data-remove-p="${idx}" class="text-[#8E8E93] hover:text-[#FF3B30] text-xs cursor-pointer ml-1">×</button>` : ''}
-      `;
-      container.appendChild(chip);
-    });
-
-    container.querySelectorAll('[data-remove-p]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.getAttribute('data-remove-p'), 10);
-        const removed = splitParticipants[idx];
-        splitParticipants.splice(idx, 1);
-        // Clean removed from items
-        splitItems.forEach(it => {
-          it.assignedTo = (it.assignedTo || []).filter(name => name !== removed);
-          if (it.assignedTo.length === 0) it.assignedTo = [...splitParticipants];
-        });
-        renderSplitBill();
-      });
-    });
-  }
-
-  function renderSplitItemsTable() {
-    const tbody = document.getElementById('splitItemsTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    splitItems.forEach((item, itemIdx) => {
-      const tr = document.createElement('tr');
-      tr.className = 'hover:bg-white/[0.02] text-xs';
-
-      const checkboxesHtml = splitParticipants.map(p => {
-        const isChecked = (item.assignedTo || []).includes(p);
-        return `
-          <label class="inline-flex items-center gap-1 mr-3 cursor-pointer select-none">
-            <input type="checkbox" data-item-idx="${itemIdx}" data-participant="${escapeHtml(p)}" ${isChecked ? 'checked' : ''} class="rounded border-white/20 text-[#00D2D3] focus:ring-0" />
-            <span class="text-[11px] ${isChecked ? 'text-white font-medium' : 'text-[#8E8E93]'}">${escapeHtml(p)}</span>
-          </label>
+    if (container) {
+      container.innerHTML = '';
+      splitParticipants.forEach((p, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'px-3 py-1.5 rounded-xl bg-[#13141F] border border-white/10 flex items-center gap-2 text-xs text-white';
+        chip.innerHTML = `
+          <span class="w-5 h-5 rounded-full bg-[#00D2D3]/20 text-[#00D2D3] flex items-center justify-center text-[10px] font-bold">${p.charAt(0)}</span>
+          <span>${escapeHtml(p)}</span>
+          ${splitParticipants.length > 1 ? `<button data-remove-p="${idx}" class="text-[#8E8E93] hover:text-[#FF3B30] text-xs cursor-pointer ml-1">×</button>` : ''}
         `;
-      }).join('');
+        container.appendChild(chip);
+      });
 
-      tr.innerHTML = `
-        <td class="py-3 font-semibold text-white">${escapeHtml(item.name)}</td>
-        <td class="py-3 font-mono tabular-nums text-white">Rp ${(Number(item.price) || 0).toLocaleString('id-ID')}</td>
-        <td class="py-3">${checkboxesHtml}</td>
-        <td class="py-3 text-right">
-          <button data-delete-split-item="${itemIdx}" class="text-[#8E8E93] hover:text-[#FF3B30] cursor-pointer text-xs p-1">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
+      container.querySelectorAll('[data-remove-p]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.getAttribute('data-remove-p'), 10);
+          const removed = splitParticipants[idx];
+          splitParticipants.splice(idx, 1);
+          splitItems.forEach(it => {
+            it.assignedTo = (it.assignedTo || []).filter(name => name !== removed);
+            if (it.assignedTo.length === 0) it.assignedTo = [...splitParticipants];
+          });
+          renderSplitBill();
+        });
+      });
+    }
 
-    // Checkbox toggles
-    tbody.querySelectorAll('input[type="checkbox"]').forEach(chk => {
-      chk.addEventListener('change', () => {
-        const itemIdx = parseInt(chk.getAttribute('data-item-idx'), 10);
-        const pName = chk.getAttribute('data-participant');
-        const it = splitItems[itemIdx];
-        if (!it.assignedTo) it.assignedTo = [];
+    const tbody = document.getElementById('splitItemsTableBody');
+    if (tbody) {
+      tbody.innerHTML = '';
+      splitItems.forEach((item, itemIdx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-white/[0.02] text-xs';
 
-        if (chk.checked) {
-          if (!it.assignedTo.includes(pName)) it.assignedTo.push(pName);
-        } else {
-          it.assignedTo = it.assignedTo.filter(name => name !== pName);
-          if (it.assignedTo.length === 0) {
-            // Cannot have 0 assigned
-            chk.checked = true;
-            it.assignedTo.push(pName);
-            alert('Menu harus ditanggung minimal oleh 1 orang');
+        const checkboxesHtml = splitParticipants.map(p => {
+          const isChecked = (item.assignedTo || []).includes(p);
+          return `
+            <label class="inline-flex items-center gap-1 mr-3 cursor-pointer select-none">
+              <input type="checkbox" data-item-idx="${itemIdx}" data-participant="${escapeHtml(p)}" ${isChecked ? 'checked' : ''} class="rounded border-white/20 text-[#00D2D3] focus:ring-0" />
+              <span class="text-[11px] ${isChecked ? 'text-white font-medium' : 'text-[#8E8E93]'}">${escapeHtml(p)}</span>
+            </label>
+          `;
+        }).join('');
+
+        tr.innerHTML = `
+          <td class="py-3 font-semibold text-white">${escapeHtml(item.name)}</td>
+          <td class="py-3 font-mono tabular-nums text-white">Rp ${(Number(item.price) || 0).toLocaleString('id-ID')}</td>
+          <td class="py-3">${checkboxesHtml}</td>
+          <td class="py-3 text-right">
+            <button data-delete-split-item="${itemIdx}" class="text-[#8E8E93] hover:text-[#FF3B30] cursor-pointer text-xs p-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+        chk.addEventListener('change', () => {
+          const itemIdx = parseInt(chk.getAttribute('data-item-idx'), 10);
+          const pName = chk.getAttribute('data-participant');
+          const it = splitItems[itemIdx];
+          if (!it.assignedTo) it.assignedTo = [];
+
+          if (chk.checked) {
+            if (!it.assignedTo.includes(pName)) it.assignedTo.push(pName);
+          } else {
+            it.assignedTo = it.assignedTo.filter(name => name !== pName);
+            if (it.assignedTo.length === 0) {
+              chk.checked = true;
+              it.assignedTo.push(pName);
+              alert('Menu harus ditanggung minimal oleh 1 orang');
+            }
           }
-        }
-        updateSplitCalculation();
+          updateSplitCalculation();
+        });
       });
-    });
 
-    tbody.querySelectorAll('[data-delete-split-item]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const itemIdx = parseInt(btn.getAttribute('data-delete-split-item'), 10);
-        splitItems.splice(itemIdx, 1);
-        renderSplitItemsTable();
-        updateSplitCalculation();
+      tbody.querySelectorAll('[data-delete-split-item]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          splitItems.splice(parseInt(btn.getAttribute('data-delete-split-item'), 10), 1);
+          renderSplitBill();
+        });
       });
-    });
+    }
+
+    updateSplitCalculation();
   }
 
   function updateSplitCalculation() {
@@ -1450,7 +1486,6 @@
     if (taxEl) taxEl.textContent = `Rp ${result.tax.toLocaleString('id-ID')}`;
     if (gTotEl) gTotEl.textContent = `Rp ${result.grandTotal.toLocaleString('id-ID')}`;
 
-    // Render Individual Breakdown Cards
     const breakdownContainer = document.getElementById('splitIndividualBreakdown');
     if (breakdownContainer) {
       breakdownContainer.innerHTML = '';
@@ -1477,9 +1512,304 @@
     return result;
   }
 
+  // ================= VIEW 5: DEDICATED MARKET & INVESTMENT DASHBOARD =================
+  function getMarketPriceMap() {
+    const map = {};
+    marketInstruments.forEach(inst => {
+      map[inst.symbol] = inst.priceIDR;
+    });
+    return map;
+  }
+
+  function renderMarketDashboard() {
+    const priceMap = getMarketPriceMap();
+    const portfolioSummary = calculatePortfolioSummary(personalHoldings, priceMap);
+
+    // KPI 1: Total Portfolio Value
+    const kpiPortVal = document.getElementById('marketKpiTotalPortfolio');
+    if (kpiPortVal) {
+      animateNumber(kpiPortVal, prevMarketPortfolio, portfolioSummary.totalValuation, { duration: 400 });
+      prevMarketPortfolio = portfolioSummary.totalValuation;
+    }
+
+    // KPI 2: Total Unrealized PnL
+    const kpiPnl = document.getElementById('marketKpiTotalPnl');
+    const kpiPnlPercent = document.getElementById('marketKpiPnlPercent');
+    if (kpiPnl) {
+      const isProf = portfolioSummary.totalPnlNominal >= 0;
+      kpiPnl.className = `font-editorial text-2xl sm:text-3xl font-bold tracking-tight ${isProf ? 'text-[#10B981]' : 'text-[#FF3B30]'}`;
+      kpiPnl.textContent = `${isProf ? '+' : ''}Rp ${Math.round(portfolioSummary.totalPnlNominal).toLocaleString('id-ID')}`;
+    }
+    if (kpiPnlPercent) {
+      const isProf = portfolioSummary.totalPnlNominal >= 0;
+      kpiPnlPercent.className = `text-[11px] font-semibold block mt-2 ${isProf ? 'text-[#10B981]' : 'text-[#FF3B30]'}`;
+      kpiPnlPercent.textContent = `${isProf ? '+' : ''}${portfolioSummary.totalPnlPercentage.toFixed(2)}% dari modal`;
+    }
+
+    // KPI 3: Top Gainer
+    const kpiTopGainer = document.getElementById('marketKpiTopGainer');
+    if (kpiTopGainer) {
+      const sortedGainers = [...marketInstruments].sort((a, b) => b.change24h - a.change24h);
+      const top = sortedGainers[0];
+      if (top) {
+        kpiTopGainer.textContent = `${top.symbol} +${top.change24h.toFixed(2)}%`;
+      }
+    }
+
+    // KPI 4: Gold Antam
+    const kpiGoldRate = document.getElementById('marketKpiGoldRate');
+    if (kpiGoldRate) {
+      const antam = marketInstruments.find(i => i.symbol === 'ANTAM');
+      if (antam) {
+        kpiGoldRate.textContent = `Rp ${antam.priceIDR.toLocaleString('id-ID')}/g`;
+      }
+    }
+
+    renderMarketCards();
+    renderPortfolioHoldings();
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  function renderMarketCards() {
+    const grid = document.getElementById('marketCardsGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    let list = [...marketInstruments];
+    if (currentMarketFilter === 'stock') list = list.filter(i => i.category === 'stock');
+    else if (currentMarketFilter === 'gold') list = list.filter(i => i.category === 'gold');
+    else if (currentMarketFilter === 'crypto') list = list.filter(i => i.category === 'crypto');
+    else if (currentMarketFilter === 'portfolio') {
+      const heldSymbols = personalHoldings.map(h => h.symbol);
+      list = list.filter(i => heldSymbols.includes(i.symbol));
+    }
+
+    list.forEach(item => {
+      const isUp = item.change24h >= 0;
+      const card = document.createElement('div');
+      card.id = `card_inst_${item.symbol}`;
+      card.className = 'dompet-card rounded-3xl p-5 space-y-4 border border-white/5 hover:border-white/20 transition-all';
+
+      // Generate SVG Sparkline polyline points (width 120, height 36)
+      const pts = item.sparkline || [10, 12, 11, 15, 14, 18, 16];
+      const minP = Math.min(...pts);
+      const maxP = Math.max(...pts);
+      const range = maxP - minP || 1;
+      const svgPts = pts.map((val, idx) => {
+        const x = Math.round((idx / (pts.length - 1)) * 110) + 5;
+        const y = Math.round(32 - ((val - minP) / range) * 26) + 2;
+        return `${x},${y}`;
+      }).join(' ');
+
+      const formattedPrice = item.priceIDR >= 1000
+        ? `Rp ${item.priceIDR.toLocaleString('id-ID')}`
+        : item.priceIDR.toFixed(2);
+
+      const usdNote = item.priceUSD ? `<span class="text-[11px] text-[#8E8E93] font-mono block">$${item.priceUSD.toLocaleString('en-US')}</span>` : '';
+
+      card.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-2xl bg-[#13141F] border border-white/10 flex items-center justify-center text-[#00D2D3] shrink-0">
+              <i data-lucide="${item.icon || 'trending-up'}" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-white text-xs tracking-tight">${item.symbol}</span>
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-white/5 text-[#8E8E93] uppercase">${item.badge || item.category}</span>
+              </div>
+              <p class="text-[11px] text-[#8E8E93] truncate max-w-[140px]">${item.name}</p>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded-lg text-[11px] font-bold font-mono ${isUp ? 'bg-[#10B981]/20 text-[#10B981]' : 'bg-[#FF3B30]/20 text-[#FF3B30]'}">
+            ${isUp ? '+' : ''}${item.change24h.toFixed(2)}%
+          </span>
+        </div>
+
+        <div class="flex items-end justify-between pt-1">
+          <div>
+            <span class="text-[10px] text-[#8E8E93] uppercase tracking-wider block">Harga Real-Time</span>
+            <span id="price_display_${item.symbol}" class="font-editorial text-xl font-bold text-white tracking-tight font-mono tabular-nums transition-colors">
+              ${formattedPrice}
+            </span>
+            ${usdNote}
+          </div>
+
+          <!-- Sparkline SVG Trend -->
+          <div class="w-28 h-9 shrink-0 flex items-center justify-end">
+            <svg class="w-full h-full overflow-visible" viewBox="0 0 120 36">
+              <polyline
+                fill="none"
+                stroke="${isUp ? '#10B981' : '#FF3B30'}"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                points="${svgPts}"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-[#8E8E93] font-mono">
+          <span>Low: Rp ${(item.low24h || 0).toLocaleString('id-ID')}</span>
+          <span>High: Rp ${(item.high24h || 0).toLocaleString('id-ID')}</span>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  function renderPortfolioHoldings() {
+    const tbody = document.getElementById('portfolioHoldingsTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const priceMap = getMarketPriceMap();
+
+    if (personalHoldings.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-xs text-[#8E8E93]">Belum ada kepemilikan aset yang dicatat. Klik "+ Catat Aset Portofolio" di atas!</td></tr>`;
+      return;
+    }
+
+    personalHoldings.forEach((h, idx) => {
+      const curPrice = priceMap[h.symbol] !== undefined ? priceMap[h.symbol] : h.buyPrice;
+      const val = calculateAssetValuation({
+        type: h.type,
+        units: h.units,
+        buyPrice: h.buyPrice,
+        currentPrice: curPrice
+      });
+
+      const isProf = val.pnlNominal >= 0;
+      const unitLabel = h.type === 'stock' ? `${h.units} lot (${h.units * 100} lembar)` : h.type === 'gold' ? `${h.units} gram` : `${h.units} ${h.symbol}`;
+
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-white/[0.02] text-xs border-b border-white/[0.04]';
+      tr.innerHTML = `
+        <td class="py-3 px-3">
+          <div class="font-bold text-white">${h.symbol}</div>
+          <span class="text-[10px] text-[#8E8E93] uppercase">${h.type}</span>
+        </td>
+        <td class="py-3 px-3 font-mono text-slate-200">${unitLabel}</td>
+        <td class="py-3 px-3 font-mono text-[#8E8E93]">Rp ${Number(h.buyPrice).toLocaleString('id-ID')}</td>
+        <td class="py-3 px-3 font-mono text-white">Rp ${Number(curPrice).toLocaleString('id-ID')}</td>
+        <td class="py-3 px-3 font-mono font-bold text-white">Rp ${Math.round(val.currentValue).toLocaleString('id-ID')}</td>
+        <td class="py-3 px-3 font-mono font-bold ${isProf ? 'text-[#10B981]' : 'text-[#FF3B30]'}">
+          ${isProf ? '+' : ''}Rp ${Math.round(val.pnlNominal).toLocaleString('id-ID')} (${isProf ? '+' : ''}${val.pnlPercentage.toFixed(2)}%)
+        </td>
+        <td class="py-3 px-3 text-center">
+          <button data-delete-holding="${idx}" class="p-1.5 rounded-lg text-[#8E8E93] hover:text-[#FF3B30] hover:bg-[#FF3B30]/10 transition-colors cursor-pointer" title="Hapus">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('[data-delete-holding]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-delete-holding'), 10);
+        const removed = personalHoldings[idx];
+        personalHoldings.splice(idx, 1);
+        persistData();
+        renderMarketDashboard();
+        showDynamicIslandHUD('trash-2', `Aset ${removed.symbol} dihapus dari portofolio`, '#FF3B30');
+      });
+    });
+  }
+
+  // REAL-TIME STREAMING & LIVE JITTER ENGINE
+  function startRealTimeMarketEngine() {
+    // Attempt live fetch from public CORS-friendly endpoint
+    fetchLiveCryptoPrices();
+
+    if (tickerStreamTimer) clearInterval(tickerStreamTimer);
+
+    // Live tick every 3.5s for real-time market action
+    tickerStreamTimer = setInterval(() => {
+      // Pick 2-4 random instruments to tick
+      const count = 2 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < count; i++) {
+        const randIdx = Math.floor(Math.random() * marketInstruments.length);
+        const inst = marketInstruments[randIdx];
+
+        const oldPrice = inst.priceIDR;
+        const newPrice = generateNextTick(oldPrice, 0.0018);
+        const diff = newPrice - oldPrice;
+        inst.priceIDR = newPrice;
+
+        // Update high / low
+        if (newPrice > inst.high24h) inst.high24h = newPrice;
+        if (newPrice < inst.low24h) inst.low24h = newPrice;
+
+        // Push to sparkline
+        inst.sparkline.push(newPrice);
+        if (inst.sparkline.length > 8) inst.sparkline.shift();
+
+        // If on Market screen, apply visible flash micro-animation
+        if (currentView === 'market') {
+          const el = document.getElementById(`price_display_${inst.symbol}`);
+          if (el) {
+            el.textContent = newPrice >= 1000 ? `Rp ${newPrice.toLocaleString('id-ID')}` : newPrice.toFixed(2);
+            const flashColor = diff >= 0 ? '#10B981' : '#FF3B30';
+            el.style.color = flashColor;
+            setTimeout(() => {
+              if (el) el.style.color = '#FFFFFF';
+            }, 600);
+          }
+        }
+      }
+
+      // Re-render market KPI totals smoothly if on market view
+      if (currentView === 'market') {
+        const priceMap = getMarketPriceMap();
+        const portfolioSummary = calculatePortfolioSummary(personalHoldings, priceMap);
+        const kpiPortVal = document.getElementById('marketKpiTotalPortfolio');
+        if (kpiPortVal) {
+          kpiPortVal.textContent = `Rp ${Math.round(portfolioSummary.totalValuation).toLocaleString('id-ID')}`;
+        }
+      }
+    }, 3500);
+  }
+
+  async function fetchLiveCryptoPrices() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple&vs_currencies=idr,usd&include_24hr_change=true');
+      if (res.ok) {
+        const data = await res.json();
+        const mapping = {
+          'BTC': 'bitcoin',
+          'ETH': 'ethereum',
+          'SOL': 'solana',
+          'BNB': 'binancecoin',
+          'XRP': 'ripple'
+        };
+
+        Object.entries(mapping).forEach(([sym, cgKey]) => {
+          if (data[cgKey]) {
+            const inst = marketInstruments.find(i => i.symbol === sym);
+            if (inst) {
+              inst.priceIDR = data[cgKey].idr;
+              inst.priceUSD = data[cgKey].usd;
+              if (data[cgKey].idr_24h_change !== undefined) {
+                inst.change24h = data[cgKey].idr_24h_change;
+              }
+            }
+          }
+        });
+
+        if (currentView === 'market') renderMarketDashboard();
+      }
+    } catch (err) {
+      // Graceful offline / zero-CORS fallback
+      console.log('Real-time live network fallback active (offline/file protocol resilient)');
+    }
+  }
+
   // ================= 9. EVENT LISTENERS =================
   function setupEventListeners() {
-    // Quick Input Bar
     const quickInput = document.getElementById('quickInput');
     const quickPreview = document.getElementById('quickPreview');
 
@@ -1517,17 +1847,14 @@
 
     document.getElementById('btnSubmitQuick')?.addEventListener('click', handleQuickSubmit);
 
-    // Quick Transfer on Dashboard
     document.getElementById('btnExecuteQuickTransfer')?.addEventListener('click', () => {
       handleInternalTransfer('quickTransferFrom', 'quickTransferTo', 'quickTransferAmount');
     });
 
-    // Wallet Transfer on My Wallet Screen
     document.getElementById('btnExecuteWalletTransfer')?.addEventListener('click', () => {
       handleInternalTransfer('walletTransferFrom', 'walletTransferTo', 'walletTransferAmount');
     });
 
-    // Transactions Search & Filter
     document.getElementById('searchTransaction')?.addEventListener('input', () => {
       renderTransactions(transactions);
     });
@@ -1536,7 +1863,76 @@
       renderTransactions(transactions);
     });
 
-    document.getElementById('btnExportCsv')?.addEventListener('click', exportTransactionsToCsv);
+    // Market Category Filter Pills
+    const filterBtns = [
+      { id: 'marketFilterAll', key: 'all' },
+      { id: 'marketFilterStocks', key: 'stock' },
+      { id: 'marketFilterGold', key: 'gold' },
+      { id: 'marketFilterCrypto', key: 'crypto' },
+      { id: 'marketFilterPortfolio', key: 'portfolio' }
+    ];
+
+    filterBtns.forEach(fb => {
+      document.getElementById(fb.id)?.addEventListener('click', () => {
+        currentMarketFilter = fb.key;
+        filterBtns.forEach(btn => {
+          const el = document.getElementById(btn.id);
+          if (btn.key === currentMarketFilter) {
+            el?.classList.add('bg-[#00D2D3]/15', 'text-[#00D2D3]', 'font-semibold', 'border-[#00D2D3]/30');
+            el?.classList.remove('bg-[#1E1E2D]', 'text-[#8E8E93]', 'border-white/5');
+          } else {
+            el?.classList.remove('bg-[#00D2D3]/15', 'text-[#00D2D3]', 'font-semibold', 'border-[#00D2D3]/30');
+            el?.classList.add('bg-[#1E1E2D]', 'text-[#8E8E93]', 'border-white/5');
+          }
+        });
+        renderMarketCards();
+      });
+    });
+
+    // Modal Add Asset
+    const modalAddAsset = document.getElementById('modalAddAsset');
+    const btnOpenAsset = document.getElementById('btnOpenAddAsset');
+    const btnOpenAssetSec = document.getElementById('btnOpenAddAssetSecondary');
+    const btnCloseAsset = document.getElementById('btnCloseAddAsset');
+    const formAsset = document.getElementById('formAddAsset');
+
+    function openAssetModal() {
+      modalAddAsset?.classList.remove('hidden');
+    }
+
+    btnOpenAsset?.addEventListener('click', openAssetModal);
+    btnOpenAssetSec?.addEventListener('click', openAssetModal);
+    btnCloseAsset?.addEventListener('click', () => modalAddAsset?.classList.add('hidden'));
+
+    formAsset?.addEventListener('submit', e => {
+      e.preventDefault();
+      const symbol = document.getElementById('assetFormSymbol')?.value;
+      const units = parseFloat(document.getElementById('assetFormUnits')?.value);
+      const buyPrice = parseFloat(document.getElementById('assetFormBuyPrice')?.value);
+
+      if (!symbol || isNaN(units) || units <= 0 || isNaN(buyPrice) || buyPrice <= 0) {
+        alert('Mohon isi data aset dengan benar');
+        return;
+      }
+
+      const inst = marketInstruments.find(i => i.symbol === symbol);
+      const type = inst ? inst.category : 'crypto';
+
+      personalHoldings.push({
+        id: `hold_${Date.now()}`,
+        symbol,
+        type,
+        units,
+        buyPrice
+      });
+
+      persistData();
+      renderMarketDashboard();
+
+      formAsset.reset();
+      modalAddAsset?.classList.add('hidden');
+      showDynamicIslandHUD('trending-up', `Aset ${symbol} tersimpan di portofolio!`, '#10B981');
+    });
 
     // Split Bill Events
     document.getElementById('btnAddParticipant')?.addEventListener('click', () => {
@@ -1553,33 +1949,6 @@
       showDynamicIslandHUD('user-plus', `Peserta "${name}" ditambahkan`, '#00D2D3');
     });
 
-    document.getElementById('splitInputParticipantName')?.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('btnAddParticipant')?.click();
-      }
-    });
-
-    document.getElementById('btnAddNewSplitItem')?.addEventListener('click', () => {
-      const menuName = prompt('Nama Menu Makanan/Minuman:');
-      if (!menuName) return;
-      const menuPrice = parseInt(prompt('Harga (Rp):', '50000'), 10);
-      if (isNaN(menuPrice) || menuPrice <= 0) return;
-
-      splitItems.push({
-        id: `split_${Date.now()}`,
-        name: menuName,
-        price: menuPrice,
-        quantity: 1,
-        assignedTo: [...splitParticipants]
-      });
-      renderSplitBill();
-      showDynamicIslandHUD('plus-circle', `Menu "${menuName}" ditambahkan`, '#00D2D3');
-    });
-
-    document.getElementById('splitServicePercent')?.addEventListener('input', updateSplitCalculation);
-    document.getElementById('splitTaxPercent')?.addEventListener('input', updateSplitCalculation);
-
     document.getElementById('btnCopyWhatsAppSplit')?.addEventListener('click', () => {
       const splitResult = updateSplitCalculation();
       const bankAcc = document.getElementById('splitBankAccountInput')?.value.trim() || 'BCA: 5410-8899-21 a/n Daniel';
@@ -1593,36 +1962,9 @@
         navigator.clipboard.writeText(waText).then(() => {
           showDynamicIslandHUD('share-2', 'Rincian tagihan disalin! Siap kirim ke WhatsApp', '#25D366');
         });
-      } else {
-        alert('Teks berhasil digenerate:\n\n' + waText);
       }
     });
 
-    // Split Bill Receipt File Upload
-    document.getElementById('splitBillFileInput')?.addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      showDynamicIslandHUD('loader', 'Memindai struk tagihan resto...', '#00D2D3');
-
-      setTimeout(() => {
-        // Realistic restaurant receipt parse
-        const extractedMock = [
-          { id: `rec_${Date.now()}_1`, name: 'Sirloin Steak 200g', price: 165000, quantity: 1, assignedTo: ['Sarah'] },
-          { id: `rec_${Date.now()}_2`, name: 'Grilled Chicken Mushroom', price: 75000, quantity: 1, assignedTo: ['Daniel'] },
-          { id: `rec_${Date.now()}_3`, name: 'Fish and Chips', price: 68000, quantity: 1, assignedTo: ['Budi'] },
-          { id: `rec_${Date.now()}_4`, name: 'Loaded Nachos (Snack)', price: 48000, quantity: 1, assignedTo: ['Daniel', 'Sarah', 'Budi'] },
-          { id: `rec_${Date.now()}_5`, name: 'Lemon Grass Tea', price: 25000, quantity: 1, assignedTo: ['Daniel'] },
-          { id: `rec_${Date.now()}_6`, name: 'Strawberry Mojito', price: 32000, quantity: 1, assignedTo: ['Sarah'] }
-        ];
-
-        splitItems = extractedMock;
-        renderSplitBill();
-        showDynamicIslandHUD('check-circle', 'Struk berhasil dipindai & 6 menu dimasukkan!', '#10B981');
-      }, 900);
-    });
-
-    // Settings Profile Name
     document.getElementById('btnSaveUserName')?.addEventListener('click', () => {
       const input = document.getElementById('settingInputUserName');
       const val = (input?.value || '').trim();
@@ -1631,22 +1973,6 @@
       localStorage.setItem('dompetku_username', userName);
       updateUserProfileDisplay();
       showDynamicIslandHUD('user-check', `Nama profil disimpan: "Hi, ${userName}"`, '#00D2D3');
-    });
-
-    // Settings Cloud Config
-    document.getElementById('btnSaveCloudConfig')?.addEventListener('click', () => {
-      showDynamicIslandHUD('cloud', 'Konfigurasi cloud disimpan ke penyimpanan lokal', '#10B981');
-    });
-
-    // Settings Reset Data
-    document.getElementById('btnResetData')?.addEventListener('click', () => {
-      if (confirm('Yakin ingin mereset seluruh data dompet dan transaksi ke setelan awal?')) {
-        localStorage.removeItem(STORAGE_WALLETS);
-        localStorage.removeItem(STORAGE_TXS);
-        loadData();
-        renderAll();
-        showDynamicIslandHUD('rotate-ccw', 'Data dompet berhasil direset ke awal', '#FF3B30');
-      }
     });
 
     setupSidebar();
@@ -1663,14 +1989,13 @@
     const parsed = parseQuickInput(text, wallets, defaultId);
 
     if (parsed.amount <= 0) {
-      alert('Mohon masukkan nominal yang valid (misal: "makan siang 35k" atau "kopi 25rb gopay")');
+      alert('Mohon masukkan nominal yang valid');
       return;
     }
 
-    const targetWalletId = parsed.walletId || defaultId;
     const newTx = {
       id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      walletId: targetWalletId,
+      walletId: parsed.walletId || defaultId,
       createdBy: 'daniel',
       type: 'expense',
       amount: parsed.amount,
@@ -1687,9 +2012,7 @@
     renderAll();
 
     input.value = '';
-    const quickPreview = document.getElementById('quickPreview');
-    if (quickPreview) quickPreview.classList.add('hidden');
-
+    document.getElementById('quickPreview')?.classList.add('hidden');
     showDynamicIslandHUD('check-circle', `Tercatat: ${parsed.note || parsed.category} (Rp ${parsed.amount.toLocaleString('id-ID')})`, '#10B981');
   }
 
@@ -1747,7 +2070,7 @@
       showDynamicIslandHUD('credit-card', `Dompet "${newWallet.name}" berhasil ditambahkan!`, '#10B981');
     });
 
-    [modalWallet].forEach(modal => {
+    [modalWallet, document.getElementById('modalAddAsset')].forEach(modal => {
       modal?.addEventListener('click', e => {
         if (e.target === modal) modal.classList.add('hidden');
       });
@@ -1755,7 +2078,7 @@
 
     window.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
-        [modalWallet].forEach(m => m?.classList.add('hidden'));
+        [modalWallet, document.getElementById('modalAddAsset')].forEach(m => m?.classList.add('hidden'));
       }
     });
   }

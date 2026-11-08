@@ -15,6 +15,12 @@ import { updateDonutChart, updateBarChart } from './charts.js';
 import { getMonthCalendarDays, aggregateTransactionsByDate } from './calendar.js';
 import { calculateSplitBill, formatWhatsAppBillSummary } from './splitBill.js';
 import {
+  INITIAL_MARKET_INSTRUMENTS,
+  calculateAssetValuation,
+  calculatePortfolioSummary,
+  generateNextTick
+} from './market.js';
+import {
   getLocalCoupleConfig,
   saveLocalCoupleConfig,
   createSupabaseClient
@@ -35,9 +41,14 @@ let prevNetWorth = 0;
 let prevIncome = 0;
 let prevExpense = 0;
 let prevCoupleKas = 0;
+let prevMarketPortfolio = 0;
 
 let wallets = [];
 let transactions = [];
+let marketInstruments = [...INITIAL_MARKET_INSTRUMENTS];
+let personalHoldings = [];
+let currentMarketFilter = 'all';
+let tickerStreamTimer = null;
 
 let splitParticipants = ['Daniel', 'Sarah', 'Budi'];
 let splitItems = [
@@ -50,8 +61,16 @@ let splitItems = [
   { id: '7', name: 'Mineral Water', price: 15000, quantity: 1, assignedTo: ['Budi'] }
 ];
 
+const INITIAL_HOLDINGS = [
+  { id: 'hold_1', symbol: 'ANTAM', type: 'gold', units: 15, buyPrice: 1410000 },
+  { id: 'hold_2', symbol: 'BBCA', type: 'stock', units: 25, buyPrice: 9850 },
+  { id: 'hold_3', symbol: 'BTC', type: 'crypto', units: 0.035, buyPrice: 1350000000 },
+  { id: 'hold_4', symbol: 'ETH', type: 'crypto', units: 0.75, buyPrice: 48000000 }
+];
+
 const STORAGE_WALLETS = 'dompetku_wallets_v2';
 const STORAGE_TXS = 'dompetku_txs_v2';
+const STORAGE_HOLDINGS = 'dompetku_market_portfolio_v2';
 
 export function initApp() {
   loadData();
@@ -59,6 +78,7 @@ export function initApp() {
   setupEventListeners();
   setupRouting();
   renderAll();
+  startRealTimeMarketEngine();
   switchView('dashboard');
   if (window.lucide) window.lucide.createIcons();
 }
@@ -67,12 +87,16 @@ function loadData() {
   try {
     const savedWallets = localStorage.getItem(STORAGE_WALLETS);
     const savedTxs = localStorage.getItem(STORAGE_TXS);
+    const savedHoldings = localStorage.getItem(STORAGE_HOLDINGS);
+
     wallets = savedWallets ? JSON.parse(savedWallets) : [...INITIAL_WALLETS];
     transactions = savedTxs ? JSON.parse(savedTxs) : [...INITIAL_TRANSACTIONS];
+    personalHoldings = savedHoldings ? JSON.parse(savedHoldings) : [...INITIAL_HOLDINGS];
   } catch (err) {
     console.error('Error loading local state:', err);
     wallets = [...INITIAL_WALLETS];
     transactions = [...INITIAL_TRANSACTIONS];
+    personalHoldings = [...INITIAL_HOLDINGS];
   }
 }
 
@@ -80,6 +104,7 @@ function persistData() {
   try {
     localStorage.setItem(STORAGE_WALLETS, JSON.stringify(wallets));
     localStorage.setItem(STORAGE_TXS, JSON.stringify(transactions));
+    localStorage.setItem(STORAGE_HOLDINGS, JSON.stringify(personalHoldings));
   } catch (err) {
     console.error('Error saving local state:', err);
   }
@@ -100,6 +125,7 @@ export function switchView(viewName) {
     wallet: document.getElementById('viewMyWallet'),
     transactions: document.getElementById('viewTransactions'),
     splitbill: document.getElementById('viewSplitBill'),
+    market: document.getElementById('viewMarket'),
     settings: document.getElementById('viewSettings')
   };
 
@@ -108,6 +134,7 @@ export function switchView(viewName) {
     wallet: 'My Wallet & Accounts',
     transactions: 'Transactions & Calendar',
     splitbill: 'Smart Split Bill (PB1 & Resto Tax)',
+    market: 'Market & Investment Dashboard',
     settings: 'Settings & Personal Profile'
   };
 
@@ -153,6 +180,7 @@ export function switchView(viewName) {
     renderCalendar();
     renderTransactions(transactions);
   } else if (viewName === 'splitbill') renderSplitBill();
+  else if (viewName === 'market') renderMarketDashboard();
   else if (viewName === 'dashboard') renderDashboard();
 
   if (window.lucide) window.lucide.createIcons();
@@ -182,6 +210,7 @@ export function renderAll() {
   renderCalendar();
   renderTransactions(transactions);
   renderSplitBill();
+  renderMarketDashboard();
 }
 
 function renderDashboard() {
@@ -755,6 +784,273 @@ function updateSplitCalculation() {
   return result;
 }
 
+// ================= VIEW 5: DEDICATED MARKET & INVESTMENT DASHBOARD =================
+function getMarketPriceMap() {
+  const map = {};
+  marketInstruments.forEach(inst => {
+    map[inst.symbol] = inst.priceIDR;
+  });
+  return map;
+}
+
+export function renderMarketDashboard() {
+  const priceMap = getMarketPriceMap();
+  const portfolioSummary = calculatePortfolioSummary(personalHoldings, priceMap);
+
+  const kpiPortVal = document.getElementById('marketKpiTotalPortfolio');
+  if (kpiPortVal) {
+    animateNumber(kpiPortVal, prevMarketPortfolio, portfolioSummary.totalValuation, { duration: 400 });
+    prevMarketPortfolio = portfolioSummary.totalValuation;
+  }
+
+  const kpiPnl = document.getElementById('marketKpiTotalPnl');
+  const kpiPnlPercent = document.getElementById('marketKpiPnlPercent');
+  if (kpiPnl) {
+    const isProf = portfolioSummary.totalPnlNominal >= 0;
+    kpiPnl.className = `font-editorial text-2xl sm:text-3xl font-bold tracking-tight ${isProf ? 'text-[#10B981]' : 'text-[#FF3B30]'}`;
+    kpiPnl.textContent = `${isProf ? '+' : ''}Rp ${Math.round(portfolioSummary.totalPnlNominal).toLocaleString('id-ID')}`;
+  }
+  if (kpiPnlPercent) {
+    const isProf = portfolioSummary.totalPnlNominal >= 0;
+    kpiPnlPercent.className = `text-[11px] font-semibold block mt-2 ${isProf ? 'text-[#10B981]' : 'text-[#FF3B30]'}`;
+    kpiPnlPercent.textContent = `${isProf ? '+' : ''}${portfolioSummary.totalPnlPercentage.toFixed(2)}% dari modal`;
+  }
+
+  const kpiTopGainer = document.getElementById('marketKpiTopGainer');
+  if (kpiTopGainer) {
+    const sortedGainers = [...marketInstruments].sort((a, b) => b.change24h - a.change24h);
+    const top = sortedGainers[0];
+    if (top) kpiTopGainer.textContent = `${top.symbol} +${top.change24h.toFixed(2)}%`;
+  }
+
+  const kpiGoldRate = document.getElementById('marketKpiGoldRate');
+  if (kpiGoldRate) {
+    const antam = marketInstruments.find(i => i.symbol === 'ANTAM');
+    if (antam) kpiGoldRate.textContent = `Rp ${antam.priceIDR.toLocaleString('id-ID')}/g`;
+  }
+
+  renderMarketCards();
+  renderPortfolioHoldings();
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function renderMarketCards() {
+  const grid = document.getElementById('marketCardsGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  let list = [...marketInstruments];
+  if (currentMarketFilter === 'stock') list = list.filter(i => i.category === 'stock');
+  else if (currentMarketFilter === 'gold') list = list.filter(i => i.category === 'gold');
+  else if (currentMarketFilter === 'crypto') list = list.filter(i => i.category === 'crypto');
+  else if (currentMarketFilter === 'portfolio') {
+    const heldSymbols = personalHoldings.map(h => h.symbol);
+    list = list.filter(i => heldSymbols.includes(i.symbol));
+  }
+
+  list.forEach(item => {
+    const isUp = item.change24h >= 0;
+    const card = document.createElement('div');
+    card.id = `card_inst_${item.symbol}`;
+    card.className = 'dompet-card rounded-3xl p-5 space-y-4 border border-white/5 hover:border-white/20 transition-all';
+
+    const pts = item.sparkline || [10, 12, 11, 15, 14, 18, 16];
+    const minP = Math.min(...pts);
+    const maxP = Math.max(...pts);
+    const range = maxP - minP || 1;
+    const svgPts = pts.map((val, idx) => {
+      const x = Math.round((idx / (pts.length - 1)) * 110) + 5;
+      const y = Math.round(32 - ((val - minP) / range) * 26) + 2;
+      return `${x},${y}`;
+    }).join(' ');
+
+    const formattedPrice = item.priceIDR >= 1000
+      ? `Rp ${item.priceIDR.toLocaleString('id-ID')}`
+      : item.priceIDR.toFixed(2);
+
+    const usdNote = item.priceUSD ? `<span class="text-[11px] text-[#8E8E93] font-mono block">$${item.priceUSD.toLocaleString('en-US')}</span>` : '';
+
+    card.innerHTML = `
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-[#13141F] border border-white/10 flex items-center justify-center text-[#00D2D3] shrink-0">
+            <i data-lucide="${item.icon || 'trending-up'}" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-bold text-white text-xs tracking-tight">${item.symbol}</span>
+              <span class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-white/5 text-[#8E8E93] uppercase">${item.badge || item.category}</span>
+            </div>
+            <p class="text-[11px] text-[#8E8E93] truncate max-w-[140px]">${item.name}</p>
+          </div>
+        </div>
+        <span class="px-2 py-0.5 rounded-lg text-[11px] font-bold font-mono ${isUp ? 'bg-[#10B981]/20 text-[#10B981]' : 'bg-[#FF3B30]/20 text-[#FF3B30]'}">
+          ${isUp ? '+' : ''}${item.change24h.toFixed(2)}%
+        </span>
+      </div>
+
+      <div class="flex items-end justify-between pt-1">
+        <div>
+          <span class="text-[10px] text-[#8E8E93] uppercase tracking-wider block">Harga Real-Time</span>
+          <span id="price_display_${item.symbol}" class="font-editorial text-xl font-bold text-white tracking-tight font-mono tabular-nums transition-colors">
+            ${formattedPrice}
+          </span>
+          ${usdNote}
+        </div>
+
+        <div class="w-28 h-9 shrink-0 flex items-center justify-end">
+          <svg class="w-full h-full overflow-visible" viewBox="0 0 120 36">
+            <polyline
+              fill="none"
+              stroke="${isUp ? '#10B981' : '#FF3B30'}"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              points="${svgPts}"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-[#8E8E93] font-mono">
+        <span>Low: Rp ${(item.low24h || 0).toLocaleString('id-ID')}</span>
+        <span>High: Rp ${(item.high24h || 0).toLocaleString('id-ID')}</span>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function renderPortfolioHoldings() {
+  const tbody = document.getElementById('portfolioHoldingsTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const priceMap = getMarketPriceMap();
+
+  if (personalHoldings.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-xs text-[#8E8E93]">Belum ada kepemilikan aset yang dicatat. Klik "+ Catat Aset Portofolio" di atas!</td></tr>`;
+    return;
+  }
+
+  personalHoldings.forEach((h, idx) => {
+    const curPrice = priceMap[h.symbol] !== undefined ? priceMap[h.symbol] : h.buyPrice;
+    const val = calculateAssetValuation({
+      type: h.type,
+      units: h.units,
+      buyPrice: h.buyPrice,
+      currentPrice: curPrice
+    });
+
+    const isProf = val.pnlNominal >= 0;
+    const unitLabel = h.type === 'stock' ? `${h.units} lot (${h.units * 100} lembar)` : h.type === 'gold' ? `${h.units} gram` : `${h.units} ${h.symbol}`;
+
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-white/[0.02] text-xs border-b border-white/[0.04]';
+    tr.innerHTML = `
+      <td class="py-3 px-3">
+        <div class="font-bold text-white">${h.symbol}</div>
+        <span class="text-[10px] text-[#8E8E93] uppercase">${h.type}</span>
+      </td>
+      <td class="py-3 px-3 font-mono text-slate-200">${unitLabel}</td>
+      <td class="py-3 px-3 font-mono text-[#8E8E93]">Rp ${Number(h.buyPrice).toLocaleString('id-ID')}</td>
+      <td class="py-3 px-3 font-mono text-white">Rp ${Number(curPrice).toLocaleString('id-ID')}</td>
+      <td class="py-3 px-3 font-mono font-bold text-white">Rp ${Math.round(val.currentValue).toLocaleString('id-ID')}</td>
+      <td class="py-3 px-3 font-mono font-bold ${isProf ? 'text-[#10B981]' : 'text-[#FF3B30]'}">
+        ${isProf ? '+' : ''}Rp ${Math.round(val.pnlNominal).toLocaleString('id-ID')} (${isProf ? '+' : ''}${val.pnlPercentage.toFixed(2)}%)
+      </td>
+      <td class="py-3 px-3 text-center">
+        <button data-delete-holding="${idx}" class="p-1.5 rounded-lg text-[#8E8E93] hover:text-[#FF3B30] hover:bg-[#FF3B30]/10 transition-colors cursor-pointer" title="Hapus">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('[data-delete-holding]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.getAttribute('data-delete-holding'), 10);
+      const removed = personalHoldings[idx];
+      personalHoldings.splice(idx, 1);
+      persistData();
+      renderMarketDashboard();
+      showDynamicIslandHUD('trash-2', `Aset ${removed.symbol} dihapus dari portofolio`, '#FF3B30');
+    });
+  });
+}
+
+function startRealTimeMarketEngine() {
+  fetchLiveCryptoPrices();
+
+  if (tickerStreamTimer) clearInterval(tickerStreamTimer);
+
+  tickerStreamTimer = setInterval(() => {
+    const count = 2 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < count; i++) {
+      const randIdx = Math.floor(Math.random() * marketInstruments.length);
+      const inst = marketInstruments[randIdx];
+
+      const oldPrice = inst.priceIDR;
+      const newPrice = generateNextTick(oldPrice, 0.0018);
+      const diff = newPrice - oldPrice;
+      inst.priceIDR = newPrice;
+
+      if (newPrice > inst.high24h) inst.high24h = newPrice;
+      if (newPrice < inst.low24h) inst.low24h = newPrice;
+
+      inst.sparkline.push(newPrice);
+      if (inst.sparkline.length > 8) inst.sparkline.shift();
+
+      if (currentView === 'market') {
+        const el = document.getElementById(`price_display_${inst.symbol}`);
+        if (el) {
+          el.textContent = newPrice >= 1000 ? `Rp ${newPrice.toLocaleString('id-ID')}` : newPrice.toFixed(2);
+          const flashColor = diff >= 0 ? '#10B981' : '#FF3B30';
+          el.style.color = flashColor;
+          setTimeout(() => {
+            if (el) el.style.color = '#FFFFFF';
+          }, 600);
+        }
+      }
+    }
+
+    if (currentView === 'market') {
+      const priceMap = getMarketPriceMap();
+      const portfolioSummary = calculatePortfolioSummary(personalHoldings, priceMap);
+      const kpiPortVal = document.getElementById('marketKpiTotalPortfolio');
+      if (kpiPortVal) {
+        kpiPortVal.textContent = `Rp ${Math.round(portfolioSummary.totalValuation).toLocaleString('id-ID')}`;
+      }
+    }
+  }, 3500);
+}
+
+async function fetchLiveCryptoPrices() {
+  try {
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple&vs_currencies=idr,usd&include_24hr_change=true');
+    if (res.ok) {
+      const data = await res.json();
+      const mapping = { 'BTC': 'bitcoin', 'ETH': 'ethereum', 'SOL': 'solana', 'BNB': 'binancecoin', 'XRP': 'ripple' };
+      Object.entries(mapping).forEach(([sym, cgKey]) => {
+        if (data[cgKey]) {
+          const inst = marketInstruments.find(i => i.symbol === sym);
+          if (inst) {
+            inst.priceIDR = data[cgKey].idr;
+            inst.priceUSD = data[cgKey].usd;
+            if (data[cgKey].idr_24h_change !== undefined) inst.change24h = data[cgKey].idr_24h_change;
+          }
+        }
+      });
+      if (currentView === 'market') renderMarketDashboard();
+    }
+  } catch (err) {
+    console.log('Real-time live network fallback active (offline/file protocol resilient)');
+  }
+}
+
 function setupEventListeners() {
   const quickInput = document.getElementById('quickInput');
   const quickPreview = document.getElementById('quickPreview');
@@ -792,21 +1088,85 @@ function setupEventListeners() {
   });
 
   document.getElementById('btnSubmitQuick')?.addEventListener('click', handleQuickSubmit);
-
   document.getElementById('btnExecuteQuickTransfer')?.addEventListener('click', () => {
     handleInternalTransfer('quickTransferFrom', 'quickTransferTo', 'quickTransferAmount');
   });
-
   document.getElementById('btnExecuteWalletTransfer')?.addEventListener('click', () => {
     handleInternalTransfer('walletTransferFrom', 'walletTransferTo', 'walletTransferAmount');
   });
 
-  document.getElementById('searchTransaction')?.addEventListener('input', () => {
-    renderTransactions(transactions);
+  document.getElementById('searchTransaction')?.addEventListener('input', () => renderTransactions(transactions));
+  document.getElementById('filterTableCategory')?.addEventListener('change', () => renderTransactions(transactions));
+
+  // Market Category Filter Pills
+  const filterBtns = [
+    { id: 'marketFilterAll', key: 'all' },
+    { id: 'marketFilterStocks', key: 'stock' },
+    { id: 'marketFilterGold', key: 'gold' },
+    { id: 'marketFilterCrypto', key: 'crypto' },
+    { id: 'marketFilterPortfolio', key: 'portfolio' }
+  ];
+
+  filterBtns.forEach(fb => {
+    document.getElementById(fb.id)?.addEventListener('click', () => {
+      currentMarketFilter = fb.key;
+      filterBtns.forEach(btn => {
+        const el = document.getElementById(btn.id);
+        if (btn.key === currentMarketFilter) {
+          el?.classList.add('bg-[#00D2D3]/15', 'text-[#00D2D3]', 'font-semibold', 'border-[#00D2D3]/30');
+          el?.classList.remove('bg-[#1E1E2D]', 'text-[#8E8E93]', 'border-white/5');
+        } else {
+          el?.classList.remove('bg-[#00D2D3]/15', 'text-[#00D2D3]', 'font-semibold', 'border-[#00D2D3]/30');
+          el?.classList.add('bg-[#1E1E2D]', 'text-[#8E8E93]', 'border-white/5');
+        }
+      });
+      renderMarketCards();
+    });
   });
 
-  document.getElementById('filterTableCategory')?.addEventListener('change', () => {
-    renderTransactions(transactions);
+  // Modal Add Asset
+  const modalAddAsset = document.getElementById('modalAddAsset');
+  const btnOpenAsset = document.getElementById('btnOpenAddAsset');
+  const btnOpenAssetSec = document.getElementById('btnOpenAddAssetSecondary');
+  const btnCloseAsset = document.getElementById('btnCloseAddAsset');
+  const formAsset = document.getElementById('formAddAsset');
+
+  function openAssetModal() {
+    modalAddAsset?.classList.remove('hidden');
+  }
+
+  btnOpenAsset?.addEventListener('click', openAssetModal);
+  btnOpenAssetSec?.addEventListener('click', openAssetModal);
+  btnCloseAsset?.addEventListener('click', () => modalAddAsset?.classList.add('hidden'));
+
+  formAsset?.addEventListener('submit', e => {
+    e.preventDefault();
+    const symbol = document.getElementById('assetFormSymbol')?.value;
+    const units = parseFloat(document.getElementById('assetFormUnits')?.value);
+    const buyPrice = parseFloat(document.getElementById('assetFormBuyPrice')?.value);
+
+    if (!symbol || isNaN(units) || units <= 0 || isNaN(buyPrice) || buyPrice <= 0) {
+      alert('Mohon isi data aset dengan benar');
+      return;
+    }
+
+    const inst = marketInstruments.find(i => i.symbol === symbol);
+    const type = inst ? inst.category : 'crypto';
+
+    personalHoldings.push({
+      id: `hold_${Date.now()}`,
+      symbol,
+      type,
+      units,
+      buyPrice
+    });
+
+    persistData();
+    renderMarketDashboard();
+
+    formAsset.reset();
+    modalAddAsset?.classList.add('hidden');
+    showDynamicIslandHUD('trending-up', `Aset ${symbol} tersimpan di portofolio!`, '#10B981');
   });
 
   document.getElementById('btnAddParticipant')?.addEventListener('click', () => {
@@ -823,23 +1183,6 @@ function setupEventListeners() {
     showDynamicIslandHUD('user-plus', `Peserta "${name}" ditambahkan`, '#00D2D3');
   });
 
-  document.getElementById('btnAddNewSplitItem')?.addEventListener('click', () => {
-    const menuName = prompt('Nama Menu Makanan/Minuman:');
-    if (!menuName) return;
-    const menuPrice = parseInt(prompt('Harga (Rp):', '50000'), 10);
-    if (isNaN(menuPrice) || menuPrice <= 0) return;
-
-    splitItems.push({
-      id: `split_${Date.now()}`,
-      name: menuName,
-      price: menuPrice,
-      quantity: 1,
-      assignedTo: [...splitParticipants]
-    });
-    renderSplitBill();
-    showDynamicIslandHUD('plus-circle', `Menu "${menuName}" ditambahkan`, '#00D2D3');
-  });
-
   document.getElementById('btnCopyWhatsAppSplit')?.addEventListener('click', () => {
     const splitResult = updateSplitCalculation();
     const bankAcc = document.getElementById('splitBankAccountInput')?.value.trim() || 'BCA: 5410-8899-21 a/n Daniel';
@@ -853,8 +1196,6 @@ function setupEventListeners() {
       navigator.clipboard.writeText(waText).then(() => {
         showDynamicIslandHUD('share-2', 'Rincian tagihan disalin! Siap kirim ke WhatsApp', '#25D366');
       });
-    } else {
-      alert('Teks berhasil digenerate:\n\n' + waText);
     }
   });
 
@@ -882,7 +1223,7 @@ function handleQuickSubmit() {
   const parsed = parseQuickInput(text, wallets, defaultId);
 
   if (parsed.amount <= 0) {
-    alert('Mohon masukkan nominal yang valid (misal: "makan siang 35k" atau "kopi 25rb gopay")');
+    alert('Mohon masukkan nominal yang valid');
     return;
   }
 
@@ -963,14 +1304,16 @@ function setupModals() {
     showDynamicIslandHUD('credit-card', `Dompet "${newWallet.name}" berhasil ditambahkan!`, '#10B981');
   });
 
-  [modalWallet].forEach(modal => {
+  [modalWallet, document.getElementById('modalAddAsset')].forEach(modal => {
     modal?.addEventListener('click', e => {
       if (e.target === modal) modal.classList.add('hidden');
     });
   });
 
   window.addEventListener('keydown', e => {
-    if (e.key === 'Escape') modalWallet?.classList.add('hidden');
+    if (e.key === 'Escape') {
+      [modalWallet, document.getElementById('modalAddAsset')].forEach(m => m?.classList.add('hidden'));
+    }
   });
 }
 
