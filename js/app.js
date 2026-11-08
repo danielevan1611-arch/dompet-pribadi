@@ -455,8 +455,8 @@ function renderMyWalletScreen() {
 
         <div class="flex items-end justify-between">
           <div>
-            <span class="text-[10px] uppercase tracking-wider text-white/60 block">Saldo Rekening</span>
-            <span class="font-editorial text-2xl font-bold text-white tracking-tight">
+            <span class="font-pill text-[10px] uppercase tracking-wider text-white/60 block">Saldo Rekening</span>
+            <span class="font-headline text-2xl font-bold text-white tracking-tight">
               Rp ${(wallet.balance || 0).toLocaleString('id-ID')}
             </span>
           </div>
@@ -872,12 +872,12 @@ export function renderMarketDashboard() {
   const kpiPnlPercent = document.getElementById('marketKpiPnlPercent');
   if (kpiPnl) {
     const isProf = portfolioSummary.totalPnlNominal >= 0;
-    kpiPnl.className = `font-editorial text-2xl sm:text-3xl font-bold tracking-tight ${isProf ? 'text-[#10B981]' : 'text-[#FF3B30]'}`;
+    kpiPnl.className = `font-headline text-2xl sm:text-3xl font-bold tracking-tight ${isProf ? 'text-[#10B981]' : 'text-[#EF4444]'}`;
     kpiPnl.textContent = `${isProf ? '+' : ''}Rp ${Math.round(portfolioSummary.totalPnlNominal).toLocaleString('id-ID')}`;
   }
   if (kpiPnlPercent) {
     const isProf = portfolioSummary.totalPnlNominal >= 0;
-    kpiPnlPercent.className = `text-[11px] font-semibold block mt-2 ${isProf ? 'text-[#10B981]' : 'text-[#FF3B30]'}`;
+    kpiPnlPercent.className = `font-amount font-mono text-[11px] font-semibold block mt-2 ${isProf ? 'text-[#10B981]' : 'text-[#EF4444]'}`;
     kpiPnlPercent.textContent = `${isProf ? '+' : ''}${portfolioSummary.totalPnlPercentage.toFixed(2)}% dari modal`;
   }
 
@@ -956,8 +956,8 @@ function renderMarketCards() {
 
       <div class="flex items-end justify-between pt-1">
         <div>
-          <span class="text-[10px] text-[#8E8E93] uppercase tracking-wider block">Harga Real-Time</span>
-          <span id="price_display_${item.symbol}" class="font-editorial text-xl font-bold text-white tracking-tight font-mono tabular-nums transition-colors">
+          <span class="font-pill text-[10px] text-[#8E8E93] uppercase tracking-wider block">Harga Real-Time</span>
+          <span id="price_display_${item.symbol}" class="font-amount text-xl font-bold text-white tracking-tight font-mono tabular-nums transition-colors">
             ${formattedPrice}
           </span>
           ${usdNote}
@@ -1485,20 +1485,20 @@ export function renderSavingsDashboard() {
         <div class="space-y-3">
           <div class="flex items-start justify-between gap-2">
             <div>
-              <span class="text-[10px] uppercase font-bold tracking-wider text-[#8E8E93] block font-compact">${escapeHtml(goal.categoryLabel || getCategoryLabel(goal.category))}</span>
-              <h4 class="font-editorial text-base font-bold text-white tracking-tight leading-snug">${escapeHtml(goal.name)}</h4>
+              <span class="font-pill text-[10px] uppercase font-bold tracking-wider text-[#8E8E93] block">${escapeHtml(goal.categoryLabel || getCategoryLabel(goal.category))}</span>
+              <h4 class="font-subhead text-base font-bold text-white tracking-tight leading-snug">${escapeHtml(goal.name)}</h4>
             </div>
             ${lockBadge}
           </div>
 
           <!-- Balance Display -->
           <div class="space-y-1">
-            <span class="text-[10px] text-[#8E8E93] uppercase font-semibold">Terkumpul</span>
+            <span class="font-pill text-[10px] text-[#8E8E93] uppercase font-semibold">Terkumpul</span>
             <div class="flex items-baseline justify-between">
-              <span class="font-editorial text-2xl font-bold text-white tracking-tight">Rp ${(goal.current || 0).toLocaleString('id-ID')}</span>
-              <span class="text-xs font-bold text-[#00D2D3] font-mono">${prog.percentage}%</span>
+              <span class="font-headline text-2xl font-bold text-white tracking-tight">Rp ${(goal.current || 0).toLocaleString('id-ID')}</span>
+              <span class="font-amount font-mono text-xs font-bold text-[#00D2D3]">${prog.percentage}%</span>
             </div>
-            <div class="flex items-center justify-between text-[11px] text-[#8E8E93] font-mono">
+            <div class="flex items-center justify-between text-[11px] text-[#8E8E93] font-amount font-mono">
               <span>Target: Rp ${(goal.target || 0).toLocaleString('id-ID')}</span>
               <span>Deadline: ${targetDateFormatted}</span>
             </div>
