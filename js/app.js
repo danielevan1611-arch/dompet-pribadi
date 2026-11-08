@@ -21,12 +21,21 @@ import {
   subscribeToCoupleRealtime
 } from './sync.js';
 import { INITIAL_WALLETS, INITIAL_TRANSACTIONS } from './mockData.js';
+import {
+  animateNumber,
+  showDynamicIslandHUD,
+  isReducedMotion
+} from './motion.js';
 
 // ================= STATE =================
 let currentUserId = 'user_a'; // 'user_a' (Kamu) or 'user_b' (Pacar)
 let currentMode = 'all'; // 'all' (Pribadi + Bersama) or 'shared' (Hanya Bersama)
 let coupleConfig = getLocalCoupleConfig();
 let supabaseClient = null;
+
+let prevNetWorth = 0;
+let prevIncome = 0;
+let prevExpense = 0;
 
 let wallets = [];
 let transactions = [];
@@ -111,14 +120,19 @@ function renderKpis(visibleWallets, visibleTxs) {
   const kpiNetWorth = document.getElementById('kpiNetWorth');
   const kpiSubtitle = document.getElementById('kpiNetWorthSubtitle');
 
-  kpiNetWorth.textContent = `Rp ${netWorth.toLocaleString('id-ID')}`;
+  if (kpiNetWorth) {
+    animateNumber(kpiNetWorth, prevNetWorth, netWorth, { duration: 480, prefix: 'Rp ' });
+    prevNetWorth = netWorth;
+  }
 
-  if (currentMode === 'shared') {
-    kpiSubtitle.textContent = 'Mode: ❤️ Kas Bersama Sahaja';
-  } else if (currentUserId === 'user_a') {
-    kpiSubtitle.textContent = `Mode: 👤 Pribadi Kamu (${coupleConfig.userName || 'Kamu'}) + Bersama`;
-  } else {
-    kpiSubtitle.textContent = `Mode: 🌸 Pribadi Pacar (${coupleConfig.partnerName || 'Pacar'}) + Bersama`;
+  if (kpiSubtitle) {
+    if (currentMode === 'shared') {
+      kpiSubtitle.textContent = 'Mode: Kas Bersama Sahaja';
+    } else if (currentUserId === 'user_a') {
+      kpiSubtitle.textContent = `Mode: Pribadi Kamu (${coupleConfig.userName || 'Kamu'}) + Bersama`;
+    } else {
+      kpiSubtitle.textContent = `Mode: Pribadi Pacar (${coupleConfig.partnerName || 'Pacar'}) + Bersama`;
+    }
   }
 
   // Monthly Income and Expense
@@ -138,8 +152,16 @@ function renderKpis(visibleWallets, visibleTxs) {
     }
   }
 
-  document.getElementById('kpiIncome').textContent = `+Rp ${monthIncome.toLocaleString('id-ID')}`;
-  document.getElementById('kpiExpense').textContent = `-Rp ${monthExpense.toLocaleString('id-ID')}`;
+  const kpiIncome = document.getElementById('kpiIncome');
+  const kpiExpense = document.getElementById('kpiExpense');
+  if (kpiIncome) {
+    animateNumber(kpiIncome, prevIncome, monthIncome, { duration: 450, prefix: 'Rp ', sign: '+' });
+    prevIncome = monthIncome;
+  }
+  if (kpiExpense) {
+    animateNumber(kpiExpense, prevExpense, monthExpense, { duration: 450, prefix: 'Rp ', sign: '-' });
+    prevExpense = monthExpense;
+  }
 }
 
 function renderWallets(visibleWallets) {
@@ -163,10 +185,10 @@ function renderWallets(visibleWallets) {
   for (const wallet of filteredWallets) {
     const isShared = wallet.visibility === 'shared';
     const card = document.createElement('div');
-    card.className = `p-4 rounded-2xl border transition-all ios-card-interactive cursor-pointer ${
+    card.className = `p-4 rounded-2xl border transition-all ios-card-specular ios-card-interactive cursor-pointer ${
       isShared
-        ? 'bg-[#1C1C1E] border-[#FF2D55]/30 shadow-sm'
-        : 'bg-[#1C1C1E] border-white/10 hover:border-white/20 shadow-sm'
+        ? 'border-[#FF2D55]/30 shadow-sm'
+        : 'border-white/10 hover:border-white/20 shadow-sm'
     }`;
 
     const iconName = wallet.type === 'bank' ? 'landmark' : wallet.type === 'ewallet' ? 'smartphone' : 'banknote';
@@ -177,13 +199,22 @@ function renderWallets(visibleWallets) {
           <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white" style="background-color: ${wallet.color || '#007AFF'}">
             <i data-lucide="${iconName}" class="w-4 h-4"></i>
           </div>
-          <span class="text-xs font-semibold text-white tracking-tight">${escapeHtml(wallet.name)}</span>
+          <div>
+            <span class="text-xs font-semibold text-white tracking-tight block">${escapeHtml(wallet.name)}</span>
+            <span class="text-[9px] text-[#8E8E93] uppercase tracking-wider">${wallet.type || 'Bank'}</span>
+          </div>
         </div>
-        <span class="text-[10px] px-2 py-0.5 rounded-full font-medium ${
-          isShared ? 'bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30' : 'bg-[#2C2C2E] text-[#8E8E93] border border-white/5'
-        }">
-          ${isShared ? 'Bersama' : 'Pribadi'}
-        </span>
+        <div class="flex items-center gap-1.5">
+          <svg class="w-5 h-4 opacity-30 text-amber-200" viewBox="0 0 24 20" fill="none" stroke="currentColor">
+            <rect x="1" y="1" width="22" height="18" rx="3" stroke-width="1.5"/>
+            <path d="M7 1v18M17 1v18M1 7h6M1 13h6M17 7h6M17 13h6" stroke-width="1.2"/>
+          </svg>
+          <span class="text-[10px] px-2 py-0.5 rounded-full font-medium ${
+            isShared ? 'bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30' : 'bg-[#2C2C2E] text-[#8E8E93] border border-white/5'
+          }">
+            ${isShared ? 'Bersama' : 'Pribadi'}
+          </span>
+        </div>
       </div>
       <div class="mt-2">
         <span class="text-[10px] text-[#8E8E93] font-medium block">Saldo</span>
@@ -193,6 +224,16 @@ function renderWallets(visibleWallets) {
       </div>
     `;
     container.appendChild(card);
+  }
+
+  if (window.gsap && !isReducedMotion()) {
+    gsap.from('#walletsContainer > div', {
+      opacity: 0,
+      y: 12,
+      stagger: 0.035,
+      duration: 0.3,
+      ease: 'power2.out'
+    });
   }
 }
 
@@ -285,6 +326,16 @@ function renderTransactions(visibleTxs) {
       deleteTransaction(id);
     });
   });
+
+  if (window.gsap && !isReducedMotion()) {
+    gsap.from('#transactionsContainer > div', {
+      opacity: 0,
+      y: 8,
+      stagger: 0.02,
+      duration: 0.25,
+      ease: 'power1.out'
+    });
+  }
 }
 
 function renderCharts(visibleTxs) {
@@ -361,6 +412,8 @@ function handleQuickSubmit() {
 
   input.value = '';
   document.getElementById('quickPreview').classList.add('hidden');
+
+  showDynamicIslandHUD('check-circle', `Tercatat: ${parsed.note || parsed.category} (Rp ${(parsed.amount || 0).toLocaleString('id-ID')})`, '#34C759');
 }
 
 function deleteTransaction(txId) {
@@ -377,6 +430,8 @@ function deleteTransaction(txId) {
   transactions = transactions.filter(t => t.id !== txId);
   persistData();
   renderAll();
+
+  showDynamicIslandHUD('trash-2', 'Transaksi dihapus & saldo dipulihkan', '#FF3B30');
 }
 
 // ================= EVENT LISTENERS =================
@@ -423,18 +478,40 @@ function setupEventListeners() {
   const btnRoleB = document.getElementById('btnRoleB');
 
   function updateRoleButtons() {
+    const track = document.getElementById('segmentedControlTrack');
+    const pill = document.getElementById('rolePillIndicator');
+    let activeBtn = btnRoleA;
+
     [btnRoleA, btnRoleShared, btnRoleB].forEach(btn => {
-      btn.className = 'px-3 py-1 rounded-full transition-all text-[#8E8E93] hover:text-white font-medium';
+      if (btn) {
+        btn.className = 'relative z-10 px-3.5 py-1 rounded-full text-[#8E8E93] hover:text-white transition-colors duration-200 font-medium';
+      }
     });
 
     if (currentMode === 'shared') {
-      btnRoleShared.className = 'px-3 py-1 rounded-full transition-all text-white bg-[#2C2C2E] shadow-sm font-medium';
+      activeBtn = btnRoleShared;
     } else if (currentUserId === 'user_a') {
-      btnRoleA.className = 'px-3 py-1 rounded-full transition-all text-white bg-[#2C2C2E] shadow-sm font-medium';
+      activeBtn = btnRoleA;
     } else {
-      btnRoleB.className = 'px-3 py-1 rounded-full transition-all text-white bg-[#2C2C2E] shadow-sm font-medium';
+      activeBtn = btnRoleB;
+    }
+
+    if (activeBtn) {
+      activeBtn.className = 'relative z-10 px-3.5 py-1 rounded-full text-white transition-colors duration-200 font-medium';
+      if (track && pill) {
+        const trackRect = track.getBoundingClientRect();
+        const btnRect = activeBtn.getBoundingClientRect();
+        if (trackRect.width > 0) {
+          const left = Math.round(btnRect.left - trackRect.left);
+          const width = Math.round(btnRect.width);
+          pill.style.transform = `translateX(${left - 4}px)`;
+          pill.style.width = `${width}px`;
+        }
+      }
     }
   }
+
+  window.addEventListener('resize', updateRoleButtons);
 
   btnRoleA?.addEventListener('click', () => {
     currentUserId = 'user_a';
