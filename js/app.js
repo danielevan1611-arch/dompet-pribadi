@@ -238,14 +238,19 @@ function renderWallets(visibleWallets) {
 }
 
 function renderTransactions(visibleTxs) {
+  const tableBody = document.getElementById('transactionsTableBody');
   const container = document.getElementById('transactionsContainer');
-  container.innerHTML = '';
+  if (!tableBody && !container) return;
+  if (tableBody) tableBody.innerHTML = '';
+  if (container) container.innerHTML = '';
 
   const searchTerm = (document.getElementById('searchTransaction')?.value || '').toLowerCase();
+  const filterCat = document.getElementById('filterTableCategory')?.value || '';
 
   const filtered = visibleTxs
     .filter(t => {
       if (currentMode === 'shared' && t.visibility !== 'shared') return false;
+      if (filterCat && t.category !== filterCat) return false;
       if (!searchTerm) return true;
       return (
         (t.note && t.note.toLowerCase().includes(searchTerm)) ||
@@ -254,16 +259,23 @@ function renderTransactions(visibleTxs) {
     })
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
+  const countLabel = document.getElementById('tableRecordCount');
+  if (countLabel) countLabel.textContent = `Menampilkan ${filtered.length} transaksi`;
+
   if (filtered.length === 0) {
-    container.innerHTML = `
-      <div class="py-8 text-center text-xs text-[#8E8E93]">
-        Belum ada transaksi yang tercatat. Coba ketik di bar Catat Cepat di atas!
-      </div>
-    `;
+    if (tableBody) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="py-8 text-center text-xs text-[#8E8E93]">
+            Belum ada transaksi dalam filter ini. Ketik di bar "Catat Cepat" di atas untuk menambah!
+          </td>
+        </tr>
+      `;
+    }
     return;
   }
 
-  for (const tx of filtered.slice(0, 25)) {
+  for (const tx of filtered.slice(0, 50)) {
     const isShared = tx.visibility === 'shared';
     const isExpense = tx.type === 'expense';
     const dateFormatted = new Date(tx.date).toLocaleDateString('id-ID', {
@@ -276,50 +288,43 @@ function renderTransactions(visibleTxs) {
     const wallet = wallets.find(w => w.id === tx.walletId);
     const walletName = wallet ? wallet.name : 'Dompet';
 
-    const item = document.createElement('div');
-    item.className = 'py-3 px-3.5 sm:px-4 flex items-center justify-between gap-3 text-xs hover:bg-[#2C2C2E]/40 transition-colors';
-
-    item.innerHTML = `
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-          isExpense ? 'bg-[#FF3B30]/15 text-[#FF3B30]' : 'bg-[#34C759]/15 text-[#34C759]'
-        }">
-          <i data-lucide="${isExpense ? 'arrow-up-right' : 'arrow-down-left'}" class="w-4 h-4"></i>
-        </div>
-        <div>
-          <div class="flex items-center gap-1.5">
-            <span class="font-medium text-white text-xs sm:text-sm">${escapeHtml(tx.note || tx.category)}</span>
-            <span class="text-[10px] px-1.5 py-0.5 rounded font-medium ${
-              isShared ? 'bg-[#FF2D55]/15 text-[#FF2D55]' : 'bg-[#2C2C2E] text-[#8E8E93]'
-            }">
-              ${isShared ? 'Bersama' : 'Pribadi'}
-            </span>
-          </div>
-          <div class="flex items-center gap-2 text-[11px] text-[#8E8E93] mt-0.5">
-            <span>${dateFormatted}</span>
-            <span>•</span>
-            <span class="text-slate-300">${escapeHtml(walletName)}</span>
-            <span>•</span>
-            <span>${escapeHtml(tx.category || 'Lainnya')}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2.5">
-        <span class="font-semibold text-xs sm:text-sm font-sans ${isExpense ? 'text-white' : 'text-[#34C759]'}">
-          ${isExpense ? '-' : '+'}Rp ${(Number(tx.amount) || 0).toLocaleString('id-ID')}
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-[#1C1C1E]/60 transition-colors border-b border-white/[0.04] text-xs';
+    tr.innerHTML = `
+      <td class="py-3 px-4 text-[#8E8E93] font-mono text-[11px]">${dateFormatted}</td>
+      <td class="py-3 px-4 font-medium text-white max-w-xs truncate">${escapeHtml(tx.note || tx.category)}</td>
+      <td class="py-3 px-4">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#2C2C2E] text-slate-300">
+          ${escapeHtml(tx.category || 'Lainnya')}
         </span>
-        <button data-delete-id="${tx.id}" class="btn-delete-tx p-1 text-[#8E8E93] hover:text-[#FF3B30] transition-colors" title="Hapus">
+      </td>
+      <td class="py-3 px-4 text-slate-300">${escapeHtml(walletName)}</td>
+      <td class="py-3 px-4">
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium ${
+          isShared ? 'bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30' : 'bg-[#2C2C2E] text-[#8E8E93]'
+        }">
+          ${isShared ? 'Bersama' : 'Pribadi'}
+        </span>
+      </td>
+      <td class="py-3 px-4 text-right font-semibold font-sans ${isExpense ? 'text-white' : 'text-[#34C759]'}">
+        ${isExpense ? '-' : '+'}Rp ${(Number(tx.amount) || 0).toLocaleString('id-ID')}
+      </td>
+      <td class="py-3 px-4 text-center">
+        <button data-delete-id="${tx.id}" class="btn-delete-tx p-1.5 rounded-lg text-[#8E8E93] hover:text-[#FF3B30] hover:bg-[#FF3B30]/10 transition-colors" title="Hapus">
           <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
         </button>
-      </div>
+      </td>
     `;
+    if (tableBody) tableBody.appendChild(tr);
 
-    container.appendChild(item);
+    if (container) {
+      const item = document.createElement('div');
+      item.innerHTML = `<button data-delete-id="${tx.id}" class="btn-delete-tx"></button>`;
+      container.appendChild(item);
+    }
   }
 
-  // Delete event listeners
-  container.querySelectorAll('.btn-delete-tx').forEach(btn => {
+  document.querySelectorAll('.btn-delete-tx').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       const id = btn.getAttribute('data-delete-id');
@@ -328,11 +333,11 @@ function renderTransactions(visibleTxs) {
   });
 
   if (window.gsap && !isReducedMotion()) {
-    gsap.from('#transactionsContainer > div', {
+    gsap.from('#transactionsTableBody > tr', {
       opacity: 0,
-      y: 8,
-      stagger: 0.02,
-      duration: 0.25,
+      y: 6,
+      stagger: 0.015,
+      duration: 0.22,
       ease: 'power1.out'
     });
   }
@@ -559,8 +564,86 @@ function setupEventListeners() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
-  // Modals Setup
+  document.getElementById('filterTableCategory')?.addEventListener('change', () => {
+    const visibleTxs = getVisibleTransactions(transactions, currentUserId);
+    renderTransactions(visibleTxs);
+  });
+
+  document.getElementById('btnExportCsv')?.addEventListener('click', exportTransactionsToCsv);
+
+  setupSidebar();
   setupModals();
+}
+
+function exportTransactionsToCsv() {
+  const visibleTxs = getVisibleTransactions(transactions, currentUserId);
+  if (!visibleTxs || visibleTxs.length === 0) {
+    showDynamicIslandHUD('alert-circle', 'Tidak ada data transaksi untuk diekspor', '#FF9500');
+    return;
+  }
+
+  const headers = ['ID', 'Tanggal', 'Tipe', 'Kategori', 'Deskripsi', 'Nominal', 'Dompet', 'Visibilitas'];
+  const rows = visibleTxs.map(t => {
+    const w = wallets.find(item => item.id === t.walletId);
+    const wName = w ? w.name : '';
+    return [
+      t.id,
+      `"${t.date}"`,
+      t.type,
+      `"${(t.category || '').replace(/"/g, '""')}"`,
+      `"${(t.note || '').replace(/"/g, '""')}"`,
+      t.amount,
+      `"${wName.replace(/"/g, '""')}"`,
+      t.visibility
+    ].join(',');
+  });
+
+  const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows].join('\n');
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', `dompetku_transaksi_${new Date().toISOString().split('T')[0]}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  showDynamicIslandHUD('download', 'Tabel transaksi berhasil diekspor ke CSV!', '#34C759');
+}
+
+function setupSidebar() {
+  const sidebar = document.getElementById('sidebarNav');
+  const toggleBtn = document.getElementById('btnToggleSidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+
+  function openSidebar() {
+    sidebar?.classList.remove('-translate-x-full');
+    backdrop?.classList.remove('hidden');
+  }
+
+  function closeSidebar() {
+    sidebar?.classList.add('-translate-x-full');
+    backdrop?.classList.add('hidden');
+  }
+
+  toggleBtn?.addEventListener('click', openSidebar);
+  backdrop?.addEventListener('click', closeSidebar);
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      closeSidebar();
+      document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.remove('text-white', 'bg-[#242426]');
+        el.classList.add('text-[#8E8E93]');
+      });
+      item.classList.add('text-white', 'bg-[#242426]');
+      item.classList.remove('text-[#8E8E93]');
+    });
+  });
+
+  document.getElementById('btnSidebarSettings')?.addEventListener('click', () => {
+    closeSidebar();
+    document.getElementById('modalSettings')?.classList.remove('hidden');
+  });
 }
 
 function setupModals() {
