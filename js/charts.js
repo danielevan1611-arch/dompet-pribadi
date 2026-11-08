@@ -6,14 +6,14 @@ let donutChartInstance = null;
 let barChartInstance = null;
 
 const CATEGORY_COLORS = {
-  'Makanan & Minuman': '#f97316',
-  'Transportasi': '#06b6d4',
-  'Belanja & Kebutuhan': '#a855f7',
-  'Tagihan & Utilitas': '#ef4444',
-  'Hiburan & Rekreasi': '#ec4899',
-  'Kesehatan': '#10b981',
-  'Gaji & Pemasukan': '#22c55e',
-  'Lainnya': '#64748b'
+  'Makanan & Minuman': '#FF9500', // Apple Orange
+  'Transportasi': '#30B0C7',      // Apple Teal
+  'Belanja & Kebutuhan': '#AF52DE',// Apple Purple
+  'Tagihan & Utilitas': '#FF3B30', // Apple Red
+  'Hiburan & Rekreasi': '#FF2D55', // Apple Pink
+  'Kesehatan': '#34C759',          // Apple Green
+  'Gaji & Pemasukan': '#30D158',   // Apple Bright Green
+  'Lainnya': '#8E8E93'             // Apple Gray
 };
 
 export function updateDonutChart(canvasElement, transactions = []) {
@@ -36,9 +36,9 @@ export function updateDonutChart(canvasElement, transactions = []) {
   }
 
   if (labels.length === 0) {
-    labels.push('Belum ada transaksi');
+    labels.push('Belum ada pengeluaran');
     data.push(1);
-    colors.push('#334155');
+    colors.push('#2C2C2E');
   }
 
   donutChartInstance = new window.Chart(canvasElement, {
@@ -50,7 +50,7 @@ export function updateDonutChart(canvasElement, transactions = []) {
           data,
           backgroundColor: colors,
           borderWidth: 2,
-          borderColor: '#0f172a'
+          borderColor: '#1C1C1E'
         }
       ]
     },
@@ -61,10 +61,10 @@ export function updateDonutChart(canvasElement, transactions = []) {
         legend: {
           position: 'bottom',
           labels: {
-            color: '#94a3b8',
-            font: { family: 'Inter, sans-serif', size: 11 },
-            boxWidth: 12,
-            padding: 14
+            color: '#8E8E93',
+            font: { family: '-apple-system, sans-serif', size: 11 },
+            boxWidth: 10,
+            padding: 10
           }
         },
         tooltip: {
@@ -76,7 +76,7 @@ export function updateDonutChart(canvasElement, transactions = []) {
           }
         }
       },
-      cutout: '68%'
+      cutout: '72%'
     }
   });
 }
@@ -104,8 +104,8 @@ export function updateBarChart(canvasElement, transactions = []) {
         {
           label: 'Arus Kas (Rp)',
           data: [totalIncome, totalExpense],
-          backgroundColor: ['#22c55e', '#ef4444'],
-          borderRadius: 8
+          backgroundColor: ['#34C759', '#FF3B30'],
+          borderRadius: 6
         }
       ]
     },
@@ -115,13 +115,13 @@ export function updateBarChart(canvasElement, transactions = []) {
       scales: {
         y: {
           ticks: {
-            color: '#64748b',
+            color: '#8E8E93',
             callback: value => 'Rp ' + (value >= 1000000 ? (value / 1000000) + 'jt' : value.toLocaleString('id-ID'))
           },
-          grid: { color: '#1e293b' }
+          grid: { color: 'rgba(255, 255, 255, 0.05)' }
         },
         x: {
-          ticks: { color: '#94a3b8' },
+          ticks: { color: '#8E8E93' },
           grid: { display: false }
         }
       },

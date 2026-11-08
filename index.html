@@ -2,21 +2,22 @@
 <html lang="id" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>DompetKu — Couple & Personal Finance</title>
   
-  <!-- PWA Meta Tags -->
+  <!-- Apple & PWA Meta Tags -->
   <link rel="manifest" href="manifest.webmanifest" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="theme-color" content="#000000" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="DompetKu" />
   <link rel="apple-touch-icon" href="assets/icon.svg" />
   <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
 
-  <!-- Google Fonts: Inter -->
+  <!-- Apple System Font Stack & Inter Fallback -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -25,257 +26,248 @@
       darkMode: 'class',
       theme: {
         extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', 'Inter', 'system-ui', 'sans-serif']
+          },
           colors: {
-            brand: { 500: '#3b82f6', 600: '#2563eb' },
-            couple: { 500: '#ec4899', 600: '#db2777' }
+            ios: {
+              bg: '#000000',
+              secondaryBg: '#1C1C1E',
+              tertiaryBg: '#2C2C2E',
+              border: 'rgba(255, 255, 255, 0.1)',
+              separator: 'rgba(255, 255, 255, 0.08)',
+              blue: '#007AFF',
+              green: '#34C759',
+              red: '#FF3B30',
+              orange: '#FF9500',
+              pink: '#FF2D55',
+              purple: '#AF52DE',
+              teal: '#30B0C7',
+              gray: '#8E8E93',
+              grayDark: '#3A3A3C'
+            }
           }
         }
       }
     }
   </script>
 
-  <!-- Lucide Icons & Chart.js & Tesseract.js & Supabase Client via CDN -->
+  <!-- Lucide Icons & Chart.js & Tesseract.js & Supabase Client -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* Mobile-first smooth scroll and transitions */
-    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-    .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    /* Apple HIG Smooth Scroll, Safe Areas, and Tactile Touch */
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-tap-highlight-color: transparent;
+      background-color: #000000;
+    }
+    .ios-card {
+      background-color: #1C1C1E;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .ios-card-interactive:active {
+      transform: scale(0.985);
+      transition: transform 0.12s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .ios-header {
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 0.5px solid rgba(255, 255, 255, 0.12);
+    }
     .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #2C2C2E; border-radius: 4px; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white pb-20 sm:pb-8">
+<body class="bg-[#000000] text-white min-h-screen flex flex-col selection:bg-[#007AFF] selection:text-white pb-24 sm:pb-12">
 
-  <!-- ================= TOP HEADER ================= -->
-  <header class="sticky top-0 z-40 bg-slate-950/85 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 sm:px-6">
-    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3">
+  <!-- ================= APPLE iOS NAVIGATION BAR ================= -->
+  <header class="sticky top-0 z-40 ios-header px-4 py-3 sm:px-6">
+    <div class="max-w-4xl mx-auto flex items-center justify-between gap-3">
+      <!-- App Identity (Apple Wallet Style) -->
       <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-pink-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-          <i data-lucide="wallet" class="w-5 h-5 text-white"></i>
+        <div class="w-8 h-8 rounded-xl bg-[#1C1C1E] border border-white/10 flex items-center justify-center text-[#007AFF]">
+          <i data-lucide="wallet" class="w-4 h-4"></i>
         </div>
         <div>
-          <h1 class="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-300 to-pink-400 bg-clip-text text-transparent">
+          <h1 class="text-sm sm:text-base font-semibold tracking-tight text-white flex items-center gap-1.5">
             DompetKu
+            <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30">Couple</span>
           </h1>
-          <p class="text-[10px] sm:text-xs text-slate-400 font-medium">Personal & Couple Finance</p>
         </div>
       </div>
 
-      <!-- Identity & Role Selector -->
+      <!-- iOS Segmented Control (Role Switcher) -->
       <div class="flex items-center gap-2">
-        <div class="inline-flex p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs font-medium">
-          <button id="btnRoleA" class="px-2.5 py-1 rounded-lg transition-all text-white bg-blue-600 font-semibold shadow">
-            👤 Kamu
+        <div class="inline-flex p-1 rounded-full bg-[#1C1C1E] border border-white/10 text-xs font-medium">
+          <button id="btnRoleA" class="px-3 py-1 rounded-full transition-all text-white bg-[#2C2C2E] shadow-sm font-medium">
+            Kamu
           </button>
-          <button id="btnRoleShared" class="px-2.5 py-1 rounded-lg transition-all text-slate-400 hover:text-slate-200">
-            ❤️ Bersama
+          <button id="btnRoleShared" class="px-3 py-1 rounded-full transition-all text-[#8E8E93] hover:text-white font-medium">
+            Bersama
           </button>
-          <button id="btnRoleB" class="px-2.5 py-1 rounded-lg transition-all text-slate-400 hover:text-slate-200">
-            🌸 Pacar
+          <button id="btnRoleB" class="px-3 py-1 rounded-full transition-all text-[#8E8E93] hover:text-white font-medium">
+            Pacar
           </button>
         </div>
 
-        <!-- Settings Button -->
-        <button id="btnOpenSettings" title="Pengaturan & Pairing" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition-colors">
-          <i data-lucide="settings-2" class="w-4 h-4"></i>
+        <!-- Apple Settings Button -->
+        <button id="btnOpenSettings" title="Pengaturan & Pairing" class="w-8 h-8 rounded-full bg-[#1C1C1E] hover:bg-[#2C2C2E] border border-white/10 text-[#8E8E93] hover:text-white flex items-center justify-center transition-colors">
+          <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- ================= MAIN CONTENT ================= -->
-  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-5 space-y-6">
+  <!-- ================= MAIN CONTENT CONTAINER ================= -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-5 space-y-6">
 
-    <!-- COUPLE PAIRING STATUS BANNER -->
-    <div id="coupleBanner" class="hidden sm:flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-pink-950/40 via-purple-950/30 to-blue-950/40 border border-pink-500/20 text-xs">
-      <div class="flex items-center gap-2 text-pink-300 font-medium">
-        <span class="inline-block w-2 h-2 rounded-full bg-pink-400 animate-pulse"></span>
-        <span>Kode Pasangan Aktif: <strong id="bannerCoupleCode" class="text-white font-mono tracking-wider">KITA-7890</strong></span>
-        <span class="text-slate-500">|</span>
-        <span class="text-slate-400">Privasi: Data pribadi terkunci rapat 🔒</span>
+    <!-- COUPLE PAIRING STATUS PILL -->
+    <div id="coupleBanner" class="hidden sm:flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-[#1C1C1E] border border-white/10 text-xs">
+      <div class="flex items-center gap-2 text-slate-300">
+        <span class="w-2 h-2 rounded-full bg-[#34C759]"></span>
+        <span>Kode Pasangan: <strong id="bannerCoupleCode" class="text-white font-mono font-semibold">KITA-7890</strong></span>
+        <span class="text-[#8E8E93]">•</span>
+        <span class="text-[#8E8E93]">Data pribadi Anda & pacar terisolasi 🔒</span>
       </div>
-      <button id="btnCopyCoupleCode" class="px-2.5 py-1 rounded-lg bg-pink-600/30 hover:bg-pink-600/50 text-pink-200 border border-pink-500/30 transition-all text-[11px] font-semibold flex items-center gap-1.5">
-        <i data-lucide="copy" class="w-3 h-3"></i> Salin Kode untuk Pacar
+      <button id="btnCopyCoupleCode" class="px-2.5 py-1 rounded-lg bg-[#2C2C2E] hover:bg-[#3A3A3C] text-slate-200 border border-white/10 transition-colors text-[11px] font-medium flex items-center gap-1.5">
+        <i data-lucide="copy" class="w-3 h-3"></i> Salin Kode
       </button>
     </div>
 
-    <!-- ================= CATAT CEPAT (NATURAL LANGUAGE BAR) ================= -->
-    <section class="glass-card rounded-2xl p-4 sm:p-5 shadow-xl shadow-black/40 relative overflow-hidden border-slate-700/60">
-      <div class="flex items-center justify-between mb-2.5">
-        <label for="quickInput" class="text-xs sm:text-sm font-semibold text-slate-200 flex items-center gap-2">
-          <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
-          Catat Cepat Otomatis (Natural Language)
-        </label>
-        <button id="btnOpenScanner" class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium transition-colors">
-          <i data-lucide="camera" class="w-3.5 h-3.5"></i> Scan Struk / Bukti Bayar
+    <!-- ================= SPOTLIGHT / QUICK INPUT BAR ================= -->
+    <section class="space-y-2">
+      <div class="ios-card rounded-2xl p-2 sm:p-2.5 flex items-center gap-2 border-white/10 shadow-sm focus-within:border-[#007AFF]/60 transition-colors">
+        <div class="pl-2 text-[#8E8E93]">
+          <i data-lucide="sparkles" class="w-4 h-4 text-[#007AFF]"></i>
+        </div>
+        <input
+          id="quickInput"
+          type="text"
+          placeholder='Ketik cepat: "makan 15k", "kopi 25rb gopay", "nonton 90k bersama"...'
+          class="flex-1 bg-transparent border-none text-sm text-white placeholder-[#8E8E93] focus:outline-none focus:ring-0"
+        />
+        <!-- Camera OCR Button -->
+        <button id="btnOpenScanner" class="w-9 h-9 rounded-xl bg-[#2C2C2E] hover:bg-[#3A3A3C] text-slate-200 flex items-center justify-center transition-colors shrink-0" title="Scan Resi">
+          <i data-lucide="camera" class="w-4 h-4"></i>
+        </button>
+        <!-- Submit Button -->
+        <button id="btnSubmitQuick" class="w-9 h-9 rounded-xl bg-[#007AFF] hover:bg-[#0071E3] active:scale-95 text-white flex items-center justify-center transition-all shadow shrink-0">
+          <i data-lucide="arrow-up" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <div class="flex gap-2">
-        <div class="relative flex-1">
-          <input
-            id="quickInput"
-            type="text"
-            placeholder='Ketik misal: "makan 15k", "kopi 25rb gopay", atau "nonton 90k bersama"'
-            class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-inner"
-          />
-        </div>
-        <button
-          id="btnSubmitQuick"
-          class="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-sm font-semibold rounded-xl flex items-center gap-1.5 transition-all shadow-lg shadow-blue-600/30 shrink-0"
-        >
-          <i data-lucide="send" class="w-4 h-4"></i>
-          <span class="hidden sm:inline">Simpan</span>
-        </button>
-      </div>
-
-      <!-- Live Quick Preview Pill -->
-      <div id="quickPreview" class="hidden mt-3 pt-3 border-t border-slate-800/80 flex flex-wrap items-center gap-2 text-xs">
-        <span class="text-slate-400">Terdeteksi:</span>
-        <span id="previewAmount" class="px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-300 font-mono font-bold border border-emerald-500/30">Rp 0</span>
-        <span id="previewCategory" class="px-2 py-0.5 rounded-md bg-blue-950/80 text-blue-300 border border-blue-500/30 font-medium">-</span>
-        <span id="previewWallet" class="px-2 py-0.5 rounded-md bg-purple-950/80 text-purple-300 border border-purple-500/30 font-medium">-</span>
-        <span id="previewVisibility" class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 font-medium">-</span>
+      <!-- Live Quick Preview Pill (iOS Inline Tag) -->
+      <div id="quickPreview" class="hidden px-3.5 py-2 rounded-xl bg-[#1C1C1E] border border-white/10 flex flex-wrap items-center gap-2 text-xs animate-in fade-in duration-150">
+        <span class="text-[#8E8E93] text-[11px]">Terdeteksi:</span>
+        <span id="previewAmount" class="px-2 py-0.5 rounded-md bg-[#34C759]/15 text-[#34C759] font-mono font-semibold">Rp 0</span>
+        <span id="previewCategory" class="px-2 py-0.5 rounded-md bg-[#2C2C2E] text-slate-300">-</span>
+        <span id="previewWallet" class="px-2 py-0.5 rounded-md bg-[#2C2C2E] text-slate-300">-</span>
+        <span id="previewVisibility" class="px-2 py-0.5 rounded-md bg-[#2C2C2E] text-slate-300">-</span>
       </div>
     </section>
 
-    <!-- ================= SUMMARY KPI CARDS ================= -->
-    <section class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-      <!-- Total Net Worth Card -->
-      <div class="glass-card rounded-2xl p-4 sm:p-5 relative overflow-hidden group">
-        <div class="absolute -right-3 -bottom-3 opacity-10 group-hover:opacity-20 transition-opacity">
-          <i data-lucide="coins" class="w-24 h-24 text-blue-400"></i>
-        </div>
-        <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Total Kekayaan Bersih</span>
-        <h2 id="kpiNetWorth" class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Rp 0</h2>
-        <p id="kpiNetWorthSubtitle" class="text-[11px] text-blue-400/90 mt-1 font-medium">Mode: 👤 Pribadi Kamu</p>
+    <!-- ================= APPLE WALLET: HERO NET WORTH ================= -->
+    <section class="ios-card rounded-3xl p-5 sm:p-6 relative overflow-hidden">
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-xs text-[#8E8E93] font-medium tracking-wide uppercase">Total Kekayaan Bersih</span>
+        <span id="kpiNetWorthSubtitle" class="text-[11px] px-2 py-0.5 rounded-full bg-[#2C2C2E] text-[#8E8E93] font-medium">👤 Mode Pribadi</span>
       </div>
+      <h2 id="kpiNetWorth" class="text-3xl sm:text-4xl font-bold tracking-tight text-white font-sans">Rp 0</h2>
 
-      <!-- Pemasukan Bulan Ini -->
-      <div class="glass-card rounded-2xl p-4 sm:p-5 relative overflow-hidden group">
-        <div class="absolute -right-3 -bottom-3 opacity-10 group-hover:opacity-20 transition-opacity">
-          <i data-lucide="arrow-down-left" class="w-24 h-24 text-emerald-400"></i>
+      <!-- Monthly Cashflow Metrics -->
+      <div class="grid grid-cols-2 gap-3 mt-5 pt-4 border-t border-white/[0.08]">
+        <div>
+          <span class="text-[11px] text-[#8E8E93] block mb-0.5">Pemasukan Bulan Ini</span>
+          <span id="kpiIncome" class="text-base sm:text-lg font-semibold text-[#34C759] font-mono">+Rp 0</span>
         </div>
-        <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Pemasukan Bulan Ini</span>
-        <h2 id="kpiIncome" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 tracking-tight">+Rp 0</h2>
-        <p class="text-[11px] text-emerald-500/90 mt-1 font-medium">Arus Kas Masuk</p>
-      </div>
-
-      <!-- Pengeluaran Bulan Ini -->
-      <div class="glass-card rounded-2xl p-4 sm:p-5 relative overflow-hidden group">
-        <div class="absolute -right-3 -bottom-3 opacity-10 group-hover:opacity-20 transition-opacity">
-          <i data-lucide="arrow-up-right" class="w-24 h-24 text-rose-400"></i>
+        <div>
+          <span class="text-[11px] text-[#8E8E93] block mb-0.5">Pengeluaran Bulan Ini</span>
+          <span id="kpiExpense" class="text-base sm:text-lg font-semibold text-[#FF3B30] font-mono">-Rp 0</span>
         </div>
-        <span class="text-xs text-slate-400 font-medium uppercase tracking-wider block mb-1">Pengeluaran Bulan Ini</span>
-        <h2 id="kpiExpense" class="text-2xl sm:text-3xl font-extrabold text-rose-400 tracking-tight">-Rp 0</h2>
-        <p class="text-[11px] text-rose-500/90 mt-1 font-medium">Arus Kas Keluar</p>
       </div>
     </section>
 
-    <!-- ================= DOMPET & AKUN (WALLETS SLIDER/GRID) ================= -->
+    <!-- ================= APPLE WALLET CARDS CAROUSEL ================= -->
     <section class="space-y-3">
-      <div class="flex items-center justify-between">
-        <h3 class="text-sm sm:text-base font-bold text-slate-200 flex items-center gap-2">
-          <i data-lucide="credit-card" class="w-4 h-4 text-blue-400"></i>
-          Dompet & Akun Saya
+      <div class="flex items-center justify-between px-1">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">
+          Dompet & Kartu Saya
         </h3>
-        <button id="btnOpenAddWallet" class="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 transition-colors">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Dompet
+        <button id="btnOpenAddWallet" class="text-xs text-[#007AFF] hover:underline font-medium flex items-center gap-1">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah
         </button>
       </div>
 
-      <!-- Wallets Container -->
-      <div id="walletsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <!-- Rendered dynamically via JS -->
+      <!-- Wallets Grid -->
+      <div id="walletsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <!-- Rendered via JS -->
       </div>
     </section>
 
-    <!-- ================= ANALYTICS CHARTS ================= -->
+    <!-- ================= VISUAL ANALYTICS (iOS Grouped Layout) ================= -->
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <!-- Donut Chart -->
-      <div class="glass-card rounded-2xl p-4 sm:p-5">
-        <div class="flex items-center justify-between mb-3">
-          <h4 class="text-xs sm:text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-            <i data-lucide="pie-chart" class="w-4 h-4 text-pink-400"></i>
-            Pengeluaran per Kategori
-          </h4>
-        </div>
-        <div class="h-60 relative">
+      <div class="ios-card rounded-2xl p-4 sm:p-5">
+        <h4 class="text-xs font-semibold text-[#8E8E93] uppercase tracking-wider mb-3">
+          Alokasi Kategori
+        </h4>
+        <div class="h-56 relative">
           <canvas id="categoryDonutCanvas"></canvas>
         </div>
       </div>
 
       <!-- Bar Chart -->
-      <div class="glass-card rounded-2xl p-4 sm:p-5">
-        <div class="flex items-center justify-between mb-3">
-          <h4 class="text-xs sm:text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-            <i data-lucide="bar-chart-2" class="w-4 h-4 text-emerald-400"></i>
-            Perbandingan Arus Kas
-          </h4>
-        </div>
-        <div class="h-60 relative">
+      <div class="ios-card rounded-2xl p-4 sm:p-5">
+        <h4 class="text-xs font-semibold text-[#8E8E93] uppercase tracking-wider mb-3">
+          Arus Kas Masuk vs Keluar
+        </h4>
+        <div class="h-56 relative">
           <canvas id="cashflowBarCanvas"></canvas>
         </div>
       </div>
     </section>
 
-    <!-- ================= RECENT TRANSACTIONS ================= -->
-    <section class="glass-card rounded-2xl p-4 sm:p-5">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-        <div>
-          <h3 class="text-sm sm:text-base font-bold text-slate-200 flex items-center gap-2">
-            <i data-lucide="history" class="w-4 h-4 text-indigo-400"></i>
-            Riwayat Transaksi Terbaru
-          </h3>
-          <p class="text-xs text-slate-400">Hanya menampilkan transaksi yang diizinkan untuk profil aktif</p>
-        </div>
-
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <input
-            id="searchTransaction"
-            type="text"
-            placeholder="Cari transaksi..."
-            class="w-full sm:w-48 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
-          />
-          <button id="btnOpenManualTx" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shrink-0 flex items-center gap-1 transition-colors">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Transaksi Baru
-          </button>
-        </div>
+    <!-- ================= iOS GROUPED INSET TRANSACTIONS LIST ================= -->
+    <section class="space-y-2.5">
+      <div class="flex items-center justify-between px-1">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">
+          Riwayat Transaksi
+        </h3>
+        <input
+          id="searchTransaction"
+          type="text"
+          placeholder="Cari..."
+          class="w-36 sm:w-44 bg-[#1C1C1E] border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white placeholder-[#8E8E93] focus:outline-none focus:border-[#007AFF]"
+        />
       </div>
 
-      <!-- Transaction List Container -->
-      <div id="transactionsContainer" class="divide-y divide-slate-800/80">
-        <!-- Rendered dynamically via JS -->
+      <!-- Inset Grouped Container -->
+      <div id="transactionsContainer" class="ios-card rounded-2xl divide-y divide-white/[0.06] overflow-hidden">
+        <!-- Rendered via JS -->
       </div>
     </section>
 
   </main>
 
-  <!-- ================= FLOATING ACTION BUTTON (MOBILE) ================= -->
-  <div class="sm:hidden fixed bottom-5 right-5 z-40">
-    <button
-      id="btnMobileFab"
-      class="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-pink-500 text-white shadow-2xl shadow-blue-500/50 flex items-center justify-center active:scale-90 transition-transform"
-      title="Catat Cepat"
-    >
-      <i data-lucide="plus" class="w-7 h-7"></i>
-    </button>
-  </div>
-
   <!-- ================= MODAL: SCAN STRUK / BUKTI BAYAR ================= -->
-  <div id="modalScanner" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-    <div class="glass-card rounded-2xl w-full max-w-md p-5 bg-slate-900 border-slate-700 shadow-2xl relative space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2">
-          <i data-lucide="camera" class="w-4 h-4 text-blue-400"></i>
-          Scan Bukti Transfer / Resi Kasir
+  <div id="modalScanner" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md">
+    <div class="w-full sm:max-w-md bg-[#1C1C1E] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="camera" class="w-4 h-4 text-[#007AFF]"></i>
+          Pindai Bukti Transfer / Resi
         </h3>
-        <button id="btnCloseScanner" class="text-slate-400 hover:text-white p-1">
+        <button id="btnCloseScanner" class="text-[#8E8E93] hover:text-white p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -284,36 +276,36 @@
         <!-- Camera / File Dropzone -->
         <label
           id="dropzone"
-          class="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-xl cursor-pointer bg-slate-950/60 hover:bg-slate-800/40 transition-colors p-4 text-center"
+          class="flex flex-col items-center justify-center w-full h-36 border border-dashed border-white/20 hover:border-[#007AFF] rounded-2xl cursor-pointer bg-[#2C2C2E]/40 hover:bg-[#2C2C2E]/70 transition-colors p-4 text-center"
         >
-          <i data-lucide="image-plus" class="w-8 h-8 text-slate-400 mb-2"></i>
-          <span class="text-xs text-slate-300 font-medium">Klik foto kamera atau upload screenshot</span>
-          <span class="text-[11px] text-slate-500 mt-1">Mendukung m-Banking BCA, Livin, GoPay, QRIS, Struk</span>
+          <i data-lucide="image-plus" class="w-7 h-7 text-[#8E8E93] mb-2"></i>
+          <span class="text-xs text-white font-medium">Buka Kamera atau Pilih Screenshot</span>
+          <span class="text-[11px] text-[#8E8E93] mt-1">m-Banking BCA, Livin, GoPay, QRIS, Struk</span>
           <input id="fileReceiptInput" type="file" accept="image/*" capture="environment" class="hidden" />
         </label>
 
-        <!-- OCR Processing State -->
-        <div id="ocrLoading" class="hidden space-y-2 py-2">
-          <div class="flex items-center justify-between text-xs text-slate-400">
+        <!-- Progress State -->
+        <div id="ocrLoading" class="hidden space-y-2 py-1">
+          <div class="flex items-center justify-between text-xs text-[#8E8E93]">
             <span>Memindai teks bukti bayar (OCR)...</span>
-            <span id="ocrProgressPercent" class="font-mono text-blue-400">0%</span>
+            <span id="ocrProgressPercent" class="font-mono text-[#007AFF]">0%</span>
           </div>
-          <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-            <div id="ocrProgressBar" class="h-full bg-blue-500 transition-all duration-200" style="width: 0%"></div>
+          <div class="w-full h-1 bg-[#2C2C2E] rounded-full overflow-hidden">
+            <div id="ocrProgressBar" class="h-full bg-[#007AFF] transition-all duration-200" style="width: 0%"></div>
           </div>
         </div>
 
-        <!-- OCR Result Preview -->
-        <div id="ocrResultBox" class="hidden space-y-2.5 p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs">
+        <!-- Result Box -->
+        <div id="ocrResultBox" class="hidden space-y-2 p-3.5 rounded-xl bg-[#2C2C2E]/60 border border-white/10 text-xs">
           <div class="flex justify-between">
-            <span class="text-slate-400">Nominal Terdeteksi:</span>
-            <span id="ocrDetectedAmount" class="font-bold text-emerald-400 font-mono">Rp 0</span>
+            <span class="text-[#8E8E93]">Nominal:</span>
+            <span id="ocrDetectedAmount" class="font-semibold text-[#34C759] font-mono">Rp 0</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-400">Keterangan:</span>
-            <span id="ocrDetectedNote" class="font-medium text-slate-200">-</span>
+            <span class="text-[#8E8E93]">Catatan:</span>
+            <span id="ocrDetectedNote" class="text-white font-medium">-</span>
           </div>
-          <button id="btnUseOcrResult" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold text-xs mt-2 transition-colors">
+          <button id="btnUseOcrResult" class="w-full py-2 bg-[#007AFF] hover:bg-[#0071E3] text-white rounded-xl font-medium text-xs mt-2 transition-colors">
             Gunakan Hasil Scan
           </button>
         </div>
@@ -322,102 +314,102 @@
   </div>
 
   <!-- ================= MODAL: TAMBAH DOMPET ================= -->
-  <div id="modalAddWallet" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-    <div class="glass-card rounded-2xl w-full max-w-sm p-5 bg-slate-900 border-slate-700 shadow-2xl relative space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2">
-          <i data-lucide="plus-circle" class="w-4 h-4 text-blue-400"></i>
+  <div id="modalAddWallet" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md">
+    <div class="w-full sm:max-w-sm bg-[#1C1C1E] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-4 h-4 text-[#007AFF]"></i>
           Tambah Dompet Baru
         </h3>
-        <button id="btnCloseAddWallet" class="text-slate-400 hover:text-white p-1">
+        <button id="btnCloseAddWallet" class="text-[#8E8E93] hover:text-white p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <form id="formAddWallet" class="space-y-3 text-xs">
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Nama Dompet / Akun</label>
-          <input id="walletFormName" type="text" placeholder="misal: BCA Tabungan, OVO, Dompet Tunai" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500" />
+          <label class="block text-[#8E8E93] mb-1">Nama Dompet</label>
+          <input id="walletFormName" type="text" placeholder="misal: BCA, GoPay, Tunai" required class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#007AFF]" />
         </div>
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Tipe</label>
-          <select id="walletFormType" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500">
+          <label class="block text-[#8E8E93] mb-1">Tipe</label>
+          <select id="walletFormType" class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#007AFF]">
             <option value="bank">Rekening Bank</option>
-            <option value="ewallet">E-Wallet (GoPay, OVO, DANA)</option>
-            <option value="cash">Uang Tunai / Cash</option>
+            <option value="ewallet">E-Wallet</option>
+            <option value="cash">Uang Tunai</option>
           </select>
         </div>
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Saldo Awal (Rp)</label>
-          <input id="walletFormBalance" type="number" placeholder="0" min="0" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500" />
+          <label class="block text-[#8E8E93] mb-1">Saldo Awal (Rp)</label>
+          <input id="walletFormBalance" type="number" placeholder="0" min="0" required class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#007AFF]" />
         </div>
         <div>
-          <label class="block text-slate-300 font-medium mb-1">Visibilitas</label>
-          <select id="walletFormVisibility" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500">
-            <option value="private">🔒 Dompet Pribadi (Rahasia untuk Anda saja)</option>
-            <option value="shared">🤝 Dompet Bersama (Dapat dilihat oleh Pacar)</option>
+          <label class="block text-[#8E8E93] mb-1">Visibilitas</label>
+          <select id="walletFormVisibility" class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#007AFF]">
+            <option value="private">🔒 Dompet Pribadi (Hanya Anda)</option>
+            <option value="shared">🤝 Dompet Bersama (Terbuka untuk Pasangan)</option>
           </select>
         </div>
-        <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold text-xs transition-colors mt-2">
+        <button type="submit" class="w-full py-2.5 bg-[#007AFF] hover:bg-[#0071E3] text-white rounded-xl font-medium text-xs transition-colors mt-2">
           Simpan Dompet
         </button>
       </form>
     </div>
   </div>
 
-  <!-- ================= MODAL: PENGATURAN & PAIRING PASANGAN ================= -->
-  <div id="modalSettings" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-    <div class="glass-card rounded-2xl w-full max-w-md p-5 bg-slate-900 border-slate-700 shadow-2xl relative space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2">
-          <i data-lucide="sliders" class="w-4 h-4 text-purple-400"></i>
-          Pengaturan Pasangan & Cloud Sync
+  <!-- ================= MODAL: PENGATURAN & PAIRING ================= -->
+  <div id="modalSettings" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md">
+    <div class="w-full sm:max-w-md bg-[#1C1C1E] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[#AF52DE]"></i>
+          Pengaturan & Pairing Pasangan
         </h3>
-        <button id="btnCloseSettings" class="text-slate-400 hover:text-white p-1">
+        <button id="btnCloseSettings" class="text-[#8E8E93] hover:text-white p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <div class="space-y-4 text-xs">
         <!-- Couple Code Box -->
-        <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-          <span class="text-slate-400 font-medium block">Kode Pasangan (Couple Code Anda):</span>
+        <div class="p-3.5 rounded-2xl bg-[#2C2C2E]/60 border border-white/10 space-y-2">
+          <span class="text-[#8E8E93] font-medium block">Kode Pasangan Anda:</span>
           <div class="flex items-center justify-between gap-2">
-            <span id="settingsCoupleCodeDisplay" class="font-mono text-base font-bold text-pink-400 tracking-wider">KITA-7890</span>
-            <button id="btnSettingsCopyCode" class="px-3 py-1.5 rounded-lg bg-pink-600/30 hover:bg-pink-600/50 text-pink-200 border border-pink-500/30 font-semibold transition-all">
+            <span id="settingsCoupleCodeDisplay" class="font-mono text-base font-bold text-white tracking-wider">KITA-7890</span>
+            <button id="btnSettingsCopyCode" class="px-3 py-1.5 rounded-lg bg-[#3A3A3C] hover:bg-[#48484A] text-white font-medium transition-colors">
               Salin Kode
             </button>
           </div>
-          <p class="text-[11px] text-slate-500">Kirim kode ini ke pacar Anda agar HP-nya terhubung ke dompet bersama yang sama.</p>
+          <p class="text-[11px] text-[#8E8E93]">Kirim kode ini ke pacar Anda agar terhubung ke dompet bersama yang sama.</p>
         </div>
 
-        <!-- Join Couple Code Form -->
-        <div class="space-y-2">
-          <label class="block text-slate-300 font-medium">Gabung ke Kode Pasangan Pacar:</label>
+        <!-- Join Form -->
+        <div class="space-y-1.5">
+          <label class="block text-[#8E8E93]">Hubungkan ke Kode Pacar:</label>
           <div class="flex gap-2">
-            <input id="inputJoinCode" type="text" placeholder="Masukkan kode, misal: LOVE-1234" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg p-2 text-white focus:outline-none focus:border-pink-500 font-mono" />
-            <button id="btnJoinCode" class="px-3.5 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg font-semibold transition-colors">
+            <input id="inputJoinCode" type="text" placeholder="misal: LOVE-1234" class="flex-1 bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#007AFF] font-mono" />
+            <button id="btnJoinCode" class="px-4 py-2.5 bg-[#007AFF] hover:bg-[#0071E3] text-white rounded-xl font-medium transition-colors">
               Hubungkan
             </button>
           </div>
         </div>
 
-        <!-- Optional Supabase Credentials for Online Sync -->
-        <div class="pt-3 border-t border-slate-800 space-y-2">
-          <span class="text-slate-400 font-medium block flex items-center justify-between">
-            <span>Konfigurasi Supabase Cloud (Opsional untuk Online Sync):</span>
-            <span class="text-[10px] text-emerald-400">Gratis 100%</span>
+        <!-- Supabase Credentials (Optional) -->
+        <div class="pt-3 border-t border-white/[0.08] space-y-2">
+          <span class="text-[#8E8E93] font-medium block flex items-center justify-between">
+            <span>Supabase Cloud Sync (Opsional):</span>
+            <span class="text-[10px] text-[#34C759]">Gratis</span>
           </span>
-          <input id="inputSupabaseUrl" type="text" placeholder="https://xyz.supabase.co" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white text-[11px] font-mono" />
-          <input id="inputSupabaseKey" type="password" placeholder="anon key..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white text-[11px] font-mono" />
-          <button id="btnSaveCloudConfig" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-semibold text-xs transition-colors">
+          <input id="inputSupabaseUrl" type="text" placeholder="https://xyz.supabase.co" class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2 text-white text-[11px] font-mono" />
+          <input id="inputSupabaseKey" type="password" placeholder="anon key..." class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2 text-white text-[11px] font-mono" />
+          <button id="btnSaveCloudConfig" class="w-full py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-white rounded-xl font-medium text-xs transition-colors">
             Simpan Konfigurasi Cloud
           </button>
         </div>
 
-        <!-- Reset Seed Data -->
-        <div class="pt-2">
-          <button id="btnResetData" class="w-full py-1.5 text-rose-400 hover:text-rose-300 text-[11px] font-medium text-center transition-colors">
+        <!-- Reset Button -->
+        <div class="pt-1">
+          <button id="btnResetData" class="w-full py-1.5 text-[#FF3B30] hover:underline text-[11px] text-center">
             Reset Data Lokal ke Awal
           </button>
         </div>
@@ -425,7 +417,7 @@
     </div>
   </div>
 
-  <!-- Main Application Script (Works both on file:/// and http/https) -->
+  <!-- Main Application Script (Self-contained, zero-CORS) -->
   <script src="js/bundle.js"></script>
   <script>
     if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {

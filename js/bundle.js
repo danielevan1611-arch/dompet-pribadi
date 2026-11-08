@@ -428,14 +428,14 @@
   let barChartInstance = null;
 
   const CATEGORY_COLORS = {
-    'Makanan & Minuman': '#f97316',
-    'Transportasi': '#06b6d4',
-    'Belanja & Kebutuhan': '#a855f7',
-    'Tagihan & Utilitas': '#ef4444',
-    'Hiburan & Rekreasi': '#ec4899',
-    'Kesehatan': '#10b981',
-    'Gaji & Pemasukan': '#22c55e',
-    'Lainnya': '#64748b'
+    'Makanan & Minuman': '#FF9500', // Apple Orange
+    'Transportasi': '#30B0C7',      // Apple Teal
+    'Belanja & Kebutuhan': '#AF52DE',// Apple Purple
+    'Tagihan & Utilitas': '#FF3B30', // Apple Red
+    'Hiburan & Rekreasi': '#FF2D55', // Apple Pink
+    'Kesehatan': '#34C759',          // Apple Green
+    'Gaji & Pemasukan': '#30D158',   // Apple Bright Green
+    'Lainnya': '#8E8E93'             // Apple Gray
   };
 
   function updateDonutChart(canvasElement, transactions = []) {
@@ -451,23 +451,23 @@
 
     let labels = Object.keys(catTotals);
     let data = Object.values(catTotals);
-    let colors = labels.map(l => CATEGORY_COLORS[l] || '#94a3b8');
+    let colors = labels.map(l => CATEGORY_COLORS[l] || '#8E8E93');
 
     if (donutChartInstance) {
       donutChartInstance.destroy();
     }
 
     if (labels.length === 0) {
-      labels = ['Belum ada transaksi'];
+      labels = ['Belum ada pengeluaran'];
       data = [1];
-      colors = ['#334155'];
+      colors = ['#2C2C2E'];
     }
 
     donutChartInstance = new window.Chart(canvasElement, {
       type: 'doughnut',
       data: {
         labels,
-        datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#0f172a' }]
+        datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#1C1C1E' }]
       },
       options: {
         responsive: true,
@@ -475,7 +475,7 @@
         plugins: {
           legend: {
             position: 'bottom',
-            labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12, padding: 12 }
+            labels: { color: '#8E8E93', font: { size: 11, family: '-apple-system, sans-serif' }, boxWidth: 10, padding: 10 }
           },
           tooltip: {
             callbacks: {
@@ -483,7 +483,7 @@
             }
           }
         },
-        cutout: '68%'
+        cutout: '72%'
       }
     });
   }
@@ -511,8 +511,8 @@
           {
             label: 'Arus Kas (Rp)',
             data: [totalIncome, totalExpense],
-            backgroundColor: ['#22c55e', '#ef4444'],
-            borderRadius: 8
+            backgroundColor: ['#34C759', '#FF3B30'],
+            borderRadius: 6
           }
         ]
       },
@@ -522,13 +522,13 @@
         scales: {
           y: {
             ticks: {
-              color: '#64748b',
+              color: '#8E8E93',
               callback: value => 'Rp ' + (value >= 1000000 ? (value / 1000000) + 'jt' : value.toLocaleString('id-ID'))
             },
-            grid: { color: '#1e293b' }
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
           },
           x: {
-            ticks: { color: '#94a3b8' },
+            ticks: { color: '#8E8E93' },
             grid: { display: false }
           }
         },
@@ -708,8 +708,8 @@
 
     if (filteredWallets.length === 0) {
       container.innerHTML = `
-        <div class="col-span-full p-4 rounded-xl bg-slate-900 border border-slate-800 text-center text-xs text-slate-400">
-          Belum ada dompet dalam kategori ini. Klik "+ Tambah Dompet" di atas.
+        <div class="col-span-full p-6 rounded-2xl bg-[#1C1C1E] border border-white/10 text-center text-xs text-[#8E8E93]">
+          Belum ada dompet dalam kategori ini. Klik "+ Tambah" di atas.
         </div>
       `;
       return;
@@ -718,10 +718,10 @@
     for (const wallet of filteredWallets) {
       const isShared = wallet.visibility === 'shared';
       const card = document.createElement('div');
-      card.className = `p-4 rounded-2xl border transition-all hover:scale-[1.01] ${
+      card.className = `p-4 rounded-2xl border transition-all ios-card-interactive cursor-pointer ${
         isShared
-          ? 'bg-gradient-to-br from-pink-950/30 via-slate-900 to-purple-950/20 border-pink-500/30 shadow-lg shadow-pink-900/10'
-          : 'bg-slate-900/90 border-slate-800 hover:border-slate-700 shadow-md'
+          ? 'bg-[#1C1C1E] border-[#FF2D55]/30 shadow-sm'
+          : 'bg-[#1C1C1E] border-white/10 hover:border-white/20 shadow-sm'
       }`;
 
       const iconName = wallet.type === 'bank' ? 'landmark' : wallet.type === 'ewallet' ? 'smartphone' : 'banknote';
@@ -729,20 +729,20 @@
       card.innerHTML = `
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white" style="background-color: ${wallet.color || '#3b82f6'}">
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white" style="background-color: ${wallet.color || '#007AFF'}">
               <i data-lucide="${iconName}" class="w-4 h-4"></i>
             </div>
-            <span class="text-xs font-semibold text-slate-200">${escapeHtml(wallet.name)}</span>
+            <span class="text-xs font-semibold text-white tracking-tight">${escapeHtml(wallet.name)}</span>
           </div>
           <span class="text-[10px] px-2 py-0.5 rounded-full font-medium ${
-            isShared ? 'bg-pink-500/20 text-pink-300 border border-pink-500/30' : 'bg-slate-800 text-slate-400 border border-slate-700'
+            isShared ? 'bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30' : 'bg-[#2C2C2E] text-[#8E8E93] border border-white/5'
           }">
-            ${isShared ? '🤝 Bersama' : '🔒 Pribadi'}
+            ${isShared ? 'Bersama' : 'Pribadi'}
           </span>
         </div>
         <div class="mt-2">
-          <span class="text-[10px] text-slate-400 block">Saldo</span>
-          <span class="text-lg font-bold text-white tracking-tight font-mono">
+          <span class="text-[10px] text-[#8E8E93] font-medium block">Saldo</span>
+          <span class="text-xl font-bold text-white tracking-tight font-sans">
             Rp ${(wallet.balance || 0).toLocaleString('id-ID')}
           </span>
         </div>
@@ -771,8 +771,8 @@
 
     if (filtered.length === 0) {
       container.innerHTML = `
-        <div class="py-8 text-center text-xs text-slate-400">
-          Belum ada transaksi yang tercatat. Coba ketik di bar "Catat Cepat" di atas!
+        <div class="py-8 text-center text-xs text-[#8E8E93]">
+          Belum ada transaksi yang tercatat. Coba ketik di bar Catat Cepat di atas!
         </div>
       `;
       return;
@@ -792,39 +792,39 @@
       const walletName = wallet ? wallet.name : 'Dompet';
 
       const item = document.createElement('div');
-      item.className = 'py-3 flex items-center justify-between gap-3 text-xs hover:bg-slate-900/50 px-2 rounded-xl transition-colors';
+      item.className = 'py-3 px-3.5 sm:px-4 flex items-center justify-between gap-3 text-xs hover:bg-[#2C2C2E]/40 transition-colors';
 
       item.innerHTML = `
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-            isExpense ? 'bg-rose-950/60 text-rose-400 border border-rose-500/20' : 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/20'
+          <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+            isExpense ? 'bg-[#FF3B30]/15 text-[#FF3B30]' : 'bg-[#34C759]/15 text-[#34C759]'
           }">
             <i data-lucide="${isExpense ? 'arrow-up-right' : 'arrow-down-left'}" class="w-4 h-4"></i>
           </div>
           <div>
             <div class="flex items-center gap-1.5">
-              <span class="font-semibold text-white text-xs sm:text-sm">${escapeHtml(tx.note || tx.category)}</span>
-              <span class="text-[10px] px-1.5 py-0.2 rounded font-medium ${
-                isShared ? 'bg-pink-500/20 text-pink-300' : 'bg-slate-800 text-slate-400'
+              <span class="font-medium text-white text-xs sm:text-sm">${escapeHtml(tx.note || tx.category)}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                isShared ? 'bg-[#FF2D55]/15 text-[#FF2D55]' : 'bg-[#2C2C2E] text-[#8E8E93]'
               }">
                 ${isShared ? 'Bersama' : 'Pribadi'}
               </span>
             </div>
-            <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
+            <div class="flex items-center gap-2 text-[11px] text-[#8E8E93] mt-0.5">
               <span>${dateFormatted}</span>
               <span>•</span>
-              <span class="text-blue-400">${escapeHtml(walletName)}</span>
+              <span class="text-slate-300">${escapeHtml(walletName)}</span>
               <span>•</span>
-              <span class="text-slate-300">${escapeHtml(tx.category || 'Lainnya')}</span>
+              <span>${escapeHtml(tx.category || 'Lainnya')}</span>
             </div>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <span class="font-bold font-mono text-xs sm:text-sm ${isExpense ? 'text-rose-400' : 'text-emerald-400'}">
+        <div class="flex items-center gap-2.5">
+          <span class="font-semibold text-xs sm:text-sm font-sans ${isExpense ? 'text-white' : 'text-[#34C759]'}">
             ${isExpense ? '-' : '+'}Rp ${(Number(tx.amount) || 0).toLocaleString('id-ID')}
           </span>
-          <button data-delete-id="${tx.id}" class="btn-delete-tx p-1.5 text-slate-500 hover:text-rose-400 transition-colors" title="Hapus">
+          <button data-delete-id="${tx.id}" class="btn-delete-tx p-1 text-[#8E8E93] hover:text-[#FF3B30] transition-colors" title="Hapus">
             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
           </button>
         </div>
@@ -972,15 +972,15 @@
 
     function updateRoleButtons() {
       [btnRoleA, btnRoleShared, btnRoleB].forEach(btn => {
-        if (btn) btn.className = 'px-2.5 py-1 rounded-lg transition-all text-slate-400 hover:text-slate-200';
+        if (btn) btn.className = 'px-3 py-1 rounded-full transition-all text-[#8E8E93] hover:text-white font-medium';
       });
 
       if (currentMode === 'shared') {
-        if (btnRoleShared) btnRoleShared.className = 'px-2.5 py-1 rounded-lg transition-all text-white bg-pink-600 font-semibold shadow';
+        if (btnRoleShared) btnRoleShared.className = 'px-3 py-1 rounded-full transition-all text-white bg-[#2C2C2E] shadow-sm font-medium';
       } else if (currentUserId === 'user_a') {
-        if (btnRoleA) btnRoleA.className = 'px-2.5 py-1 rounded-lg transition-all text-white bg-blue-600 font-semibold shadow';
+        if (btnRoleA) btnRoleA.className = 'px-3 py-1 rounded-full transition-all text-white bg-[#2C2C2E] shadow-sm font-medium';
       } else {
-        if (btnRoleB) btnRoleB.className = 'px-2.5 py-1 rounded-lg transition-all text-white bg-purple-600 font-semibold shadow';
+        if (btnRoleB) btnRoleB.className = 'px-3 py-1 rounded-full transition-all text-white bg-[#2C2C2E] shadow-sm font-medium';
       }
     }
 
