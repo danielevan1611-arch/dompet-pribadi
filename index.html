@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>DompetKu — Couple & Personal Finance CRM</title>
+  <title>Dompet — Personal Payment & Finance Dashboard</title>
   
   <!-- Apple & PWA Meta Tags -->
   <link rel="manifest" href="manifest.webmanifest" />
-  <meta name="theme-color" content="#000000" />
+  <meta name="theme-color" content="#13141F" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="DompetKu" />
+  <meta name="apple-mobile-web-app-title" content="Dompet" />
   <link rel="apple-touch-icon" href="assets/icon.svg" />
   <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
 
-  <!-- Apple System Font Stack & Inter Fallback -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Google Fonts: Inter (UI Sans) & JetBrains Mono (Financial Tabular Figures) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,36 +26,24 @@
       darkMode: 'class',
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', 'Inter', 'system-ui', 'sans-serif']
-          },
           colors: {
-            ios: {
-              bg: '#000000',
-              secondaryBg: '#1C1C1E',
-              tertiaryBg: '#2C2C2E',
-              border: 'rgba(255, 255, 255, 0.1)',
-              separator: 'rgba(255, 255, 255, 0.08)',
-              blue: '#007AFF',
-              green: '#34C759',
-              red: '#FF3B30',
-              orange: '#FF9500',
-              pink: '#FF2D55',
-              purple: '#AF52DE',
-              teal: '#30B0C7',
-              gray: '#8E8E93',
-              grayDark: '#3A3A3C'
+            dompet: {
+              bg: '#13141F',
+              card: '#1E1E2D',
+              cardHover: '#252538',
+              cyan: '#00D2D3',
+              cyanHover: '#00B8B9',
+              amber: '#F59E0B',
+              green: '#10B981',
+              purple: '#8B5CF6',
+              blue: '#3B82F6',
+              border: 'rgba(255, 255, 255, 0.06)'
             }
           }
         }
       }
     }
   </script>
-
-  <!-- Google Fonts: Inter (UI Sans) & JetBrains Mono (Financial Tabular Figures) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Lucide Icons & Chart.js & Tesseract.js & Supabase Client & GSAP Motion -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -65,55 +53,89 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <style>
-    /* Apple HIG & UI-UX-PRO-MAX Unified Typography & Design System */
+    /* Apple Official New York Font Family (Extracted from NY.dmg) */
+    @font-face {
+      font-family: 'New York';
+      src: url('assets/fonts/NewYorkLarge-Regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'New York';
+      src: url('assets/fonts/NewYorkLarge-Medium.otf') format('opentype');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'New York';
+      src: url('assets/fonts/NewYorkLarge-Semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'New York';
+      src: url('assets/fonts/NewYorkLarge-Bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'New York';
+      src: url('assets/fonts/NewYorkExtraLarge-Black.otf') format('opentype');
+      font-weight: 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Apple Ecosystem Typography Pairing */
     :root {
       color-scheme: dark;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+      --font-editorial: 'New York', Georgia, serif;
+      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", 'Inter', system-ui, sans-serif;
       --font-mono: 'JetBrains Mono', "SF Mono", Menlo, Consolas, monospace;
     }
+
     body {
       font-family: var(--font-sans);
+      background-color: #13141F;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       -webkit-tap-highlight-color: transparent;
-      background-color: #000000;
-      letter-spacing: -0.011em;
+      letter-spacing: -0.012em;
     }
-    /* Tabular lining figures for financial metrics & currency */
+
+    .font-editorial {
+      font-family: var(--font-editorial) !important;
+      letter-spacing: -0.015em;
+    }
     .font-mono, .font-num {
       font-family: var(--font-mono) !important;
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1, 'zero' 1;
     }
-    .ios-card {
-      background-color: #1C1C1E;
-      border: 1px solid rgba(255, 255, 255, 0.07);
+
+    .dompet-card {
+      background-color: #1E1E2D;
+      border: 1px solid rgba(255, 255, 255, 0.06);
     }
-    .ios-card-specular {
-      position: relative;
-      background: #1C1C1E;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+    .dompet-card-specular {
+      background-color: #1E1E2D;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
       transition: all 0.22s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    .ios-card-specular:hover {
-      border-color: rgba(255, 255, 255, 0.2);
+    .dompet-card-specular:hover {
+      border-color: rgba(0, 210, 211, 0.35);
       transform: translateY(-2px);
     }
-    .ios-card-interactive:active {
-      transform: scale(0.975);
-      transition: transform 0.1s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-    .ios-header {
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: saturate(180%) blur(20px);
-      -webkit-backdrop-filter: saturate(180%) blur(20px);
-      border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-    }
-    .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: #2C2C2E; border-radius: 4px; }
 
-    /* Dynamic Island Native Apple HUD (Independent of Tailwind JIT compilation) */
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #2A2A3D; border-radius: 4px; }
+
+    /* Dynamic Island Native Apple HUD */
     #dynamicIslandHUD {
       position: fixed;
       top: 18px;
@@ -131,8 +153,8 @@
       pointer-events: auto;
     }
     @keyframes quickFlash {
-      0%, 100% { border-color: rgba(255, 255, 255, 0.1); }
-      50% { border-color: #34C759; box-shadow: 0 0 16px rgba(52, 199, 89, 0.45); }
+      0%, 100% { border-color: rgba(255, 255, 255, 0.08); }
+      50% { border-color: #00D2D3; box-shadow: 0 0 16px rgba(0, 210, 211, 0.4); }
     }
     .input-flash-success {
       animation: quickFlash 0.9s cubic-bezier(0.25, 1, 0.5, 1);
@@ -148,387 +170,760 @@
     }
   </style>
 </head>
-<body class="bg-[#000000] text-white min-h-screen flex selection:bg-[#007AFF] selection:text-white">
+<body class="bg-[#13141F] text-white min-h-screen flex selection:bg-[#00D2D3] selection:text-black">
 
   <!-- ================= APPLE DYNAMIC ISLAND HUD ================= -->
   <aside id="dynamicIslandHUD" aria-live="polite">
-    <div class="px-5 py-2.5 rounded-full bg-[#1C1C1E]/95 backdrop-blur-2xl border-2 border-[#007AFF]/60 shadow-[0_12px_40px_rgba(0,122,255,0.35)] flex items-center gap-3 text-xs text-white max-w-sm">
-      <span id="dynamicIslandIcon" class="w-7 h-7 rounded-full bg-[#34C759]/20 text-[#34C759] flex items-center justify-center shrink-0">
-        <svg class="w-4 h-4 text-[#34C759]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <div class="px-5 py-2.5 rounded-full bg-[#1E1E2D]/95 backdrop-blur-2xl border-2 border-[#00D2D3]/60 shadow-[0_12px_40px_rgba(0,210,211,0.35)] flex items-center gap-3 text-xs text-white max-w-sm">
+      <span id="dynamicIslandIcon" class="w-7 h-7 rounded-full bg-[#00D2D3]/20 text-[#00D2D3] flex items-center justify-center shrink-0">
+        <svg class="w-4 h-4 text-[#00D2D3]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       </span>
       <div class="flex flex-col min-w-0">
-        <span id="dynamicIslandTitle" class="text-[10px] font-bold uppercase tracking-wider text-[#34C759]">Tercatat</span>
+        <span id="dynamicIslandTitle" class="text-[10px] font-bold uppercase tracking-wider text-[#00D2D3]">Tercatat</span>
         <span id="dynamicIslandText" class="font-semibold tracking-tight text-white truncate text-xs">Transaksi berhasil disimpan</span>
       </div>
     </div>
   </aside>
 
   <!-- ================= MOBILE SIDEBAR BACKDROP ================= -->
-  <div id="sidebarBackdrop" class="hidden fixed inset-0 z-40 bg-black/75 backdrop-blur-sm lg:hidden transition-opacity"></div>
+  <div id="sidebarBackdrop" class="hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm lg:hidden transition-opacity"></div>
 
-  <!-- ================= CRM LEFT SIDEBAR ================= -->
-  <aside id="sidebarNav" class="fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#141416] border-r border-white/[0.08] flex flex-col justify-between transition-transform duration-300 -translate-x-full lg:translate-x-0 lg:static lg:h-screen lg:shrink-0">
-    <div class="p-5 space-y-6">
-      <!-- App Brand (Apple + CRM Identity) -->
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-2xl bg-[#1C1C1E] border border-white/10 flex items-center justify-center text-[#007AFF] shadow-sm">
-          <i data-lucide="wallet" class="w-5 h-5"></i>
-        </div>
-        <div>
-          <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-            DompetKu
-          </h1>
-          <span class="text-[10px] text-[#8E8E93] tracking-wide block uppercase font-medium">Finance CRM</span>
+  <!-- ================= DOMPET LEFT SIDEBAR ================= -->
+  <aside id="sidebarNav" class="fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#1E1E2D] border-r border-white/5 flex flex-col justify-between transition-transform duration-300 -translate-x-full lg:translate-x-0 lg:static lg:h-screen lg:shrink-0">
+    <div class="py-6 space-y-6">
+      
+      <!-- Brand Logo (Dompet Theme) -->
+      <div class="px-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-[#00D2D3]/15 border border-[#00D2D3]/30 flex items-center justify-center text-[#00D2D3] shadow-lg shadow-[#00D2D3]/10">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold tracking-tight text-white font-editorial flex items-center gap-1">
+              dompet
+            </h1>
+            <span class="text-[10px] text-[#8E8E93] tracking-wider block uppercase font-medium">Payment Admin</span>
+          </div>
         </div>
       </div>
 
-      <!-- Navigation Menu -->
-      <nav class="space-y-1.5 text-xs font-medium">
-        <a href="#sectionOverview" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-white bg-[#242426] shadow-sm transition-all" data-target="overview">
-          <i data-lucide="layout-dashboard" class="w-4 h-4 text-[#007AFF]"></i>
-          <span>Ringkasan Keuangan</span>
-        </a>
-        <a href="#sectionWallets" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[#8E8E93] hover:text-white hover:bg-[#1C1C1E] transition-all" data-target="wallets">
-          <i data-lucide="credit-card" class="w-4 h-4"></i>
-          <span>Dompet & Sumber Dana</span>
-        </a>
-        <a href="#sectionTransactions" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[#8E8E93] hover:text-white hover:bg-[#1C1C1E] transition-all" data-target="transactions">
-          <i data-lucide="table" class="w-4 h-4"></i>
-          <span>Tabel CRM Transaksi</span>
-        </a>
-        <a href="#sectionAnalytics" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[#8E8E93] hover:text-white hover:bg-[#1C1C1E] transition-all" data-target="analytics">
-          <i data-lucide="pie-chart" class="w-4 h-4"></i>
-          <span>Grafik & Analitik</span>
-        </a>
+      <!-- User Profile Card ("Hi, Daniel") -->
+      <div class="px-4">
+        <div class="p-3.5 rounded-2xl bg-[#13141F] border border-white/5 flex items-center gap-3 shadow-inner">
+          <div class="relative w-11 h-11 rounded-full overflow-hidden bg-gradient-to-tr from-[#00D2D3] to-[#3B82F6] p-0.5 shrink-0 shadow">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Daniel" class="w-full h-full object-cover rounded-full" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5">
+              <h4 id="sidebarUserName" class="font-editorial text-sm font-bold text-white tracking-tight truncate">Hi, Daniel</h4>
+              <span class="w-2 h-2 rounded-full bg-[#10B981]"></span>
+            </div>
+            <span id="sidebarUserEmail" class="text-[11px] text-[#8E8E93] block truncate font-sans">daniel@finance.id</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Menu Items (Multi-View Switchers) -->
+      <nav class="px-3 space-y-1.5 text-xs font-medium">
+        <button data-view="dashboard" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-white bg-[#00D2D3]/15 text-[#00D2D3] font-semibold transition-all cursor-pointer">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <span>Dashboard</span>
+        </button>
+
+        <button data-view="wallet" class="nav-item w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-[#8E8E93] hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+          <span class="flex items-center gap-3">
+            <i data-lucide="credit-card" class="w-4 h-4"></i>
+            <span>My Wallet</span>
+          </span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-60"></i>
+        </button>
+
+        <button data-view="transactions" class="nav-item w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-[#8E8E93] hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+          <span class="flex items-center gap-3">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+            <span>Transactions & Calendar</span>
+          </span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-60"></i>
+        </button>
+
+        <button data-view="splitbill" class="nav-item w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-[#8E8E93] hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+          <span class="flex items-center gap-3">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+            <span>Split Bill (PB1 & Tax)</span>
+          </span>
+          <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#00D2D3]/20 text-[#00D2D3]">PRO</span>
+        </button>
       </nav>
     </div>
 
-    <!-- Sidebar Bottom: Personal Cloud & Settings -->
-    <div class="p-4 border-t border-white/[0.08] space-y-2">
-      <div class="p-3 rounded-2xl bg-[#1C1C1E] border border-white/5 space-y-1.5 text-xs">
-        <div class="flex items-center justify-between">
-          <span class="text-[#8E8E93] text-[11px] font-medium">Mode Aplikasi</span>
-          <span class="text-white font-semibold text-[11px] px-2 py-0.5 rounded-md bg-[#2C2C2E]">Personal Pro</span>
-        </div>
-        <span class="text-[11px] text-[#34C759] flex items-center gap-1.5 font-medium">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#34C759] animate-pulse"></span> Sinkronisasi Realtime ⚡
-        </span>
-      </div>
-
-      <button id="btnSidebarSettings" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[#8E8E93] hover:text-white hover:bg-[#1C1C1E] text-xs transition-colors cursor-pointer">
+    <!-- Sidebar Bottom: Settings -->
+    <div class="p-4 border-t border-white/5 space-y-2">
+      <button data-view="settings" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[#8E8E93] hover:text-white hover:bg-white/5 text-xs transition-colors cursor-pointer">
         <span class="flex items-center gap-2.5">
-          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[#007AFF]"></i>
-          <span>Pengaturan & Cloud Sync</span>
+          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[#00D2D3]"></i>
+          <span>Pengaturan & Cloud</span>
         </span>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
       </button>
     </div>
   </aside>
 
-  <!-- ================= CRM MAIN WORKSPACE (FULL WIDTH) ================= -->
-  <div id="mainWorkspace" class="flex-1 flex flex-col min-w-0 min-h-screen bg-black">
+  <!-- ================= MAIN WORKSPACE (FULL WIDTH & MULTI-VIEW) ================= -->
+  <div id="mainWorkspace" class="flex-1 flex flex-col min-w-0 min-h-screen bg-[#13141F]">
 
     <!-- TOP HEADER BAR -->
-    <header class="sticky top-0 z-40 ios-header px-4 sm:px-6 py-3">
+    <header class="sticky top-0 z-40 bg-[#1E1E2D]/80 backdrop-blur-xl border-b border-white/5 px-4 sm:px-6 py-3">
       <div class="w-full flex items-center justify-between gap-3">
-        <!-- Left: Mobile Toggle & Breadcrumbs -->
+        
+        <!-- Left: Mobile Toggle & Dynamic Title -->
         <div class="flex items-center gap-3">
-          <button id="btnToggleSidebar" class="lg:hidden p-2 rounded-xl bg-[#1C1C1E] border border-white/10 text-[#8E8E93] hover:text-white transition-colors" title="Buka Menu">
+          <button id="btnToggleSidebar" class="lg:hidden p-2 rounded-xl bg-[#13141F] border border-white/10 text-[#8E8E93] hover:text-white transition-colors" title="Buka Menu">
             <i data-lucide="menu" class="w-5 h-5"></i>
           </button>
           <div>
-            <div class="hidden sm:flex items-center gap-1.5 text-xs text-[#8E8E93]">
-              <span>DompetKu</span>
-              <span>/</span>
-              <span class="text-white font-medium">Enterprise Finance CRM</span>
-            </div>
+            <h2 id="topHeaderTitle" class="font-editorial text-lg font-bold text-white tracking-tight">Dashboard</h2>
           </div>
         </div>
 
         <!-- Center: Apple Spotlight Quick Input Bar -->
         <div class="flex-1 max-w-xl mx-2">
-          <div class="ios-card rounded-2xl p-1.5 sm:p-2 flex items-center gap-2 border-white/10 shadow-sm focus-within:border-[#007AFF] focus-within:ring-2 focus-within:ring-[#007AFF]/25 transition-all">
+          <div class="dompet-card rounded-2xl p-1.5 sm:p-2 flex items-center gap-2 shadow-sm focus-within:border-[#00D2D3] focus-within:ring-2 focus-within:ring-[#00D2D3]/25 transition-all">
             <div class="pl-2 text-[#8E8E93]">
-              <i data-lucide="sparkles" class="w-4 h-4 text-[#007AFF]"></i>
+              <i data-lucide="sparkles" class="w-4 h-4 text-[#00D2D3]"></i>
             </div>
             <input
               id="quickInput"
               type="text"
-              placeholder='Ketik cepat: "makan 15k", "kopi 25rb gopay", "nonton 90k bersama"...'
+              placeholder='Ketik cepat: "makan 15k", "kopi 25rb gopay", "bensin 30.000"...'
               class="flex-1 bg-transparent border-none text-xs sm:text-sm text-white placeholder-[#8E8E93] focus:outline-none focus:ring-0"
             />
             <!-- Camera OCR Button -->
-            <button id="btnOpenScanner" class="w-8 h-8 rounded-xl bg-[#2C2C2E] hover:bg-[#3A3A3C] text-slate-200 flex items-center justify-center transition-colors shrink-0" title="Scan Resi">
-              <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+            <button id="btnOpenScanner" class="w-8 h-8 rounded-xl bg-[#13141F] hover:bg-white/10 text-slate-200 flex items-center justify-center transition-colors shrink-0 cursor-pointer" title="Scan Resi">
+              <i data-lucide="camera" class="w-3.5 h-3.5 text-[#00D2D3]"></i>
             </button>
             <!-- Submit Button -->
-            <button id="btnSubmitQuick" class="w-8 h-8 rounded-xl bg-[#007AFF] hover:bg-[#0071E3] active:scale-95 text-white flex items-center justify-center transition-all shadow shrink-0">
-              <i data-lucide="arrow-up" class="w-3.5 h-3.5"></i>
+            <button id="btnSubmitQuick" class="w-8 h-8 rounded-xl bg-[#00D2D3] hover:bg-[#00B8B9] active:scale-95 text-black font-bold flex items-center justify-center transition-all shadow shrink-0 cursor-pointer">
+              <i data-lucide="arrow-up" class="w-4 h-4"></i>
             </button>
           </div>
         </div>
 
-        <!-- Right: Personal Status & Settings Button -->
+        <!-- Right: Actions -->
         <div class="flex items-center gap-2 shrink-0">
-          <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1C1C1E] border border-white/10 text-[11px] text-[#8E8E93]">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#34C759]"></span>
-            <span class="text-white font-medium">Personal Finance</span>
-          </div>
-
-          <button id="btnOpenSettings" title="Pengaturan & Cloud Sync" class="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-[#1C1C1E] hover:bg-[#2C2C2E] border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <button id="btnTopReport" class="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#00D2D3]/15 text-[#00D2D3] border border-[#00D2D3]/30 text-xs font-semibold hover:bg-[#00D2D3] hover:text-black transition-all cursor-pointer">
+            <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>
+            <span>Generate Report</span>
+          </button>
+          <button id="btnOpenSettings" title="Pengaturan" class="w-9 h-9 rounded-full bg-[#1E1E2D] hover:bg-[#252538] border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-transform active:scale-90 cursor-pointer">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
           </button>
         </div>
       </div>
 
       <!-- Quick Preview Pill (iOS Inline Tag) -->
-      <div id="quickPreview" class="hidden mt-2 px-3.5 py-1.5 rounded-xl bg-[#1C1C1E] border border-white/10 flex flex-wrap items-center gap-2 text-xs">
+      <div id="quickPreview" class="hidden mt-2 px-3.5 py-1.5 rounded-xl bg-[#13141F] border border-white/10 flex flex-wrap items-center gap-2 text-xs">
         <span class="text-[#8E8E93] text-[11px]">Terdeteksi:</span>
-        <span id="previewAmount" class="px-2 py-0.5 rounded-md bg-[#34C759]/15 text-[#34C759] font-mono font-semibold">Rp 0</span>
-        <span id="previewCategory" class="px-2 py-0.5 rounded-md bg-[#2C2C2E] text-slate-300">-</span>
-        <span id="previewWallet" class="px-2 py-0.5 rounded-md bg-[#2C2C2E] text-slate-300">-</span>
+        <span id="previewAmount" class="px-2 py-0.5 rounded-md bg-[#10B981]/20 text-[#10B981] font-mono font-semibold">Rp 0</span>
+        <span id="previewCategory" class="px-2 py-0.5 rounded-md bg-[#1E1E2D] text-slate-300">-</span>
+        <span id="previewWallet" class="px-2 py-0.5 rounded-md bg-[#1E1E2D] text-slate-300">-</span>
       </div>
     </header>
 
-    <!-- MAIN DASHBOARD CONTENT (FULL WIDESCREEN & MOBILE SCROLL) -->
+    <!-- ================= MULTI-VIEW VIEWPORT CONTAINER ================= -->
     <main class="w-full px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-8 space-y-6 flex-1 custom-scroll overflow-y-auto">
 
-      <!-- ================= SECTION 1: 4-COLUMN CRM KPI CARDS ================= -->
-      <section id="sectionOverview" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <!-- KPI 1: Net Worth -->
-        <div class="ios-card-specular rounded-2xl p-5 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-[#8E8E93] font-medium tracking-wide uppercase">Total Saldo Bersih</span>
-            <span id="kpiNetWorthSubtitle" class="text-[11px] px-2.5 py-0.5 rounded-full bg-[#2C2C2E] text-slate-300 font-medium">Personal Pro</span>
+      <!-- ================= VIEW 1: DASHBOARD (EXECUTIVE OVERVIEW ONLY) ================= -->
+      <section id="viewDashboard" class="view-screen space-y-6">
+        
+        <!-- ROW 1: 4 COLORED KPI CARDS (MATCHING FIGMA & DEXIGNLAB PALETTE) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <!-- Card 1: Total Saldo Aktif (Amber) -->
+          <div class="rounded-2xl p-5 space-y-2 border border-amber-500/20 bg-gradient-to-br from-[#D97706]/25 to-[#78350F]/40 shadow-lg relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-amber-200/80 font-medium uppercase tracking-wider">Total Saldo Bersih</span>
+              <div class="w-7 h-7 rounded-full bg-amber-400/20 flex items-center justify-center text-amber-300">
+                <i data-lucide="wallet" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <h3 id="kpiNetWorth" class="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-white">Rp 0</h3>
+            <span class="text-[11px] text-amber-200/60 block font-sans">Seluruh saldo kas & rekening</span>
           </div>
-          <h2 id="kpiNetWorth" class="text-2xl sm:text-3xl font-bold tracking-tight text-white font-mono tabular-nums">Rp 0</h2>
-          <span class="text-[11px] text-[#8E8E93] block">Akumulasi seluruh saldo aktif</span>
+
+          <!-- Card 2: Pemasukan Bulan Ini (Green) -->
+          <div class="rounded-2xl p-5 space-y-2 border border-emerald-500/20 bg-gradient-to-br from-[#059669]/25 to-[#064E3B]/40 shadow-lg relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-emerald-200/80 font-medium uppercase tracking-wider">Pemasukan Bulan Ini</span>
+              <div class="w-7 h-7 rounded-full bg-emerald-400/20 flex items-center justify-center text-emerald-300">
+                <i data-lucide="trending-up" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <h3 id="kpiIncome" class="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-[#10B981]">+Rp 0</h3>
+            <span class="text-[11px] text-emerald-200/60 block font-sans">Gaji & cashflow masuk</span>
+          </div>
+
+          <!-- Card 3: Pengeluaran Bulan Ini (Purple) -->
+          <div class="rounded-2xl p-5 space-y-2 border border-purple-500/20 bg-gradient-to-br from-[#7C3AED]/25 to-[#4C1D95]/40 shadow-lg relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-purple-200/80 font-medium uppercase tracking-wider">Pengeluaran Bulan Ini</span>
+              <div class="w-7 h-7 rounded-full bg-purple-400/20 flex items-center justify-center text-purple-300">
+                <i data-lucide="trending-down" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <h3 id="kpiExpense" class="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-[#A78BFA]">-Rp 0</h3>
+            <span class="text-[11px] text-purple-200/60 block font-sans">Biaya konsumsi & tagihan</span>
+          </div>
+
+          <!-- Card 4: Tabungan & Investasi (Blue) -->
+          <div class="rounded-2xl p-5 space-y-2 border border-blue-500/20 bg-gradient-to-br from-[#2563EB]/25 to-[#1E3A8A]/40 shadow-lg relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-blue-200/80 font-medium uppercase tracking-wider">Tabungan & Cadangan</span>
+              <div class="w-7 h-7 rounded-full bg-blue-400/20 flex items-center justify-center text-blue-300">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <h3 id="kpiCoupleKas" class="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-white">Rp 0</h3>
+            <span class="text-[11px] text-blue-200/60 block font-sans">Dana darurat & alokasi simpanan</span>
+          </div>
         </div>
 
-        <!-- KPI 2: Pemasukan Bulan Ini -->
-        <div class="ios-card-specular rounded-2xl p-5 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-[#8E8E93] font-medium tracking-wide uppercase">Pemasukan Bulan Ini</span>
-            <div class="w-6 h-6 rounded-full bg-[#34C759]/15 text-[#34C759] flex items-center justify-center">
-              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+        <!-- ROW 2: VISUAL ATM CARD + CARD'S OVERVIEW DONUT + ACTIVITY CHART -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Visual ATM Card (Mastercard Blue/Cyan Gradient) -->
+          <div class="dompet-card rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between shadow-xl min-h-[220px] bg-gradient-to-br from-[#1E3A8A] via-[#1E40AF] to-[#0284C7] border-white/10">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-red-500/80 -mr-3"></div>
+                <div class="w-7 h-7 rounded-full bg-amber-400/80"></div>
+                <span class="ml-2 font-mono text-xs tracking-widest text-white/80">DEBIT</span>
+              </div>
+              <svg class="w-6 h-6 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            
+            <div class="my-4 space-y-1">
+              <span class="text-[11px] text-white/70 uppercase tracking-wider font-medium">Saldo Dompet Utama</span>
+              <h2 id="atmCardBalance" class="font-editorial text-3xl font-bold text-white tracking-tight">Rp 0</h2>
+              <span class="text-[11px] text-cyan-200 flex items-center gap-1 font-medium">
+                <span>+0.8% dari minggu lalu</span>
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-white/80 font-mono tracking-wider pt-2 border-t border-white/15">
+              <span>•••• 4821</span>
+              <span class="font-sans font-semibold tracking-normal text-white">DANIEL</span>
             </div>
           </div>
-          <h2 id="kpiIncome" class="text-2xl sm:text-3xl font-bold tracking-tight text-[#34C759] font-mono tabular-nums">+Rp 0</h2>
-          <span class="text-[11px] text-[#8E8E93] block">Gaji & cashflow masuk</span>
-        </div>
 
-        <!-- KPI 3: Pengeluaran Bulan Ini -->
-        <div class="ios-card-specular rounded-2xl p-5 space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-[#8E8E93] font-medium tracking-wide uppercase">Pengeluaran Bulan Ini</span>
-            <div class="w-6 h-6 rounded-full bg-[#FF3B30]/15 text-[#FF3B30] flex items-center justify-center">
-              <i data-lucide="trending-down" class="w-3.5 h-3.5"></i>
+          <!-- Donut Chart: Card's Overview -->
+          <div class="dompet-card rounded-3xl p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="font-editorial text-sm font-bold text-white">Card's Overview</h4>
+              <span class="text-[11px] text-[#8E8E93]">Alokasi Kategori</span>
             </div>
-          </div>
-          <h2 id="kpiExpense" class="text-2xl sm:text-3xl font-bold tracking-tight text-[#FF3B30] font-mono tabular-nums">-Rp 0</h2>
-          <span class="text-[11px] text-[#8E8E93] block">Biaya makan, tagihan & belanja</span>
-        </div>
-
-        <!-- KPI 4: Tabungan & Dana Darurat -->
-        <div class="ios-card-specular rounded-2xl p-5 space-y-2 border-[#5856D6]/30">
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-[#5856D6] font-medium tracking-wide uppercase">Tabungan & Cadangan</span>
-            <div class="w-6 h-6 rounded-full bg-[#5856D6]/15 text-[#5856D6] flex items-center justify-center">
-              <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-            </div>
-          </div>
-          <h2 id="kpiCoupleKas" class="text-2xl sm:text-3xl font-bold tracking-tight text-white font-mono tabular-nums">Rp 0</h2>
-          <span class="text-[11px] text-[#8E8E93] block">Dana darurat & alokasi simpanan</span>
-        </div>
-      </section>
-
-      <!-- ================= SECTION 2: HORIZONTAL RESOURCE CARDS (WALLETS) ================= -->
-      <section id="sectionWallets" class="space-y-3">
-        <div class="flex items-center justify-between px-1">
-          <div class="flex items-center gap-2">
-            <i data-lucide="credit-card" class="w-4 h-4 text-[#007AFF]"></i>
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-[#8E8E93]">
-              Dompet & Rekening Sumber Dana
-            </h3>
-          </div>
-          <button id="btnOpenAddWallet" class="px-3 py-1.5 rounded-xl bg-[#1C1C1E] hover:bg-[#2C2C2E] border border-white/10 text-xs text-[#007AFF] hover:text-white font-medium flex items-center gap-1.5 transition-colors">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Dompet
-          </button>
-        </div>
-
-        <!-- Wallets Grid (CRM Channels layout) -->
-        <div id="walletsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Rendered via JS -->
-        </div>
-      </section>
-
-      <!-- ================= SECTION 3: DUAL-PANE CRM ANALYTICS & DATA TABLE ================= -->
-      <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-        <!-- LEFT PANE: VISUAL ANALYTICS (1/3) -->
-        <div id="sectionAnalytics" class="xl:col-span-1 space-y-4">
-          <!-- Donut Chart -->
-          <div class="ios-card rounded-2xl p-4 sm:p-5">
-            <div class="flex items-center justify-between mb-3">
-              <h4 class="text-xs font-semibold text-[#8E8E93] uppercase tracking-wider">
-                Alokasi Pengeluaran
-              </h4>
-              <i data-lucide="pie-chart" class="w-4 h-4 text-[#8E8E93]"></i>
-            </div>
-            <div class="h-56 relative">
+            <div class="h-44 relative">
               <canvas id="categoryDonutCanvas"></canvas>
             </div>
           </div>
 
-          <!-- Bar Chart -->
-          <div class="ios-card rounded-2xl p-4 sm:p-5">
-            <div class="flex items-center justify-between mb-3">
-              <h4 class="text-xs font-semibold text-[#8E8E93] uppercase tracking-wider">
-                Arus Kas (Cashflow)
-              </h4>
-              <i data-lucide="bar-chart-2" class="w-4 h-4 text-[#8E8E93]"></i>
+          <!-- Activity Chart: Weekly Arus Kas -->
+          <div class="dompet-card rounded-3xl p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-editorial text-sm font-bold text-white">Activity</h4>
+                <span class="text-xs text-[#00D2D3] font-semibold font-mono">Arus Kas Mingguan</span>
+              </div>
+              <div class="flex items-center gap-3 text-[11px]">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#10B981]"></span> Income</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#EF4444]"></span> Outcome</span>
+              </div>
             </div>
-            <div class="h-56 relative">
+            <div class="h-44 relative">
               <canvas id="cashflowBarCanvas"></canvas>
             </div>
           </div>
         </div>
 
-        <!-- RIGHT PANE: RICH CRM DATA TABLE (2/3) -->
-        <div id="sectionTransactions" class="xl:col-span-2 space-y-3">
-          <div class="ios-card rounded-2xl overflow-hidden border border-white/10 shadow-sm flex flex-col">
-            
-            <!-- Table Header Bar & Filter Controls -->
-            <div class="p-4 border-b border-white/[0.08] flex flex-wrap items-center justify-between gap-3 bg-[#18181A]">
-              <div class="flex items-center gap-2">
-                <i data-lucide="table" class="w-4 h-4 text-[#007AFF]"></i>
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-white">
-                  Tabel Riwayat Transaksi
-                </h3>
-              </div>
-
-              <!-- Filter Bar Actions -->
-              <div class="flex flex-wrap items-center gap-2">
-                <!-- Search Input -->
-                <div class="relative">
-                  <input
-                    id="searchTransaction"
-                    type="text"
-                    placeholder="Cari transaksi..."
-                    class="w-36 sm:w-44 bg-[#242426] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white placeholder-[#8E8E93] focus:outline-none focus:border-[#007AFF]"
-                  />
-                </div>
-
-                <!-- Category Filter Dropdown -->
-                <select id="filterTableCategory" class="bg-[#242426] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#007AFF]">
-                  <option value="">Semua Kategori</option>
-                  <option value="Makanan & Minuman">Makanan & Minuman</option>
-                  <option value="Transportasi">Transportasi</option>
-                  <option value="Belanja & Kebutuhan">Belanja</option>
-                  <option value="Tagihan & Utilitas">Tagihan</option>
-                  <option value="Hiburan & Rekreasi">Hiburan</option>
-                  <option value="Kesehatan">Kesehatan</option>
-                  <option value="Gaji & Pemasukan">Gaji</option>
-                  <option value="Lainnya">Lainnya</option>
+        <!-- ROW 3: QUICK TRANSFER CARD & SPENDINGS PROGRESS BARS -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Quick Transfer Module -->
+          <div class="dompet-card rounded-3xl p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <h4 class="font-editorial text-base font-bold text-white">Quick Transfer Antar Dompet</h4>
+              <span class="text-xs text-[#00D2D3]">Internal Mutasi</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <label class="block text-[#8E8E93] mb-1">Dari Dompet</label>
+                <select id="quickTransferFrom" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#00D2D3]">
+                  <!-- Populated via JS -->
                 </select>
-
-                <!-- Export CSV Button -->
-                <button id="btnExportCsv" class="px-3 py-1.5 rounded-xl bg-[#242426] hover:bg-[#2C2C2E] border border-white/10 text-xs text-slate-200 hover:text-white transition-colors flex items-center gap-1.5 font-medium" title="Unduh CSV">
-                  <i data-lucide="download" class="w-3.5 h-3.5 text-[#34C759]"></i>
-                  <span>Export CSV</span>
-                </button>
+              </div>
+              <div>
+                <label class="block text-[#8E8E93] mb-1">Ke Dompet</label>
+                <select id="quickTransferTo" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#00D2D3]">
+                  <!-- Populated via JS -->
+                </select>
               </div>
             </div>
-
-            <!-- Mobile Card Feed View (Visible on < 640px) -->
-            <div id="transactionsMobileCards" class="block sm:hidden divide-y divide-white/[0.06] p-3 space-y-2.5">
-              <!-- Rendered via JS -->
+            <div>
+              <label class="block text-[#8E8E93] text-xs mb-1">Nominal Transfer (Rp)</label>
+              <input id="quickTransferAmount" type="number" placeholder="misal: 100000" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white text-xs font-mono focus:outline-none focus:border-[#00D2D3]" />
             </div>
+            <button id="btnExecuteQuickTransfer" class="w-full py-3 rounded-xl bg-[#00D2D3] hover:bg-[#00B8B9] text-black font-bold text-xs transition-transform active:scale-[0.99] cursor-pointer shadow-lg shadow-[#00D2D3]/20">
+              TRANSFER SEKARANG
+            </button>
+          </div>
 
-            <!-- Full-width Responsive Table (Visible on >= 640px) -->
-            <div class="hidden sm:block w-full overflow-x-auto custom-scroll">
-              <table class="w-full text-left text-xs whitespace-nowrap">
-                <thead class="bg-[#141416] text-[#8E8E93] border-b border-white/[0.06] uppercase text-[10px] tracking-wider font-semibold">
-                  <tr>
-                    <th class="py-3 px-4">Tanggal & Waktu</th>
-                    <th class="py-3 px-4">Deskripsi / Item</th>
-                    <th class="py-3 px-4">Kategori</th>
-                    <th class="py-3 px-4">Dompet Sumber</th>
-                    <th class="py-3 px-4">Tipe Aliran</th>
-                    <th class="py-3 px-4 text-right">Nominal (Rp)</th>
-                    <th class="py-3 px-4 text-center">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="transactionsTableBody" class="divide-y divide-white/[0.04]">
-                  <!-- Rendered via JS -->
-                </tbody>
-              </table>
+          <!-- Spendings Budget Progress Bars -->
+          <div class="dompet-card rounded-3xl p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <h4 class="font-editorial text-base font-bold text-white">Spendings by Category</h4>
+              <span class="text-xs text-[#8E8E93]">Bulan Ini</span>
             </div>
-
-            <!-- Legacy Inset Container (Hidden proxy fallback for backward test compatibility) -->
-            <div id="transactionsContainer" class="hidden"></div>
-
-            <!-- Table Footer -->
-            <div class="p-3 border-t border-white/[0.06] bg-[#141416] flex items-center justify-between text-[11px] text-[#8E8E93]">
-              <span id="tableRecordCount">Menampilkan transaksi terbaru</span>
-              <span class="text-slate-400">DompetKu Personal Pro</span>
+            <div class="space-y-3 text-xs">
+              <div>
+                <div class="flex justify-between text-[11px] mb-1">
+                  <span class="text-[#8E8E93]">Makanan & Minuman</span>
+                  <span id="spendFoodVal" class="font-mono text-white">Rp 0</span>
+                </div>
+                <div class="w-full h-2 bg-[#13141F] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#00D2D3] rounded-full" style="width: 45%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-[11px] mb-1">
+                  <span class="text-[#8E8E93]">Transportasi</span>
+                  <span id="spendTransportVal" class="font-mono text-white">Rp 0</span>
+                </div>
+                <div class="w-full h-2 bg-[#13141F] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#10B981] rounded-full" style="width: 25%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-[11px] mb-1">
+                  <span class="text-[#8E8E93]">Belanja & Kebutuhan</span>
+                  <span id="spendShoppingVal" class="font-mono text-white">Rp 0</span>
+                </div>
+                <div class="w-full h-2 bg-[#13141F] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#F59E0B] rounded-full" style="width: 60%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex justify-between text-[11px] mb-1">
+                  <span class="text-[#8E8E93]">Tagihan & Utilitas</span>
+                  <span id="spendBillsVal" class="font-mono text-white">Rp 0</span>
+                </div>
+                <div class="w-full h-2 bg-[#13141F] rounded-full overflow-hidden">
+                  <div class="h-full bg-[#8B5CF6] rounded-full" style="width: 35%"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
+        <!-- ROW 4: RECENT TRANSACTIONS (LATEST 5) -->
+        <div class="dompet-card rounded-3xl p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="font-editorial text-base font-bold text-white">Recent Transactions</h4>
+            <button data-view="transactions" class="text-xs text-[#00D2D3] hover:underline font-medium cursor-pointer">
+              Buka Semua di Kalender Transaksi →
+            </button>
+          </div>
+          <div id="dashboardRecentTxs" class="divide-y divide-white/5">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 2: DEDICATED SCREEN: MY WALLET ================= -->
+      <section id="viewMyWallet" class="view-screen hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="font-editorial text-2xl font-bold text-white">My Wallet & Accounts</h3>
+            <p class="text-xs text-[#8E8E93]">Kelola semua rekening bank, e-wallet, dan sumber dana Anda</p>
+          </div>
+          <button id="btnOpenAddWallet" class="px-4 py-2.5 rounded-xl bg-[#00D2D3] hover:bg-[#00B8B9] text-black font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-[#00D2D3]/20">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Tambah Dompet Baru</span>
+          </button>
+        </div>
+
+        <!-- Wallets ATM Cards Grid -->
+        <div id="myWalletsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Rendered via JS -->
+        </div>
+
+        <!-- Mutasi Antar Rekening (Full Width Panel) -->
+        <div class="dompet-card rounded-3xl p-6 space-y-4">
+          <h4 class="font-editorial text-lg font-bold text-white">Mutasi Antar Rekening Sendiri</h4>
+          <p class="text-xs text-[#8E8E93]">Pindahkan dana antar dompet (misal: Top-Up BCA ke GoPay) tanpa mengganggu catatan pengeluaran.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-2">
+            <div>
+              <label class="block text-[#8E8E93] mb-1">Dari Rekening</label>
+              <select id="walletTransferFrom" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white"></select>
+            </div>
+            <div>
+              <label class="block text-[#8E8E93] mb-1">Ke Rekening</label>
+              <select id="walletTransferTo" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white"></select>
+            </div>
+            <div>
+              <label class="block text-[#8E8E93] mb-1">Nominal (Rp)</label>
+              <input id="walletTransferAmount" type="number" placeholder="0" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white font-mono" />
+            </div>
+          </div>
+          <button id="btnExecuteWalletTransfer" class="px-6 py-2.5 rounded-xl bg-[#00D2D3] text-black font-bold text-xs hover:bg-[#00B8B9] transition-all cursor-pointer">
+            Pindahkan Saldo Sekarang
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 3: DEDICATED SCREEN: TRANSACTIONS & FINANCIAL CALENDAR ================= -->
+      <section id="viewTransactions" class="view-screen hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="font-editorial text-2xl font-bold text-white">Transactions & Financial Calendar</h3>
+            <p class="text-xs text-[#8E8E93]">Kalender bulanan dengan ringkasan pengeluaran & pemasukan harian</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnExportCsv" class="px-4 py-2 rounded-xl bg-[#1E1E2D] hover:bg-white/10 border border-white/10 text-xs text-white flex items-center gap-2 transition-colors cursor-pointer">
+              <i data-lucide="download" class="w-3.5 h-3.5 text-[#10B981]"></i>
+              <span>Export CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MONTHLY FINANCIAL CALENDAR WIDGET -->
+        <div class="dompet-card rounded-3xl p-6 space-y-4">
+          <div class="flex items-center justify-between border-b border-white/5 pb-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="calendar" class="w-5 h-5 text-[#00D2D3]"></i>
+              <h4 id="calendarMonthLabel" class="font-editorial text-lg font-bold text-white">November 2026</h4>
+            </div>
+            <span class="text-xs text-[#8E8E93]">Klik tanggal untuk memfilter rincian hari itu</span>
+          </div>
+
+          <!-- Calendar Weekday Header -->
+          <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-[#8E8E93] py-1 border-b border-white/5">
+            <div>Min</div>
+            <div>Sen</div>
+            <div>Sel</div>
+            <div>Rab</div>
+            <div>Kam</div>
+            <div>Jum</div>
+            <div>Sab</div>
+          </div>
+
+          <!-- Calendar Days Grid -->
+          <div id="calendarDaysGrid" class="grid grid-cols-7 gap-1.5 sm:gap-2">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- TRANSACTIONS DATA TABLE (FILTERED BY CALENDAR OR ALL) -->
+        <div class="dompet-card rounded-3xl overflow-hidden space-y-3">
+          <div class="p-4 border-b border-white/5 flex flex-wrap items-center justify-between gap-3 bg-[#171724]">
+            <div class="flex items-center gap-2">
+              <i data-lucide="table" class="w-4 h-4 text-[#00D2D3]"></i>
+              <h4 id="transactionTableTitle" class="font-editorial text-sm font-bold text-white">Daftar Transaksi</h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="searchTransaction" type="text" placeholder="Cari transaksi..." class="bg-[#13141F] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder-[#8E8E93] focus:outline-none focus:border-[#00D2D3]" />
+              <select id="filterTableCategory" class="bg-[#13141F] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#00D2D3]">
+                <option value="">Semua Kategori</option>
+                <option value="Makanan & Minuman">Makanan & Minuman</option>
+                <option value="Transportasi">Transportasi</option>
+                <option value="Belanja & Kebutuhan">Belanja</option>
+                <option value="Tagihan & Utilitas">Tagihan</option>
+                <option value="Hiburan & Rekreasi">Hiburan</option>
+                <option value="Kesehatan">Kesehatan</option>
+                <option value="Gaji & Pemasukan">Gaji</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Full Width Table -->
+          <div class="w-full overflow-x-auto custom-scroll">
+            <table class="w-full text-left text-xs whitespace-nowrap">
+              <thead class="bg-[#13141F] text-[#8E8E93] border-b border-white/5 uppercase text-[10px] tracking-wider font-semibold">
+                <tr>
+                  <th class="py-3 px-4">Tanggal & Waktu</th>
+                  <th class="py-3 px-4">Deskripsi / Item</th>
+                  <th class="py-3 px-4">Kategori</th>
+                  <th class="py-3 px-4">Dompet Sumber</th>
+                  <th class="py-3 px-4">Tipe Aliran</th>
+                  <th class="py-3 px-4 text-right">Nominal (Rp)</th>
+                  <th class="py-3 px-4 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="transactionsTableBody" class="divide-y divide-white/5">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Legacy fallback container for test suites -->
+          <div id="transactionsContainer" class="hidden"></div>
+
+          <div class="p-4 border-t border-white/5 flex items-center justify-between text-xs text-[#8E8E93]">
+            <span id="tableRecordCount">Menampilkan transaksi terbaru</span>
+            <span class="text-[#00D2D3]">Dompet Pro Personal</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 4: DEDICATED SCREEN: SMART SPLIT BILL (PB1 & SERVICE) ================= -->
+      <section id="viewSplitBill" class="view-screen hidden space-y-6">
+        <div>
+          <h3 class="font-editorial text-2xl font-bold text-white">Smart Split Bill (PB1 & Resto Tax)</h3>
+          <p class="text-xs text-[#8E8E93]">Bagi tagihan makan bersama secara proporsional sesuai standar pajak resto di Indonesia</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- LEFT 2 COLS: RECEIPT SCANNER & ITEM LIST -->
+          <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Struk Dropzone -->
+            <div class="dompet-card rounded-3xl p-5 space-y-3">
+              <label for="splitBillFileInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/15 hover:border-[#00D2D3] rounded-2xl cursor-pointer bg-[#13141F]/60 hover:bg-[#13141F] transition-colors p-4 text-center">
+                <i data-lucide="receipt" class="w-7 h-7 text-[#00D2D3] mb-1"></i>
+                <span class="text-xs text-white font-semibold">Unggah Foto Struk Kasir / PDF Tagihan</span>
+                <span class="text-[11px] text-[#8E8E93] mt-0.5">Membaca otomatis nama menu & harga</span>
+                <input id="splitBillFileInput" type="file" accept="image/*,application/pdf" class="hidden" />
+              </label>
+            </div>
+
+            <!-- Participants Chips Input -->
+            <div class="dompet-card rounded-3xl p-5 space-y-3">
+              <div class="flex items-center justify-between">
+                <h4 class="font-editorial text-sm font-bold text-white">Daftar Orang (*Participants*)</h4>
+                <span class="text-[11px] text-[#8E8E93]">Ketik nama lalu tekan Enter</span>
+              </div>
+              <div class="flex gap-2">
+                <input id="splitInputParticipantName" type="text" placeholder="misal: Daniel, Sarah, Budi" class="flex-1 bg-[#13141F] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#00D2D3]" />
+                <button id="btnAddParticipant" class="px-4 py-2 bg-[#00D2D3] text-black font-bold rounded-xl text-xs hover:bg-[#00B8B9] cursor-pointer">
+                  + Tambah
+                </button>
+              </div>
+              <div id="splitParticipantsList" class="flex flex-wrap gap-2 pt-1">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+            <!-- Items Table & Assignment -->
+            <div class="dompet-card rounded-3xl p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <h4 class="font-editorial text-sm font-bold text-white">Daftar Pesanan & Pembagian</h4>
+                <button id="btnAddNewSplitItem" class="text-xs text-[#00D2D3] hover:underline font-semibold cursor-pointer">
+                  + Tambah Menu Manual
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs whitespace-nowrap">
+                  <thead class="text-[#8E8E93] border-b border-white/10 text-[10px] uppercase font-semibold">
+                    <tr>
+                      <th class="py-2.5 px-3">Nama Menu</th>
+                      <th class="py-2.5 px-3">Harga Satuan (Rp)</th>
+                      <th class="py-2.5 px-3">Qty</th>
+                      <th class="py-2.5 px-3">Dipesan Oleh</th>
+                      <th class="py-2.5 px-3 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="splitItemsTableBody" class="divide-y divide-white/5">
+                    <!-- Injected via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COL: INDONESIAN TAX SETTINGS & SUMMARY -->
+          <div class="space-y-6">
+            
+            <!-- Tax Configuration Card -->
+            <div class="dompet-card rounded-3xl p-5 space-y-3">
+              <h4 class="font-editorial text-sm font-bold text-white">Pengaturan Pajak Indonesia</h4>
+              <div class="space-y-2.5 text-xs">
+                <div>
+                  <label class="block text-[#8E8E93] text-[11px] mb-1">Service Charge Restoran (%)</label>
+                  <input id="splitServicePercent" type="number" value="5" min="0" max="20" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2 text-white font-mono" />
+                </div>
+                <div>
+                  <label class="block text-[#8E8E93] text-[11px] mb-1">PB1 / Pajak Restoran (%)</label>
+                  <input id="splitTaxPercent" type="number" value="10" min="0" max="15" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2 text-white font-mono" />
+                </div>
+                <div>
+                  <label class="block text-[#8E8E93] text-[11px] mb-1">Nomor Rekening Anda (Untuk Transfer)</label>
+                  <input id="splitBankAccountInput" type="text" placeholder="BCA: 1234-5678-90 a/n Daniel" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2 text-white text-xs" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Grand Summary & WhatsApp Export -->
+            <div class="dompet-card rounded-3xl p-5 space-y-4 border border-[#00D2D3]/30">
+              <h4 class="font-editorial text-base font-bold text-white">Ringkasan Tagihan Bersih</h4>
+              
+              <div class="space-y-1.5 text-xs border-b border-white/10 pb-3">
+                <div class="flex justify-between text-[#8E8E93]">
+                  <span>Subtotal Menu:</span>
+                  <span id="splitSummarySubtotal" class="font-mono text-white">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-[#8E8E93]">
+                  <span>Service Charge:</span>
+                  <span id="splitSummaryService" class="font-mono text-white">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-[#8E8E93]">
+                  <span>PB1 Resto Tax:</span>
+                  <span id="splitSummaryTax" class="font-mono text-white">Rp 0</span>
+                </div>
+                <div class="flex justify-between font-bold text-sm text-white pt-1">
+                  <span>Grand Total:</span>
+                  <span id="splitSummaryGrandTotal" class="font-mono text-[#00D2D3]">Rp 0</span>
+                </div>
+              </div>
+
+              <!-- Individual Breakdown -->
+              <div id="splitIndividualBreakdown" class="space-y-2 text-xs">
+                <!-- Injected via JS -->
+              </div>
+
+              <!-- WhatsApp Share Button -->
+              <button id="btnCopyWhatsAppSplit" class="w-full py-3 rounded-xl bg-[#25D366] hover:bg-[#20BA5C] text-black font-bold text-xs transition-transform active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#25D366]/20">
+                <i data-lucide="share-2" class="w-4 h-4"></i>
+                <span>Salin Rincian ke WhatsApp</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 5: DEDICATED SCREEN: SETTINGS ================= -->
+      <section id="viewSettings" class="view-screen hidden space-y-6">
+        <div>
+          <h3 class="font-editorial text-2xl font-bold text-white">Settings & Personal Profile</h3>
+          <p class="text-xs text-[#8E8E93]">Konfigurasi identitas pengguna, integrasi Telegram bot, dan Supabase Cloud</p>
+        </div>
+
+        <div class="max-w-2xl dompet-card rounded-3xl p-6 space-y-6">
+          <!-- Profile Name Editor -->
+          <div class="space-y-3">
+            <h4 class="font-editorial text-sm font-bold text-white">Identitas Pengguna</h4>
+            <div>
+              <label class="block text-xs text-[#8E8E93] mb-1">Nama Panggilan (Muncul di "Hi, [Nama]")</label>
+              <div class="flex gap-2">
+                <input id="settingInputUserName" type="text" value="Daniel" class="flex-1 bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-[#00D2D3]" />
+                <button id="btnSaveUserName" class="px-5 py-2.5 bg-[#00D2D3] text-black font-bold rounded-xl text-xs hover:bg-[#00B8B9] cursor-pointer">
+                  Simpan Nama
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Telegram Bot Quick Guide -->
+          <div class="p-4 rounded-2xl bg-[#13141F] border border-white/5 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-white flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#0088CC]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                <span>Telegram Bot Quick Recording</span>
+              </span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#10B981]/20 text-[#10B981]">Aktif</span>
+            </div>
+            <p class="text-[11px] text-[#8E8E93] leading-relaxed">
+              Catat keuangan kapan saja tanpa buka browser lewat Telegram: ketik <code class="text-[#00D2D3] bg-black/50 px-1 py-0.5 rounded font-mono">makan siang 35k</code> atau <code class="text-[#00D2D3] bg-black/50 px-1 py-0.5 rounded font-mono">kopi 25rb gopay</code>.
+            </p>
+          </div>
+
+          <!-- Supabase Cloud Sync -->
+          <div class="space-y-3 pt-2 border-t border-white/5">
+            <h4 class="font-editorial text-sm font-bold text-white">Supabase Cloud Sync</h4>
+            <div class="space-y-2 text-xs">
+              <input id="inputSupabaseUrl" type="text" placeholder="https://xyz.supabase.co" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white font-mono focus:outline-none focus:border-[#00D2D3]" />
+              <input id="inputSupabaseKey" type="password" placeholder="anon key..." class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white font-mono focus:outline-none focus:border-[#00D2D3]" />
+              <button id="btnSaveCloudConfig" class="w-full py-2.5 bg-[#1E1E2D] hover:bg-white/10 border border-white/10 text-white rounded-xl font-bold text-xs transition-colors cursor-pointer">
+                Simpan Konfigurasi Cloud
+              </button>
+            </div>
+          </div>
+
+          <!-- Reset Data -->
+          <div class="pt-4 border-t border-white/5">
+            <button id="btnResetData" class="w-full py-2 text-[#EF4444] hover:underline text-xs text-center cursor-pointer">
+              Reset Seluruh Data Lokal ke Kondisi Awal
+            </button>
+          </div>
+        </div>
       </section>
 
     </main>
-
   </div>
 
-  <!-- ================= MODAL: SCAN STRUK / BUKTI BAYAR ================= -->
+  <!-- ================= APPLE iOS MOBILE BOTTOM TAB BAR ================= -->
+  <nav id="mobileBottomNav" class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#1E1E2D]/95 backdrop-blur-2xl border-t border-white/5 px-2 py-2 flex items-center justify-around shadow-2xl safe-area-bottom">
+    <button data-view="dashboard" class="mobile-tab-btn flex flex-col items-center gap-1 text-[#00D2D3] py-1 px-2.5 cursor-pointer">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span class="text-[9px] font-medium tracking-tight">Dashboard</span>
+    </button>
+    <button data-view="wallet" class="mobile-tab-btn flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white py-1 px-2.5 cursor-pointer">
+      <i data-lucide="credit-card" class="w-5 h-5"></i>
+      <span class="text-[9px] font-medium tracking-tight">Wallet</span>
+    </button>
+    <button data-view="transactions" class="mobile-tab-btn flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white py-1 px-2.5 cursor-pointer">
+      <i data-lucide="calendar" class="w-5 h-5"></i>
+      <span class="text-[9px] font-medium tracking-tight">Transaksi</span>
+    </button>
+    <button data-view="splitbill" class="mobile-tab-btn flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white py-1 px-2.5 cursor-pointer">
+      <i data-lucide="receipt" class="w-5 h-5"></i>
+      <span class="text-[9px] font-medium tracking-tight">Split Bill</span>
+    </button>
+    <button data-view="settings" class="mobile-tab-btn flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white py-1 px-2.5 cursor-pointer">
+      <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+      <span class="text-[9px] font-medium tracking-tight">Setting</span>
+    </button>
+  </nav>
+
+  <!-- ================= MODAL: SCAN STRUK OCR ================= -->
   <div id="modalScanner" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md">
-    <div class="w-full sm:max-w-md bg-[#1C1C1E] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
+    <div class="w-full sm:max-w-md bg-[#1E1E2D] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
         <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-          <svg class="w-4 h-4 text-[#007AFF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="4"/></svg>
+          <svg class="w-4 h-4 text-[#00D2D3]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="4"/></svg>
           Pindai Bukti Transfer / Resi
         </h3>
-        <button id="btnCloseScanner" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-[#3A3A3C] text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+        <button id="btnCloseScanner" type="button" class="w-8 h-8 rounded-full bg-[#13141F] hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
       <div class="space-y-3">
-        <!-- Camera / File Dropzone -->
-        <label
-          id="dropzone"
-          class="flex flex-col items-center justify-center w-full h-36 border border-dashed border-white/20 hover:border-[#007AFF] rounded-2xl cursor-pointer bg-[#2C2C2E]/40 hover:bg-[#2C2C2E]/70 transition-colors p-4 text-center"
-        >
+        <label id="dropzone" class="flex flex-col items-center justify-center w-full h-36 border border-dashed border-white/20 hover:border-[#00D2D3] rounded-2xl cursor-pointer bg-[#13141F]/60 hover:bg-[#13141F] transition-colors p-4 text-center">
           <i data-lucide="image-plus" class="w-7 h-7 text-[#8E8E93] mb-2"></i>
           <span class="text-xs text-white font-medium">Buka Kamera atau Pilih Screenshot</span>
           <span class="text-[11px] text-[#8E8E93] mt-1">m-Banking BCA, Livin, GoPay, QRIS, Struk</span>
           <input id="fileReceiptInput" type="file" accept="image/*" capture="environment" class="hidden" />
         </label>
 
-        <!-- Progress State -->
         <div id="ocrLoading" class="hidden space-y-2 py-1">
           <div class="flex items-center justify-between text-xs text-[#8E8E93]">
             <span>Memindai teks bukti bayar (OCR)...</span>
-            <span id="ocrProgressPercent" class="font-mono text-[#007AFF]">0%</span>
+            <span id="ocrProgressPercent" class="font-mono text-[#00D2D3]">0%</span>
           </div>
-          <div class="w-full h-1 bg-[#2C2C2E] rounded-full overflow-hidden">
-            <div id="ocrProgressBar" class="h-full bg-[#007AFF] transition-all duration-200" style="width: 0%"></div>
+          <div class="w-full h-1 bg-[#13141F] rounded-full overflow-hidden">
+            <div id="ocrProgressBar" class="h-full bg-[#00D2D3] transition-all duration-200" style="width: 0%"></div>
           </div>
         </div>
 
-        <!-- Result Box -->
-        <div id="ocrResultBox" class="hidden space-y-2 p-3.5 rounded-xl bg-[#2C2C2E]/60 border border-white/10 text-xs">
+        <div id="ocrResultBox" class="hidden space-y-2 p-3.5 rounded-xl bg-[#13141F]/80 border border-white/10 text-xs">
           <div class="flex justify-between">
             <span class="text-[#8E8E93]">Nominal:</span>
-            <span id="ocrDetectedAmount" class="font-semibold text-[#34C759] font-mono">Rp 0</span>
+            <span id="ocrDetectedAmount" class="font-semibold text-[#10B981] font-mono">Rp 0</span>
           </div>
           <div class="flex justify-between">
             <span class="text-[#8E8E93]">Catatan:</span>
             <span id="ocrDetectedNote" class="text-white font-medium">-</span>
           </div>
-          <button id="btnUseOcrResult" class="w-full py-2 bg-[#007AFF] hover:bg-[#0071E3] text-white rounded-xl font-medium text-xs mt-2 transition-colors">
+          <button id="btnUseOcrResult" class="w-full py-2 bg-[#00D2D3] hover:bg-[#00B8B9] text-black font-bold rounded-xl text-xs mt-2 transition-colors cursor-pointer">
             Gunakan Hasil Scan
           </button>
         </div>
@@ -538,25 +933,25 @@
 
   <!-- ================= MODAL: TAMBAH DOMPET ================= -->
   <div id="modalAddWallet" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md">
-    <div class="w-full sm:max-w-sm bg-[#1C1C1E] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
+    <div class="w-full sm:max-w-sm bg-[#1E1E2D] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
         <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-          <i data-lucide="plus-circle" class="w-4 h-4 text-[#007AFF]"></i>
+          <i data-lucide="plus-circle" class="w-4 h-4 text-[#00D2D3]"></i>
           Tambah Dompet Baru
         </h3>
-        <button id="btnCloseAddWallet" type="button" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-[#3A3A3C] text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+        <button id="btnCloseAddWallet" type="button" class="w-8 h-8 rounded-full bg-[#13141F] hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
       <form id="formAddWallet" class="space-y-3 text-xs">
         <div>
-          <label class="block text-[#8E8E93] mb-1">Nama Dompet</label>
-          <input id="walletFormName" type="text" placeholder="misal: BCA, GoPay, Tunai" required class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#007AFF]" />
+          <label class="block text-[#8E8E93] mb-1">Nama Dompet / Rekening</label>
+          <input id="walletFormName" type="text" placeholder="misal: BCA, GoPay, Tunai" required class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#00D2D3]" />
         </div>
         <div>
           <label class="block text-[#8E8E93] mb-1">Tipe</label>
-          <select id="walletFormType" class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#007AFF]">
+          <select id="walletFormType" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#00D2D3]">
             <option value="bank">Rekening Bank</option>
             <option value="ewallet">E-Wallet</option>
             <option value="cash">Uang Tunai</option>
@@ -564,120 +959,23 @@
         </div>
         <div>
           <label class="block text-[#8E8E93] mb-1">Saldo Awal (Rp)</label>
-          <input id="walletFormBalance" type="number" placeholder="0" min="0" required class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#007AFF]" />
+          <input id="walletFormBalance" type="number" placeholder="0" min="0" required class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white font-mono focus:outline-none focus:border-[#00D2D3]" />
         </div>
         <div>
-          <label class="block text-[#8E8E93] mb-1">Visibilitas</label>
-          <select id="walletFormVisibility" class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#007AFF]">
-            <option value="private">🔒 Dompet Pribadi (Hanya Anda)</option>
-            <option value="shared">🤝 Dompet Bersama (Terbuka untuk Pasangan)</option>
-          </select>
+          <label class="block text-[#8E8E93] mb-1">Warna Kartu</label>
+          <div class="flex items-center gap-2 pt-1">
+            <input id="walletFormColor" type="color" value="#00D2D3" class="w-10 h-8 rounded-lg cursor-pointer bg-transparent border-0" />
+            <span class="text-[11px] text-[#8E8E93]">Pilih aksen kartu ATM</span>
+          </div>
         </div>
-        <button type="submit" class="w-full py-2.5 bg-[#007AFF] hover:bg-[#0071E3] text-white rounded-xl font-medium text-xs transition-colors mt-2">
+        <button type="submit" class="w-full py-2.5 bg-[#00D2D3] hover:bg-[#00B8B9] text-black font-bold rounded-xl text-xs transition-colors mt-2 cursor-pointer shadow">
           Simpan Dompet
         </button>
       </form>
     </div>
   </div>
 
-  <!-- ================= MODAL: PENGATURAN & CLOUD SYNC ================= -->
-  <div id="modalSettings" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md">
-    <div class="w-full sm:max-w-md bg-[#1C1C1E] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
-      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
-        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[#007AFF]"></i>
-          Pengaturan Personal & Cloud Sync
-        </h3>
-        <button id="btnCloseSettings" type="button" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-[#3A3A3C] text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup Pengaturan">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <div class="space-y-4 text-xs">
-        <!-- Personal Edition Card -->
-        <div class="p-3.5 rounded-2xl bg-[#2C2C2E]/60 border border-white/10 space-y-1.5">
-          <div class="flex items-center justify-between">
-            <span class="text-white font-semibold text-xs flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-[#34C759]"></span> DompetKu Personal Edition
-            </span>
-            <span class="text-[10px] text-[#34C759] font-medium px-2 py-0.5 rounded-full bg-[#34C759]/15">Pro Mandiri</span>
-          </div>
-          <p class="text-[11px] text-[#8E8E93] leading-relaxed">Aplikasi keuangan mandiri. Anda dan pacar Anda masing-masing memiliki buku kas pribadi yang terisolasi aman.</p>
-        </div>
-
-        <!-- Telegram Quick Logging Info -->
-        <div class="p-3.5 rounded-2xl bg-[#2C2C2E]/60 border border-white/10 space-y-1.5">
-          <div class="flex items-center justify-between">
-            <span class="text-white font-medium text-xs flex items-center gap-2">
-              <svg class="w-4 h-4 text-[#0088CC]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
-              <span>Telegram Bot Recording</span>
-            </span>
-            <span class="text-[10px] text-[#34C759] font-semibold">Tersedia</span>
-          </div>
-          <p class="text-[11px] text-[#8E8E93] leading-relaxed">Catat transaksi langsung via chat Telegram: contoh <code class="text-white bg-black/50 px-1 py-0.5 rounded font-mono">kopi 25rb gopay</code> atau <code class="text-white bg-black/50 px-1 py-0.5 rounded font-mono">makan 35k</code> tanpa perlu membuka browser.</p>
-        </div>
-
-        <!-- Supabase Cloud Credentials -->
-        <div class="pt-2 border-t border-white/[0.08] space-y-2">
-          <span class="text-[#8E8E93] font-medium block flex items-center justify-between text-xs">
-            <span>Supabase Cloud Sync:</span>
-            <span class="text-[10px] text-[#34C759]">Tersambung</span>
-          </span>
-          <input id="inputSupabaseUrl" type="text" placeholder="https://xyz.supabase.co" class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white text-xs font-mono focus:outline-none focus:border-[#007AFF]" />
-          <input id="inputSupabaseKey" type="password" placeholder="anon key..." class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white text-xs font-mono focus:outline-none focus:border-[#007AFF]" />
-          <button id="btnSaveCloudConfig" class="w-full py-2.5 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-white rounded-xl font-medium text-xs transition-colors cursor-pointer">
-            Simpan Konfigurasi Cloud
-          </button>
-        </div>
-
-        <!-- Done / Return to Dashboard Action -->
-        <div class="pt-2">
-          <button id="btnDoneSettings" type="button" class="w-full py-3 rounded-xl bg-[#007AFF] hover:bg-[#0071E3] active:scale-[0.98] text-white font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#007AFF]/25">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-            <span>Selesai & Kembali ke Dashboard</span>
-          </button>
-        </div>
-
-        <!-- Reset Button -->
-        <div class="pt-1">
-          <button id="btnResetData" class="w-full py-2 text-[#FF3B30] hover:underline text-xs text-center cursor-pointer">
-            Reset Data Lokal ke Awal
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================= APPLE iOS MOBILE BOTTOM TAB BAR ================= -->
-  <nav id="mobileBottomNav" class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#141416]/92 backdrop-blur-2xl border-t border-white/[0.08] px-4 py-2 flex items-center justify-around shadow-2xl safe-area-bottom">
-    <a href="#sectionOverview" class="tab-item flex flex-col items-center gap-1 text-[#007AFF] transition-colors py-1.5 px-3" data-target="overview">
-      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium tracking-tight">Ringkasan</span>
-    </a>
-    <a href="#sectionWallets" class="tab-item flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white transition-colors py-1.5 px-3" data-target="wallets">
-      <i data-lucide="credit-card" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium tracking-tight">Dompet</span>
-    </a>
-    <a href="#sectionTransactions" class="tab-item flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white transition-colors py-1.5 px-3" data-target="transactions">
-      <i data-lucide="table" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium tracking-tight">Transaksi</span>
-    </a>
-    <button id="btnBottomTabSettings" class="tab-item flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white transition-colors py-1.5 px-3 cursor-pointer">
-      <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium tracking-tight">Pengaturan</span>
-    </button>
-  </nav>
-
   <!-- Main Application Script (Self-contained, zero-CORS) -->
   <script src="js/bundle.js"></script>
-  <script>
-    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(err => {
-          console.log('SW registration notice:', err);
-        });
-      });
-    }
-  </script>
 </body>
 </html>

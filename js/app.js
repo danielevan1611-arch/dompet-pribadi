@@ -1,5 +1,5 @@
 /**
- * DompetKu - Main Application Controller
+ * DompetKu - Main Application Controller (ES Module Edition)
  */
 
 import {
@@ -12,13 +12,12 @@ import {
 import { parseQuickInput } from './quickParser.js';
 import { extractPaymentDetailsFromText, scanReceiptWithTesseract } from './receiptScanner.js';
 import { updateDonutChart, updateBarChart } from './charts.js';
+import { getMonthCalendarDays, aggregateTransactionsByDate } from './calendar.js';
+import { calculateSplitBill, formatWhatsAppBillSummary } from './splitBill.js';
 import {
   getLocalCoupleConfig,
   saveLocalCoupleConfig,
-  createSupabaseClient,
-  pushTransactionToCloud,
-  pushWalletToCloud,
-  subscribeToCoupleRealtime
+  createSupabaseClient
 } from './sync.js';
 import { INITIAL_WALLETS, INITIAL_TRANSACTIONS } from './mockData.js';
 import {
@@ -28,27 +27,39 @@ import {
 } from './motion.js';
 
 // ================= STATE =================
-let currentUserId = 'user_a'; // 'user_a' (Kamu) or 'user_b' (Pacar)
-let currentMode = 'all'; // 'all' (Pribadi + Bersama) or 'shared' (Hanya Bersama)
-let coupleConfig = getLocalCoupleConfig();
-let supabaseClient = null;
+let currentView = 'dashboard';
+let selectedCalendarDate = null;
+let userName = localStorage.getItem('dompetku_username') || 'Daniel';
 
 let prevNetWorth = 0;
 let prevIncome = 0;
 let prevExpense = 0;
+let prevCoupleKas = 0;
 
 let wallets = [];
 let transactions = [];
 
-const STORAGE_WALLETS = 'dompetku_wallets_v1';
-const STORAGE_TXS = 'dompetku_txs_v1';
+let splitParticipants = ['Daniel', 'Sarah', 'Budi'];
+let splitItems = [
+  { id: '1', name: 'Nasi Goreng Spesial', price: 45000, quantity: 1, assignedTo: ['Daniel'] },
+  { id: '2', name: 'Wagyu Beef Ribeye', price: 185000, quantity: 1, assignedTo: ['Sarah'] },
+  { id: '3', name: 'Pasta Carbonara', price: 65000, quantity: 1, assignedTo: ['Budi'] },
+  { id: '4', name: 'Truffle Fries (Sharing)', price: 55000, quantity: 1, assignedTo: ['Daniel', 'Sarah', 'Budi'] },
+  { id: '5', name: 'Ice Peach Tea', price: 28000, quantity: 1, assignedTo: ['Daniel'] },
+  { id: '6', name: 'Matcha Latte', price: 35000, quantity: 1, assignedTo: ['Sarah'] },
+  { id: '7', name: 'Mineral Water', price: 15000, quantity: 1, assignedTo: ['Budi'] }
+];
 
-// ================= INIT =================
-function initApp() {
+const STORAGE_WALLETS = 'dompetku_wallets_v2';
+const STORAGE_TXS = 'dompetku_txs_v2';
+
+export function initApp() {
   loadData();
+  updateUserProfileDisplay();
   setupEventListeners();
+  setupRouting();
   renderAll();
-  initCloud();
+  switchView('dashboard');
   if (window.lucide) window.lucide.createIcons();
 }
 
@@ -56,7 +67,6 @@ function loadData() {
   try {
     const savedWallets = localStorage.getItem(STORAGE_WALLETS);
     const savedTxs = localStorage.getItem(STORAGE_TXS);
-
     wallets = savedWallets ? JSON.parse(savedWallets) : [...INITIAL_WALLETS];
     transactions = savedTxs ? JSON.parse(savedTxs) : [...INITIAL_TRANSACTIONS];
   } catch (err) {
@@ -75,357 +85,525 @@ function persistData() {
   }
 }
 
-function initCloud() {
-  if (coupleConfig.supabaseUrl && coupleConfig.supabaseAnonKey) {
-    supabaseClient = createSupabaseClient(coupleConfig.supabaseUrl, coupleConfig.supabaseAnonKey);
-    if (supabaseClient) {
-      subscribeToCoupleRealtime(supabaseClient, {
-        coupleCode: coupleConfig.coupleCode,
-        currentUserId,
-        onWalletChange: updatedWallet => {
-          const idx = wallets.findIndex(w => w.id === updatedWallet.id);
-          if (idx >= 0) wallets[idx] = updatedWallet;
-          else wallets.push(updatedWallet);
-          persistData();
-          renderAll();
-        },
-        onTransactionChange: newTx => {
-          const idx = transactions.findIndex(t => t.id === newTx.id);
-          if (idx >= 0) transactions[idx] = newTx;
-          else transactions.unshift(newTx);
-          persistData();
-          renderAll();
-        }
-      });
+function updateUserProfileDisplay() {
+  const greetingEl = document.getElementById('sidebarUserName');
+  if (greetingEl) greetingEl.textContent = `Hi, ${userName}`;
+  const nameInput = document.getElementById('settingInputUserName');
+  if (nameInput) nameInput.value = userName;
+}
+
+export function switchView(viewName) {
+  currentView = viewName;
+
+  const views = {
+    dashboard: document.getElementById('viewDashboard'),
+    wallet: document.getElementById('viewMyWallet'),
+    transactions: document.getElementById('viewTransactions'),
+    splitbill: document.getElementById('viewSplitBill'),
+    settings: document.getElementById('viewSettings')
+  };
+
+  const titles = {
+    dashboard: 'Dashboard',
+    wallet: 'My Wallet & Accounts',
+    transactions: 'Transactions & Calendar',
+    splitbill: 'Smart Split Bill (PB1 & Resto Tax)',
+    settings: 'Settings & Personal Profile'
+  };
+
+  Object.values(views).forEach(v => {
+    if (v) v.classList.add('hidden');
+  });
+
+  const activeEl = views[viewName] || views.dashboard;
+  if (activeEl) {
+    activeEl.classList.remove('hidden');
+    if (window.gsap && !isReducedMotion()) {
+      gsap.fromTo(activeEl, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.25, ease: 'power2.out' });
     }
   }
-}
 
-// ================= RENDER FUNCTIONS =================
-function renderAll() {
-  const visibleWallets = getVisibleWallets(wallets, currentUserId);
-  const visibleTxs = getVisibleTransactions(transactions, currentUserId);
+  const headerTitle = document.getElementById('topHeaderTitle');
+  if (headerTitle) headerTitle.textContent = titles[viewName] || 'Dashboard';
 
-  renderKpis(visibleWallets, visibleTxs);
-  renderWallets(visibleWallets);
-  renderTransactions(visibleTxs);
-  renderCharts(visibleTxs);
-  renderCoupleBanner();
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    const v = btn.getAttribute('data-view');
+    if (v === viewName) {
+      btn.classList.add('bg-[#00D2D3]/15', 'text-[#00D2D3]', 'font-semibold');
+      btn.classList.remove('text-[#8E8E93]');
+    } else {
+      btn.classList.remove('bg-[#00D2D3]/15', 'text-[#00D2D3]', 'font-semibold');
+      btn.classList.add('text-[#8E8E93]');
+    }
+  });
+
+  document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+    const v = btn.getAttribute('data-view');
+    if (v === viewName) {
+      btn.classList.add('text-[#00D2D3]', 'font-semibold');
+      btn.classList.remove('text-[#8E8E93]');
+    } else {
+      btn.classList.remove('text-[#00D2D3]', 'font-semibold');
+      btn.classList.add('text-[#8E8E93]');
+    }
+  });
+
+  if (viewName === 'wallet') renderMyWalletScreen();
+  else if (viewName === 'transactions') {
+    renderCalendar();
+    renderTransactions(transactions);
+  } else if (viewName === 'splitbill') renderSplitBill();
+  else if (viewName === 'dashboard') renderDashboard();
 
   if (window.lucide) window.lucide.createIcons();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function renderKpis(visibleWallets, visibleTxs) {
-  const netWorth = calculateNetWorth(visibleWallets, currentUserId, currentMode);
-  const kpiNetWorth = document.getElementById('kpiNetWorth');
-  const kpiSubtitle = document.getElementById('kpiNetWorthSubtitle');
+function setupRouting() {
+  document.querySelectorAll('[data-view]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.preventDefault();
+      const targetView = el.getAttribute('data-view');
+      if (targetView) switchView(targetView);
 
+      const sidebar = document.getElementById('sidebarNav');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      sidebar?.classList.add('-translate-x-full');
+      backdrop?.classList.add('hidden');
+    });
+  });
+
+  document.getElementById('btnOpenSettings')?.addEventListener('click', () => switchView('settings'));
+}
+
+export function renderAll() {
+  renderDashboard();
+  renderMyWalletScreen();
+  renderCalendar();
+  renderTransactions(transactions);
+  renderSplitBill();
+}
+
+function renderDashboard() {
+  const netWorth = wallets.reduce((acc, w) => acc + Number(w.balance || 0), 0);
+
+  const kpiNetWorth = document.getElementById('kpiNetWorth');
   if (kpiNetWorth) {
-    animateNumber(kpiNetWorth, prevNetWorth, netWorth, { duration: 480, prefix: 'Rp ' });
+    animateNumber(kpiNetWorth, prevNetWorth, netWorth, { duration: 450 });
     prevNetWorth = netWorth;
   }
 
-  if (kpiSubtitle) {
-    if (currentMode === 'shared') {
-      kpiSubtitle.textContent = 'Mode: Kas Bersama Sahaja';
-    } else if (currentUserId === 'user_a') {
-      kpiSubtitle.textContent = `Mode: Pribadi Kamu (${coupleConfig.userName || 'Kamu'}) + Bersama`;
-    } else {
-      kpiSubtitle.textContent = `Mode: Pribadi Pacar (${coupleConfig.partnerName || 'Pacar'}) + Bersama`;
-    }
+  const atmCardBalance = document.getElementById('atmCardBalance');
+  if (atmCardBalance) {
+    animateNumber(atmCardBalance, prevNetWorth, netWorth, { duration: 450 });
   }
 
-  // Monthly Income and Expense
   const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
+  const curMonth = now.getMonth();
+  const curYear = now.getFullYear();
 
   let monthIncome = 0;
   let monthExpense = 0;
 
-  for (const t of visibleTxs) {
-    if (currentMode === 'shared' && t.visibility !== 'shared') continue;
+  transactions.forEach(t => {
     const d = new Date(t.date);
-    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+    if (d.getMonth() === curMonth && d.getFullYear() === curYear) {
       if (t.type === 'income') monthIncome += Number(t.amount);
       if (t.type === 'expense') monthExpense += Number(t.amount);
     }
-  }
+  });
 
   const kpiIncome = document.getElementById('kpiIncome');
-  const kpiExpense = document.getElementById('kpiExpense');
   if (kpiIncome) {
-    animateNumber(kpiIncome, prevIncome, monthIncome, { duration: 450, prefix: 'Rp ', sign: '+' });
+    animateNumber(kpiIncome, prevIncome, monthIncome, { duration: 450, sign: '+' });
     prevIncome = monthIncome;
   }
+
+  const kpiExpense = document.getElementById('kpiExpense');
   if (kpiExpense) {
-    animateNumber(kpiExpense, prevExpense, monthExpense, { duration: 450, prefix: 'Rp ', sign: '-' });
+    animateNumber(kpiExpense, prevExpense, monthExpense, { duration: 450, sign: '-' });
     prevExpense = monthExpense;
   }
-}
 
-function renderWallets(visibleWallets) {
-  const container = document.getElementById('walletsContainer');
-  container.innerHTML = '';
-
-  const filteredWallets = visibleWallets.filter(w => {
-    if (currentMode === 'shared') return w.visibility === 'shared';
-    return true;
-  });
-
-  if (filteredWallets.length === 0) {
-    container.innerHTML = `
-      <div class="col-span-full p-6 rounded-2xl bg-[#1C1C1E] border border-white/10 text-center text-xs text-[#8E8E93]">
-        Belum ada dompet dalam kategori ini. Klik "+ Tambah" di atas.
-      </div>
-    `;
-    return;
+  const bankReserves = wallets.filter(w => w.type === 'bank').reduce((acc, w) => acc + Number(w.balance || 0), 0);
+  const kpiCoupleKas = document.getElementById('kpiCoupleKas');
+  if (kpiCoupleKas) {
+    animateNumber(kpiCoupleKas, prevCoupleKas, bankReserves, { duration: 450 });
+    prevCoupleKas = bankReserves;
   }
 
-  for (const wallet of filteredWallets) {
-    const isShared = wallet.visibility === 'shared';
-    const card = document.createElement('div');
-    card.className = `p-4 rounded-2xl border transition-all ios-card-specular ios-card-interactive cursor-pointer ${
-      isShared
-        ? 'border-[#FF2D55]/30 shadow-sm'
-        : 'border-white/10 hover:border-white/20 shadow-sm'
-    }`;
+  populateTransferSelects('quickTransferFrom', 'quickTransferTo');
+  updateSpendingsCategoryBars();
+  renderDashboardRecentTxs();
 
-    const iconName = wallet.type === 'bank' ? 'landmark' : wallet.type === 'ewallet' ? 'smartphone' : 'banknote';
-
-    card.innerHTML = `
-      <div class="flex items-center justify-between mb-3">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white" style="background-color: ${wallet.color || '#007AFF'}">
-            <i data-lucide="${iconName}" class="w-4 h-4"></i>
-          </div>
-          <div>
-            <span class="text-xs font-semibold text-white tracking-tight block">${escapeHtml(wallet.name)}</span>
-            <span class="text-[9px] text-[#8E8E93] uppercase tracking-wider">${wallet.type || 'Bank'}</span>
-          </div>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <svg class="w-5 h-4 opacity-30 text-amber-200" viewBox="0 0 24 20" fill="none" stroke="currentColor">
-            <rect x="1" y="1" width="22" height="18" rx="3" stroke-width="1.5"/>
-            <path d="M7 1v18M17 1v18M1 7h6M1 13h6M17 7h6M17 13h6" stroke-width="1.2"/>
-          </svg>
-          <span class="text-[10px] px-2 py-0.5 rounded-full font-medium ${
-            isShared ? 'bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30' : 'bg-[#2C2C2E] text-[#8E8E93] border border-white/5'
-          }">
-            ${isShared ? 'Bersama' : 'Pribadi'}
-          </span>
-        </div>
-      </div>
-      <div class="mt-2">
-        <span class="text-[10px] text-[#8E8E93] font-medium block">Saldo</span>
-        <span class="text-xl font-bold text-white tracking-tight font-sans">
-          Rp ${(wallet.balance || 0).toLocaleString('id-ID')}
-        </span>
-      </div>
-    `;
-    container.appendChild(card);
-  }
-
-  if (window.gsap && !isReducedMotion()) {
-    gsap.from('#walletsContainer > div', {
-      opacity: 0,
-      y: 12,
-      stagger: 0.035,
-      duration: 0.3,
-      ease: 'power2.out'
-    });
-  }
-}
-
-function renderTransactions(visibleTxs) {
-  const tableBody = document.getElementById('transactionsTableBody');
-  const container = document.getElementById('transactionsContainer');
-  if (!tableBody && !container) return;
-  if (tableBody) tableBody.innerHTML = '';
-  if (container) container.innerHTML = '';
-
-  const searchTerm = (document.getElementById('searchTransaction')?.value || '').toLowerCase();
-  const filterCat = document.getElementById('filterTableCategory')?.value || '';
-
-  const filtered = visibleTxs
-    .filter(t => {
-      if (currentMode === 'shared' && t.visibility !== 'shared') return false;
-      if (filterCat && t.category !== filterCat) return false;
-      if (!searchTerm) return true;
-      return (
-        (t.note && t.note.toLowerCase().includes(searchTerm)) ||
-        (t.category && t.category.toLowerCase().includes(searchTerm))
-      );
-    })
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-  const countLabel = document.getElementById('tableRecordCount');
-  if (countLabel) countLabel.textContent = `Menampilkan ${filtered.length} transaksi`;
-
-  if (filtered.length === 0) {
-    if (tableBody) {
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="7" class="py-8 text-center text-xs text-[#8E8E93]">
-            Belum ada transaksi dalam filter ini. Ketik di bar "Catat Cepat" di atas untuk menambah!
-          </td>
-        </tr>
-      `;
-    }
-    return;
-  }
-
-  for (const tx of filtered.slice(0, 50)) {
-    const isShared = tx.visibility === 'shared';
-    const isExpense = tx.type === 'expense';
-    const dateFormatted = new Date(tx.date).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-
-    const wallet = wallets.find(w => w.id === tx.walletId);
-    const walletName = wallet ? wallet.name : 'Dompet';
-
-    const tr = document.createElement('tr');
-    tr.className = 'hover:bg-[#1C1C1E]/60 transition-colors border-b border-white/[0.04] text-xs';
-    tr.innerHTML = `
-      <td class="py-3 px-4 text-[#8E8E93] font-mono text-[11px]">${dateFormatted}</td>
-      <td class="py-3 px-4 font-medium text-white max-w-xs truncate">${escapeHtml(tx.note || tx.category)}</td>
-      <td class="py-3 px-4">
-        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#2C2C2E] text-slate-300">
-          ${escapeHtml(tx.category || 'Lainnya')}
-        </span>
-      </td>
-      <td class="py-3 px-4 text-slate-300">${escapeHtml(walletName)}</td>
-      <td class="py-3 px-4">
-        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium ${
-          isShared ? 'bg-[#FF2D55]/15 text-[#FF2D55] border border-[#FF2D55]/30' : 'bg-[#2C2C2E] text-[#8E8E93]'
-        }">
-          ${isShared ? 'Bersama' : 'Pribadi'}
-        </span>
-      </td>
-      <td class="py-3 px-4 text-right font-semibold font-sans ${isExpense ? 'text-white' : 'text-[#34C759]'}">
-        ${isExpense ? '-' : '+'}Rp ${(Number(tx.amount) || 0).toLocaleString('id-ID')}
-      </td>
-      <td class="py-3 px-4 text-center">
-        <button data-delete-id="${tx.id}" class="btn-delete-tx p-1.5 rounded-lg text-[#8E8E93] hover:text-[#FF3B30] hover:bg-[#FF3B30]/10 transition-colors" title="Hapus">
-          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-        </button>
-      </td>
-    `;
-    if (tableBody) tableBody.appendChild(tr);
-
-    if (container) {
-      const item = document.createElement('div');
-      item.innerHTML = `<button data-delete-id="${tx.id}" class="btn-delete-tx"></button>`;
-      container.appendChild(item);
-    }
-  }
-
-  document.querySelectorAll('.btn-delete-tx').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      const id = btn.getAttribute('data-delete-id');
-      deleteTransaction(id);
-    });
-  });
-
-  if (window.gsap && !isReducedMotion()) {
-    gsap.from('#transactionsTableBody > tr', {
-      opacity: 0,
-      y: 6,
-      stagger: 0.015,
-      duration: 0.22,
-      ease: 'power1.out'
-    });
-  }
-}
-
-function renderCharts(visibleTxs) {
   const donutCanvas = document.getElementById('categoryDonutCanvas');
   const barCanvas = document.getElementById('cashflowBarCanvas');
-  if (donutCanvas && barCanvas) {
-    updateDonutChart(donutCanvas, visibleTxs);
-    updateBarChart(barCanvas, visibleTxs);
-  }
+  if (donutCanvas) updateDonutChart(donutCanvas, transactions);
+  if (barCanvas) updateBarChart(barCanvas, transactions);
 }
 
-function renderCoupleBanner() {
-  const banner = document.getElementById('coupleBanner');
-  const codeDisplay = document.getElementById('bannerCoupleCode');
-  const settingsDisplay = document.getElementById('settingsCoupleCodeDisplay');
+function updateSpendingsCategoryBars() {
+  let food = 0, transport = 0, shopping = 0, bills = 0;
+  transactions.filter(t => t.type === 'expense').forEach(t => {
+    const cat = t.category || '';
+    const amt = Number(t.amount) || 0;
+    if (cat.includes('Makanan')) food += amt;
+    else if (cat.includes('Transportasi')) transport += amt;
+    else if (cat.includes('Belanja')) shopping += amt;
+    else if (cat.includes('Tagihan')) bills += amt;
+  });
 
-  if (coupleConfig.coupleCode) {
-    if (banner) banner.classList.remove('hidden');
-    if (codeDisplay) codeDisplay.textContent = coupleConfig.coupleCode;
-    if (settingsDisplay) settingsDisplay.textContent = coupleConfig.coupleCode;
-  }
+  const foodEl = document.getElementById('spendFoodVal');
+  const transEl = document.getElementById('spendTransportVal');
+  const shopEl = document.getElementById('spendShoppingVal');
+  const billEl = document.getElementById('spendBillsVal');
+
+  if (foodEl) foodEl.textContent = `Rp ${food.toLocaleString('id-ID')}`;
+  if (transEl) transEl.textContent = `Rp ${transport.toLocaleString('id-ID')}`;
+  if (shopEl) shopEl.textContent = `Rp ${shopping.toLocaleString('id-ID')}`;
+  if (billEl) billEl.textContent = `Rp ${bills.toLocaleString('id-ID')}`;
 }
 
-// ================= TRANSACTION ACTIONS =================
-function handleQuickSubmit() {
-  const input = document.getElementById('quickInput');
-  const text = (input?.value || '').trim();
-  if (!text) return;
+function renderDashboardRecentTxs() {
+  const container = document.getElementById('dashboardRecentTxs');
+  if (!container) return;
+  container.innerHTML = '';
 
-  const visibleWallets = getVisibleWallets(wallets, currentUserId);
-  const defaultWallet = visibleWallets.find(w => w.visibility === 'private') || visibleWallets[0];
-  const defaultId = defaultWallet ? defaultWallet.id : (wallets[0] ? wallets[0].id : null);
+  const recent = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+  recent.forEach(tx => {
+    const isExp = tx.type === 'expense';
+    const w = wallets.find(item => item.id === tx.walletId);
+    const wName = w ? w.name : 'Dompet';
+    const dateFmt = new Date(tx.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 
-  const parsed = parseQuickInput(text, visibleWallets, defaultId);
+    const item = document.createElement('div');
+    item.className = 'py-3 flex items-center justify-between gap-3 text-xs';
+    item.innerHTML = `
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-8 h-8 rounded-xl ${isExp ? 'bg-[#FF3B30]/15 text-[#FF3B30]' : 'bg-[#10B981]/15 text-[#10B981]'} flex items-center justify-center shrink-0">
+          <i data-lucide="${isExp ? 'arrow-up-right' : 'arrow-down-left'}" class="w-4 h-4"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="font-semibold text-white truncate">${escapeHtml(tx.note || tx.category)}</p>
+          <p class="text-[11px] text-[#8E8E93] truncate">${dateFmt} • ${escapeHtml(wName)}</p>
+        </div>
+      </div>
+      <div class="text-right shrink-0">
+        <span class="font-mono tabular-nums font-bold ${isExp ? 'text-white' : 'text-[#10B981]'}">
+          ${isExp ? '-' : '+'}Rp ${(Number(tx.amount) || 0).toLocaleString('id-ID')}
+        </span>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+  if (window.lucide) window.lucide.createIcons();
+}
 
-  if (parsed.amount <= 0) {
-    alert('Mohon masukkan nominal yang valid (misal: "makan 15k" atau "kopi 25rb")');
+function populateTransferSelects(fromId, toId) {
+  const selFrom = document.getElementById(fromId);
+  const selTo = document.getElementById(toId);
+  if (!selFrom || !selTo) return;
+
+  const fromVal = selFrom.value;
+  const toVal = selTo.value;
+
+  selFrom.innerHTML = '';
+  selTo.innerHTML = '';
+
+  wallets.forEach(w => {
+    const optFrom = document.createElement('option');
+    optFrom.value = w.id;
+    optFrom.textContent = `${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`;
+    selFrom.appendChild(optFrom);
+
+    const optTo = document.createElement('option');
+    optTo.value = w.id;
+    optTo.textContent = `${w.name} (Rp ${w.balance.toLocaleString('id-ID')})`;
+    selTo.appendChild(optTo);
+  });
+
+  if (fromVal && wallets.some(w => w.id === fromVal)) selFrom.value = fromVal;
+  if (toVal && wallets.some(w => w.id === toVal)) selTo.value = toVal;
+  else if (wallets.length > 1) selTo.selectedIndex = 1;
+}
+
+function renderMyWalletScreen() {
+  const grid = document.getElementById('myWalletsGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  wallets.forEach(wallet => {
+    const card = document.createElement('div');
+    card.className = 'relative rounded-3xl p-6 overflow-hidden border border-white/10 shadow-xl transition-transform hover:-translate-y-1';
+    card.style.background = `linear-gradient(135deg, ${wallet.color || '#1E1E2D'} 0%, #13141F 100%)`;
+
+    const cardLast4 = wallet.id.replace(/\D/g, '').slice(-4) || '8892';
+    const typeLabel = wallet.type === 'bank' ? 'DEBIT CARD' : wallet.type === 'ewallet' ? 'E-WALLET' : 'CASH WALLET';
+
+    card.innerHTML = `
+      <div class="relative z-10 flex flex-col justify-between h-44">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold tracking-widest text-white uppercase">${escapeHtml(wallet.name)}</span>
+          </div>
+          <span class="text-[10px] font-mono tracking-widest px-2 py-0.5 rounded bg-white/10 text-white/90 uppercase">${typeLabel}</span>
+        </div>
+
+        <div class="my-auto">
+          <svg class="w-10 h-7 text-amber-200/80 drop-shadow" viewBox="0 0 24 20" fill="currentColor">
+            <rect x="1" y="1" width="22" height="18" rx="3" fill="#D4AF37"/>
+            <path d="M7 1v18M17 1v18M1 7h6M1 13h6M17 7h6M17 13h6" stroke="#996515" stroke-width="1.2"/>
+          </svg>
+          <div class="font-mono text-sm tracking-widest text-white/70 mt-2">
+            •••• •••• •••• ${cardLast4}
+          </div>
+        </div>
+
+        <div class="flex items-end justify-between">
+          <div>
+            <span class="text-[10px] uppercase tracking-wider text-white/60 block">Saldo Rekening</span>
+            <span class="font-editorial text-2xl font-bold text-white tracking-tight">
+              Rp ${(wallet.balance || 0).toLocaleString('id-ID')}
+            </span>
+          </div>
+          <div class="flex -space-x-2">
+            <div class="w-7 h-7 rounded-full bg-red-500/80"></div>
+            <div class="w-7 h-7 rounded-full bg-amber-400/80"></div>
+          </div>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  populateTransferSelects('walletTransferFrom', 'walletTransferTo');
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function handleInternalTransfer(fromSelectId, toSelectId, amountInputId) {
+  const fromId = document.getElementById(fromSelectId)?.value;
+  const toId = document.getElementById(toSelectId)?.value;
+  const amountVal = Number(document.getElementById(amountInputId)?.value) || 0;
+
+  if (!fromId || !toId || fromId === toId) {
+    alert('Mohon pilih dua rekening yang berbeda untuk melakukan transfer');
     return;
   }
 
-  // If parsed visibility is shared, pick the shared wallet if default was private
-  let targetWalletId = parsed.walletId;
-  if (parsed.visibility === 'shared') {
-    const sharedWallet = wallets.find(w => w.visibility === 'shared');
-    if (sharedWallet) targetWalletId = sharedWallet.id;
+  if (amountVal <= 0) {
+    alert('Mohon masukkan nominal transfer yang valid');
+    return;
   }
 
-  const newTx = {
-    id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-    walletId: targetWalletId,
-    createdBy: currentUserId,
-    coupleId: coupleConfig.coupleCode,
-    type: 'expense',
-    amount: parsed.amount,
-    category: parsed.category,
-    note: parsed.note,
-    visibility: parsed.visibility,
+  const fromWallet = wallets.find(w => w.id === fromId);
+  const toWallet = wallets.find(w => w.id === toId);
+
+  if (!fromWallet || !toWallet) return;
+
+  if (fromWallet.balance < amountVal) {
+    alert(`Saldo ${fromWallet.name} tidak mencukupi (Rp ${fromWallet.balance.toLocaleString('id-ID')})`);
+    return;
+  }
+
+  fromWallet.balance -= amountVal;
+  toWallet.balance += amountVal;
+
+  const transferTx = {
+    id: `tx_${Date.now()}_transfer`,
+    walletId: toWallet.id,
+    createdBy: 'daniel',
+    type: 'income',
+    amount: amountVal,
+    category: 'Mutasi Internal',
+    note: `Transfer dari ${fromWallet.name} ke ${toWallet.name}`,
+    visibility: 'personal',
     date: new Date().toISOString()
   };
-
-  // Update Wallets Balance
-  wallets = addTransaction(wallets, newTx);
-  transactions.unshift(newTx);
+  transactions.unshift(transferTx);
 
   persistData();
   renderAll();
 
-  // Cloud sync
-  if (supabaseClient) {
-    pushTransactionToCloud(supabaseClient, newTx);
-    const affectedWallet = wallets.find(w => w.id === targetWalletId);
-    if (affectedWallet) pushWalletToCloud(supabaseClient, affectedWallet);
+  const amtInput = document.getElementById(amountInputId);
+  if (amtInput) amtInput.value = '';
+
+  showDynamicIslandHUD(
+    'arrow-left-right',
+    `Pindah saldo Rp ${amountVal.toLocaleString('id-ID')} (${fromWallet.name} ➔ ${toWallet.name})`,
+    '#00D2D3'
+  );
+}
+
+function renderCalendar() {
+  const grid = document.getElementById('calendarDaysGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  const days = getMonthCalendarDays(2026, 10);
+  const dailyAggregates = aggregateTransactionsByDate(transactions);
+
+  days.forEach(day => {
+    const cell = document.createElement('div');
+    if (day.isPadding) {
+      cell.className = 'h-16 sm:h-20 rounded-2xl bg-white/[0.02] border border-transparent opacity-30';
+      grid.appendChild(cell);
+      return;
+    }
+
+    const dateKey = day.dateString;
+    const data = dailyAggregates[dateKey] || { income: 0, expense: 0, count: 0 };
+    const isSelected = selectedCalendarDate === dateKey;
+
+    cell.className = `h-16 sm:h-20 p-1.5 sm:p-2 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+      isSelected
+        ? 'bg-[#00D2D3]/15 border-[#00D2D3] shadow-lg shadow-[#00D2D3]/20 ring-1 ring-[#00D2D3]'
+        : 'bg-[#171724] border-white/5 hover:border-white/20 hover:bg-[#1E1E2D]'
+    }`;
+
+    cell.innerHTML = `
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold ${isSelected ? 'text-[#00D2D3]' : 'text-white'} font-mono">${day.dayNumber}</span>
+        ${data.count > 0 ? `<span class="w-1.5 h-1.5 rounded-full bg-[#00D2D3]"></span>` : ''}
+      </div>
+      <div class="space-y-0.5 overflow-hidden">
+        ${data.income > 0 ? `<div class="text-[9px] sm:text-[10px] font-mono text-[#10B981] font-semibold truncate">+${(data.income / 1000).toFixed(0)}k</div>` : ''}
+        ${data.expense > 0 ? `<div class="text-[9px] sm:text-[10px] font-mono text-[#A78BFA] font-semibold truncate">-${(data.expense / 1000).toFixed(0)}k</div>` : ''}
+      </div>
+    `;
+
+    cell.addEventListener('click', () => {
+      selectedCalendarDate = selectedCalendarDate === dateKey ? null : dateKey;
+      renderCalendar();
+      renderTransactions(transactions);
+    });
+
+    grid.appendChild(cell);
+  });
+}
+
+function renderTransactions(txList) {
+  const tableBody = document.getElementById('transactionsTableBody');
+  const mobileCards = document.getElementById('transactionsMobileCards');
+  const tableTitle = document.getElementById('transactionTableTitle');
+  const countLabel = document.getElementById('tableRecordCount');
+  if (!tableBody && !mobileCards) return;
+
+  if (tableBody) tableBody.innerHTML = '';
+  if (mobileCards) mobileCards.innerHTML = '';
+
+  const searchTerm = (document.getElementById('searchTransaction')?.value || '').toLowerCase();
+  const filterCat = document.getElementById('filterTableCategory')?.value || '';
+
+  let filtered = [...txList];
+
+  if (selectedCalendarDate) {
+    filtered = filtered.filter(t => t.date && t.date.startsWith(selectedCalendarDate));
+    if (tableTitle) {
+      const dFmt = new Date(selectedCalendarDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      tableTitle.innerHTML = `Transaksi pada <span class="text-[#00D2D3]">${dFmt}</span> <button id="btnResetCalendarFilter" class="ml-2 text-xs text-[#8E8E93] hover:text-white underline cursor-pointer">(Tampilkan Semua)</button>`;
+      document.getElementById('btnResetCalendarFilter')?.addEventListener('click', () => {
+        selectedCalendarDate = null;
+        renderCalendar();
+        renderTransactions(transactions);
+      });
+    }
+  } else {
+    if (tableTitle) tableTitle.textContent = 'Daftar Transaksi';
   }
 
-  input.value = '';
-  document.getElementById('quickPreview').classList.add('hidden');
+  if (filterCat) filtered = filtered.filter(t => t.category === filterCat);
+  if (searchTerm) {
+    filtered = filtered.filter(t =>
+      (t.note && t.note.toLowerCase().includes(searchTerm)) ||
+      (t.category && t.category.toLowerCase().includes(searchTerm))
+    );
+  }
 
-  showDynamicIslandHUD('check-circle', `Tercatat: ${parsed.note || parsed.category} (Rp ${(parsed.amount || 0).toLocaleString('id-ID')})`, '#34C759');
+  filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (countLabel) countLabel.textContent = `Menampilkan ${filtered.length} transaksi`;
+
+  if (filtered.length === 0) {
+    if (tableBody) tableBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-xs text-[#8E8E93]">Tidak ada transaksi ditemukan.</td></tr>`;
+    if (mobileCards) mobileCards.innerHTML = `<div class="py-6 text-center text-xs text-[#8E8E93]">Tidak ada transaksi ditemukan.</div>`;
+    return;
+  }
+
+  filtered.forEach(tx => {
+    const isExp = tx.type === 'expense';
+    const d = new Date(tx.date);
+    const dateFormatted = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const w = wallets.find(item => item.id === tx.walletId);
+    const wName = w ? w.name : 'Dompet';
+
+    if (tableBody) {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-[#1E1E2D]/80 transition-colors border-b border-white/[0.04] text-xs';
+      tr.innerHTML = `
+        <td class="py-3 px-4 text-[#8E8E93] font-mono text-[11px]">${dateFormatted}</td>
+        <td class="py-3 px-4 font-semibold text-white max-w-xs truncate">${escapeHtml(tx.note || tx.category)}</td>
+        <td class="py-3 px-4">
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#13141F] text-slate-300 border border-white/5">
+            ${escapeHtml(tx.category || 'Lainnya')}
+          </span>
+        </td>
+        <td class="py-3 px-4 text-slate-300">${escapeHtml(wName)}</td>
+        <td class="py-3 px-4">
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium ${isExp ? 'bg-[#FF3B30]/10 text-[#FF3B30]' : 'bg-[#10B981]/10 text-[#10B981]'}">
+            ${isExp ? 'Pengeluaran' : 'Pemasukan'}
+          </span>
+        </td>
+        <td class="py-3 px-4 text-right font-bold font-mono tabular-nums text-xs ${isExp ? 'text-white' : 'text-[#10B981]'}">
+          ${isExp ? '-' : '+'}Rp ${(Number(tx.amount) || 0).toLocaleString('id-ID')}
+        </td>
+        <td class="py-3 px-4 text-center">
+          <button data-delete-id="${tx.id}" class="btn-delete-tx p-1.5 rounded-lg text-[#8E8E93] hover:text-[#FF3B30] hover:bg-[#FF3B30]/10 transition-colors cursor-pointer" title="Hapus">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </td>
+      `;
+      tableBody.appendChild(tr);
+    }
+
+    if (mobileCards) {
+      const mCard = document.createElement('div');
+      mCard.className = 'p-3.5 rounded-2xl bg-[#171724] border border-white/5 space-y-2';
+      mCard.innerHTML = `
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] text-[#8E8E93] font-mono">${dateFormatted}</span>
+          <span class="font-mono tabular-nums text-sm font-bold ${isExp ? 'text-white' : 'text-[#10B981]'}">
+            ${isExp ? '-' : '+'}Rp ${(Number(tx.amount) || 0).toLocaleString('id-ID')}
+          </span>
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <p class="text-xs font-semibold text-white">${escapeHtml(tx.note || tx.category)}</p>
+            <div class="flex items-center gap-1.5 mt-1">
+              <span class="px-2 py-0.5 rounded-md bg-[#13141F] text-slate-300 text-[10px]">${escapeHtml(tx.category || 'Lainnya')}</span>
+              <span class="text-[#8E8E93] text-[10px]">•</span>
+              <span class="text-[#8E8E93] text-[10px]">${escapeHtml(wName)}</span>
+            </div>
+          </div>
+          <button data-delete-id="${tx.id}" class="btn-delete-tx w-7 h-7 rounded-full bg-[#1E1E2D] hover:bg-[#FF3B30]/20 text-[#8E8E93] hover:text-[#FF3B30] flex items-center justify-center transition-colors cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </div>
+      `;
+      mobileCards.appendChild(mCard);
+    }
+  });
+
+  document.querySelectorAll('.btn-delete-tx').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      deleteTransaction(btn.getAttribute('data-delete-id'));
+    });
+  });
 }
 
 function deleteTransaction(txId) {
   const tx = transactions.find(t => t.id === txId);
   if (!tx) return;
 
-  // Revert wallet balance
   const wallet = wallets.find(w => w.id === tx.walletId);
   if (wallet) {
     if (tx.type === 'expense') wallet.balance += Number(tx.amount);
@@ -439,32 +617,170 @@ function deleteTransaction(txId) {
   showDynamicIslandHUD('trash-2', 'Transaksi dihapus & saldo dipulihkan', '#FF3B30');
 }
 
-// ================= EVENT LISTENERS =================
+function renderSplitBill() {
+  const container = document.getElementById('splitParticipantsList');
+  if (container) {
+    container.innerHTML = '';
+    splitParticipants.forEach((p, idx) => {
+      const chip = document.createElement('div');
+      chip.className = 'px-3 py-1.5 rounded-xl bg-[#13141F] border border-white/10 flex items-center gap-2 text-xs text-white';
+      chip.innerHTML = `
+        <span class="w-5 h-5 rounded-full bg-[#00D2D3]/20 text-[#00D2D3] flex items-center justify-center text-[10px] font-bold">${p.charAt(0)}</span>
+        <span>${escapeHtml(p)}</span>
+        ${splitParticipants.length > 1 ? `<button data-remove-p="${idx}" class="text-[#8E8E93] hover:text-[#FF3B30] text-xs cursor-pointer ml-1">×</button>` : ''}
+      `;
+      container.appendChild(chip);
+    });
+
+    container.querySelectorAll('[data-remove-p]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-remove-p'), 10);
+        const removed = splitParticipants[idx];
+        splitParticipants.splice(idx, 1);
+        splitItems.forEach(it => {
+          it.assignedTo = (it.assignedTo || []).filter(name => name !== removed);
+          if (it.assignedTo.length === 0) it.assignedTo = [...splitParticipants];
+        });
+        renderSplitBill();
+      });
+    });
+  }
+
+  const tbody = document.getElementById('splitItemsTableBody');
+  if (tbody) {
+    tbody.innerHTML = '';
+    splitItems.forEach((item, itemIdx) => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-white/[0.02] text-xs';
+
+      const checkboxesHtml = splitParticipants.map(p => {
+        const isChecked = (item.assignedTo || []).includes(p);
+        return `
+          <label class="inline-flex items-center gap-1 mr-3 cursor-pointer select-none">
+            <input type="checkbox" data-item-idx="${itemIdx}" data-participant="${escapeHtml(p)}" ${isChecked ? 'checked' : ''} class="rounded border-white/20 text-[#00D2D3] focus:ring-0" />
+            <span class="text-[11px] ${isChecked ? 'text-white font-medium' : 'text-[#8E8E93]'}">${escapeHtml(p)}</span>
+          </label>
+        `;
+      }).join('');
+
+      tr.innerHTML = `
+        <td class="py-3 font-semibold text-white">${escapeHtml(item.name)}</td>
+        <td class="py-3 font-mono tabular-nums text-white">Rp ${(Number(item.price) || 0).toLocaleString('id-ID')}</td>
+        <td class="py-3">${checkboxesHtml}</td>
+        <td class="py-3 text-right">
+          <button data-delete-split-item="${itemIdx}" class="text-[#8E8E93] hover:text-[#FF3B30] cursor-pointer text-xs p-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('input[type="checkbox"]').forEach(chk => {
+      chk.addEventListener('change', () => {
+        const itemIdx = parseInt(chk.getAttribute('data-item-idx'), 10);
+        const pName = chk.getAttribute('data-participant');
+        const it = splitItems[itemIdx];
+        if (!it.assignedTo) it.assignedTo = [];
+
+        if (chk.checked) {
+          if (!it.assignedTo.includes(pName)) it.assignedTo.push(pName);
+        } else {
+          it.assignedTo = it.assignedTo.filter(name => name !== pName);
+          if (it.assignedTo.length === 0) {
+            chk.checked = true;
+            it.assignedTo.push(pName);
+            alert('Menu harus ditanggung minimal oleh 1 orang');
+          }
+        }
+        updateSplitCalculation();
+      });
+    });
+
+    tbody.querySelectorAll('[data-delete-split-item]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        splitItems.splice(parseInt(btn.getAttribute('data-delete-split-item'), 10), 1);
+        renderSplitBill();
+      });
+    });
+  }
+
+  updateSplitCalculation();
+}
+
+function updateSplitCalculation() {
+  const servicePercent = Number(document.getElementById('splitServicePercent')?.value) || 5;
+  const taxPercent = Number(document.getElementById('splitTaxPercent')?.value) || 10;
+
+  const result = calculateSplitBill({
+    items: splitItems,
+    participants: splitParticipants,
+    servicePercent,
+    taxPercent
+  });
+
+  const subEl = document.getElementById('splitSummarySubtotal');
+  const srvEl = document.getElementById('splitSummaryService');
+  const taxEl = document.getElementById('splitSummaryTax');
+  const gTotEl = document.getElementById('splitSummaryGrandTotal');
+
+  if (subEl) subEl.textContent = `Rp ${result.subtotal.toLocaleString('id-ID')}`;
+  if (srvEl) srvEl.textContent = `Rp ${result.serviceCharge.toLocaleString('id-ID')}`;
+  if (taxEl) taxEl.textContent = `Rp ${result.tax.toLocaleString('id-ID')}`;
+  if (gTotEl) gTotEl.textContent = `Rp ${result.grandTotal.toLocaleString('id-ID')}`;
+
+  const breakdownContainer = document.getElementById('splitIndividualBreakdown');
+  if (breakdownContainer) {
+    breakdownContainer.innerHTML = '';
+    Object.values(result.breakdown).forEach(p => {
+      const pCard = document.createElement('div');
+      pCard.className = 'p-3 rounded-2xl bg-[#13141F] border border-white/5 space-y-1';
+      pCard.innerHTML = `
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-white flex items-center gap-1.5">
+            <span class="w-4 h-4 rounded-full bg-[#00D2D3]/20 text-[#00D2D3] flex items-center justify-center text-[9px] font-bold">${p.name.charAt(0)}</span>
+            ${escapeHtml(p.name)}
+          </span>
+          <span class="font-mono font-bold text-sm text-[#00D2D3]">Rp ${p.totalOwed.toLocaleString('id-ID')}</span>
+        </div>
+        <div class="text-[11px] text-[#8E8E93] flex justify-between">
+          <span>Menu: Rp ${p.itemSubtotal.toLocaleString('id-ID')}</span>
+          <span>+ Pajak & Svc: Rp ${(p.serviceCharge + p.tax).toLocaleString('id-ID')}</span>
+        </div>
+      `;
+      breakdownContainer.appendChild(pCard);
+    });
+  }
+
+  return result;
+}
+
 function setupEventListeners() {
-  // Quick Input Enter Key & Live Preview
   const quickInput = document.getElementById('quickInput');
   const quickPreview = document.getElementById('quickPreview');
 
   quickInput?.addEventListener('input', () => {
     const val = quickInput.value.trim();
     if (!val) {
-      quickPreview.classList.add('hidden');
+      quickPreview?.classList.add('hidden');
       return;
     }
 
-    const visibleWallets = getVisibleWallets(wallets, currentUserId);
-    const defaultWallet = visibleWallets[0];
-    const parsed = parseQuickInput(val, visibleWallets, defaultWallet ? defaultWallet.id : null);
+    const defaultWallet = wallets[0];
+    const parsed = parseQuickInput(val, wallets, defaultWallet ? defaultWallet.id : null);
 
     if (parsed.amount > 0) {
-      quickPreview.classList.remove('hidden');
-      document.getElementById('previewAmount').textContent = `Rp ${parsed.amount.toLocaleString('id-ID')}`;
-      document.getElementById('previewCategory').textContent = parsed.category;
+      quickPreview?.classList.remove('hidden');
+      const pAmount = document.getElementById('previewAmount');
+      const pCat = document.getElementById('previewCategory');
+      const pWallet = document.getElementById('previewWallet');
+
+      if (pAmount) pAmount.textContent = `Rp ${parsed.amount.toLocaleString('id-ID')}`;
+      if (pCat) pCat.textContent = parsed.category;
       const w = wallets.find(item => item.id === parsed.walletId);
-      document.getElementById('previewWallet').textContent = w ? w.name : 'Dompet Utama';
-      document.getElementById('previewVisibility').textContent = parsed.visibility === 'shared' ? '🤝 Bersama' : '🔒 Pribadi';
+      if (pWallet) pWallet.textContent = w ? w.name : 'BCA Prioritas';
     } else {
-      quickPreview.classList.add('hidden');
+      quickPreview?.classList.add('hidden');
     }
   });
 
@@ -477,137 +793,120 @@ function setupEventListeners() {
 
   document.getElementById('btnSubmitQuick')?.addEventListener('click', handleQuickSubmit);
 
-  // Role Switchers
-  const btnRoleA = document.getElementById('btnRoleA');
-  const btnRoleShared = document.getElementById('btnRoleShared');
-  const btnRoleB = document.getElementById('btnRoleB');
-
-  function updateRoleButtons() {
-    const track = document.getElementById('segmentedControlTrack');
-    const pill = document.getElementById('rolePillIndicator');
-    let activeBtn = btnRoleA;
-
-    [btnRoleA, btnRoleShared, btnRoleB].forEach(btn => {
-      if (btn) {
-        btn.className = 'relative z-10 px-3.5 py-1 rounded-full text-[#8E8E93] hover:text-white transition-colors duration-200 font-medium';
-      }
-    });
-
-    if (currentMode === 'shared') {
-      activeBtn = btnRoleShared;
-    } else if (currentUserId === 'user_a') {
-      activeBtn = btnRoleA;
-    } else {
-      activeBtn = btnRoleB;
-    }
-
-    if (activeBtn) {
-      activeBtn.className = 'relative z-10 px-3.5 py-1 rounded-full text-white transition-colors duration-200 font-medium';
-      if (track && pill) {
-        const trackRect = track.getBoundingClientRect();
-        const btnRect = activeBtn.getBoundingClientRect();
-        if (trackRect.width > 0) {
-          const left = Math.round(btnRect.left - trackRect.left);
-          const width = Math.round(btnRect.width);
-          pill.style.transform = `translateX(${left - 4}px)`;
-          pill.style.width = `${width}px`;
-        }
-      }
-    }
-  }
-
-  window.addEventListener('resize', updateRoleButtons);
-
-  btnRoleA?.addEventListener('click', () => {
-    currentUserId = 'user_a';
-    currentMode = 'all';
-    updateRoleButtons();
-    renderAll();
+  document.getElementById('btnExecuteQuickTransfer')?.addEventListener('click', () => {
+    handleInternalTransfer('quickTransferFrom', 'quickTransferTo', 'quickTransferAmount');
   });
 
-  btnRoleShared?.addEventListener('click', () => {
-    currentMode = 'shared';
-    updateRoleButtons();
-    renderAll();
+  document.getElementById('btnExecuteWalletTransfer')?.addEventListener('click', () => {
+    handleInternalTransfer('walletTransferFrom', 'walletTransferTo', 'walletTransferAmount');
   });
 
-  btnRoleB?.addEventListener('click', () => {
-    currentUserId = 'user_b';
-    currentMode = 'all';
-    updateRoleButtons();
-    renderAll();
-  });
-
-  // Search filter
   document.getElementById('searchTransaction')?.addEventListener('input', () => {
-    const visibleTxs = getVisibleTransactions(transactions, currentUserId);
-    renderTransactions(visibleTxs);
-  });
-
-  // Copy Couple Code
-  const copyBtn = document.getElementById('btnCopyCoupleCode');
-  copyBtn?.addEventListener('click', () => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(coupleConfig.coupleCode).then(() => {
-        copyBtn.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> Tersalin!';
-        setTimeout(() => {
-          copyBtn.innerHTML = '<i data-lucide="copy" class="w-3 h-3"></i> Salin Kode untuk Pacar';
-          if (window.lucide) window.lucide.createIcons();
-        }, 2000);
-      });
-    }
-  });
-
-  // Mobile FAB
-  document.getElementById('btnMobileFab')?.addEventListener('click', () => {
-    document.getElementById('quickInput')?.focus();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    renderTransactions(transactions);
   });
 
   document.getElementById('filterTableCategory')?.addEventListener('change', () => {
-    const visibleTxs = getVisibleTransactions(transactions, currentUserId);
-    renderTransactions(visibleTxs);
+    renderTransactions(transactions);
   });
 
-  document.getElementById('btnExportCsv')?.addEventListener('click', exportTransactionsToCsv);
+  document.getElementById('btnAddParticipant')?.addEventListener('click', () => {
+    const input = document.getElementById('splitInputParticipantName');
+    const name = (input?.value || '').trim();
+    if (!name) return;
+    if (splitParticipants.includes(name)) {
+      alert('Nama orang sudah terdaftar');
+      return;
+    }
+    splitParticipants.push(name);
+    input.value = '';
+    renderSplitBill();
+    showDynamicIslandHUD('user-plus', `Peserta "${name}" ditambahkan`, '#00D2D3');
+  });
+
+  document.getElementById('btnAddNewSplitItem')?.addEventListener('click', () => {
+    const menuName = prompt('Nama Menu Makanan/Minuman:');
+    if (!menuName) return;
+    const menuPrice = parseInt(prompt('Harga (Rp):', '50000'), 10);
+    if (isNaN(menuPrice) || menuPrice <= 0) return;
+
+    splitItems.push({
+      id: `split_${Date.now()}`,
+      name: menuName,
+      price: menuPrice,
+      quantity: 1,
+      assignedTo: [...splitParticipants]
+    });
+    renderSplitBill();
+    showDynamicIslandHUD('plus-circle', `Menu "${menuName}" ditambahkan`, '#00D2D3');
+  });
+
+  document.getElementById('btnCopyWhatsAppSplit')?.addEventListener('click', () => {
+    const splitResult = updateSplitCalculation();
+    const bankAcc = document.getElementById('splitBankAccountInput')?.value.trim() || 'BCA: 5410-8899-21 a/n Daniel';
+    const waText = formatWhatsAppBillSummary({
+      splitResult,
+      bankAccount: bankAcc,
+      placeName: 'Senopati Cafe & Bistro'
+    });
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(waText).then(() => {
+        showDynamicIslandHUD('share-2', 'Rincian tagihan disalin! Siap kirim ke WhatsApp', '#25D366');
+      });
+    } else {
+      alert('Teks berhasil digenerate:\n\n' + waText);
+    }
+  });
+
+  document.getElementById('btnSaveUserName')?.addEventListener('click', () => {
+    const input = document.getElementById('settingInputUserName');
+    const val = (input?.value || '').trim();
+    if (!val) return;
+    userName = val;
+    localStorage.setItem('dompetku_username', userName);
+    updateUserProfileDisplay();
+    showDynamicIslandHUD('user-check', `Nama profil disimpan: "Hi, ${userName}"`, '#00D2D3');
+  });
 
   setupSidebar();
   setupModals();
 }
 
-function exportTransactionsToCsv() {
-  const visibleTxs = getVisibleTransactions(transactions, currentUserId);
-  if (!visibleTxs || visibleTxs.length === 0) {
-    showDynamicIslandHUD('alert-circle', 'Tidak ada data transaksi untuk diekspor', '#FF9500');
+function handleQuickSubmit() {
+  const input = document.getElementById('quickInput');
+  const text = (input?.value || '').trim();
+  if (!text) return;
+
+  const defaultWallet = wallets[0];
+  const defaultId = defaultWallet ? defaultWallet.id : null;
+  const parsed = parseQuickInput(text, wallets, defaultId);
+
+  if (parsed.amount <= 0) {
+    alert('Mohon masukkan nominal yang valid (misal: "makan siang 35k" atau "kopi 25rb gopay")');
     return;
   }
 
-  const headers = ['ID', 'Tanggal', 'Tipe', 'Kategori', 'Deskripsi', 'Nominal', 'Dompet', 'Visibilitas'];
-  const rows = visibleTxs.map(t => {
-    const w = wallets.find(item => item.id === t.walletId);
-    const wName = w ? w.name : '';
-    return [
-      t.id,
-      `"${t.date}"`,
-      t.type,
-      `"${(t.category || '').replace(/"/g, '""')}"`,
-      `"${(t.note || '').replace(/"/g, '""')}"`,
-      t.amount,
-      `"${wName.replace(/"/g, '""')}"`,
-      t.visibility
-    ].join(',');
-  });
+  const newTx = {
+    id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    walletId: parsed.walletId || defaultId,
+    createdBy: 'daniel',
+    type: 'expense',
+    amount: parsed.amount,
+    category: parsed.category,
+    note: parsed.note,
+    visibility: 'personal',
+    date: new Date().toISOString()
+  };
 
-  const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows].join('\n');
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', `dompetku_transaksi_${new Date().toISOString().split('T')[0]}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  wallets = addTransaction(wallets, newTx);
+  transactions.unshift(newTx);
 
-  showDynamicIslandHUD('download', 'Tabel transaksi berhasil diekspor ke CSV!', '#34C759');
+  persistData();
+  renderAll();
+
+  input.value = '';
+  document.getElementById('quickPreview')?.classList.add('hidden');
+  showDynamicIslandHUD('check-circle', `Tercatat: ${parsed.note || parsed.category} (Rp ${parsed.amount.toLocaleString('id-ID')})`, '#10B981');
 }
 
 function setupSidebar() {
@@ -627,179 +926,51 @@ function setupSidebar() {
 
   toggleBtn?.addEventListener('click', openSidebar);
   backdrop?.addEventListener('click', closeSidebar);
-
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => {
-      closeSidebar();
-      document.querySelectorAll('.nav-item').forEach(el => {
-        el.classList.remove('text-white', 'bg-[#242426]');
-        el.classList.add('text-[#8E8E93]');
-      });
-      item.classList.add('text-white', 'bg-[#242426]');
-      item.classList.remove('text-[#8E8E93]');
-    });
-  });
-
-  document.getElementById('btnSidebarSettings')?.addEventListener('click', () => {
-    closeSidebar();
-    document.getElementById('modalSettings')?.classList.remove('hidden');
-  });
 }
 
 function setupModals() {
-  // Modal: Add Wallet
   const modalWallet = document.getElementById('modalAddWallet');
   const btnOpenWallet = document.getElementById('btnOpenAddWallet');
   const btnCloseWallet = document.getElementById('btnCloseAddWallet');
   const formWallet = document.getElementById('formAddWallet');
 
-  btnOpenWallet?.addEventListener('click', () => modalWallet.classList.remove('hidden'));
-  btnCloseWallet?.addEventListener('click', () => modalWallet.classList.add('hidden'));
+  btnOpenWallet?.addEventListener('click', () => modalWallet?.classList.remove('hidden'));
+  btnCloseWallet?.addEventListener('click', () => modalWallet?.classList.add('hidden'));
 
   formWallet?.addEventListener('submit', e => {
     e.preventDefault();
-    const name = document.getElementById('walletFormName').value.trim();
-    const type = document.getElementById('walletFormType').value;
-    const balance = Number(document.getElementById('walletFormBalance').value) || 0;
-    const visibility = document.getElementById('walletFormVisibility').value;
+    const name = document.getElementById('walletFormName')?.value.trim();
+    const type = document.getElementById('walletFormType')?.value;
+    const balance = Number(document.getElementById('walletFormBalance')?.value) || 0;
+    const color = document.getElementById('walletFormColor')?.value || '#00D2D3';
+
+    if (!name) return;
 
     const newWallet = createWallet({
-      ownerId: currentUserId,
-      coupleId: coupleConfig.coupleCode,
       name,
       type,
       balance,
-      visibility,
-      color: visibility === 'shared' ? '#ec4899' : '#3b82f6'
+      color,
+      icon: type === 'bank' ? 'landmark' : type === 'ewallet' ? 'smartphone' : 'banknote'
     });
 
     wallets.push(newWallet);
     persistData();
     renderAll();
 
-    if (supabaseClient) pushWalletToCloud(supabaseClient, newWallet);
-
     formWallet.reset();
-    modalWallet.classList.add('hidden');
+    modalWallet?.classList.add('hidden');
+    showDynamicIslandHUD('credit-card', `Dompet "${newWallet.name}" berhasil ditambahkan!`, '#10B981');
   });
 
-  // Modal: Scanner / OCR
-  const modalScanner = document.getElementById('modalScanner');
-  const btnOpenScanner = document.getElementById('btnOpenScanner');
-  const btnCloseScanner = document.getElementById('btnCloseScanner');
-  const fileInput = document.getElementById('fileReceiptInput');
-  const ocrLoading = document.getElementById('ocrLoading');
-  const ocrProgressBar = document.getElementById('ocrProgressBar');
-  const ocrProgressPercent = document.getElementById('ocrProgressPercent');
-  const ocrResultBox = document.getElementById('ocrResultBox');
-  const ocrDetectedAmount = document.getElementById('ocrDetectedAmount');
-  const ocrDetectedNote = document.getElementById('ocrDetectedNote');
-  const btnUseOcr = document.getElementById('btnUseOcrResult');
-
-  let scannedResult = null;
-
-  btnOpenScanner?.addEventListener('click', () => {
-    modalScanner.classList.remove('hidden');
-    ocrResultBox.classList.add('hidden');
-    ocrLoading.classList.add('hidden');
-  });
-  btnCloseScanner?.addEventListener('click', () => modalScanner.classList.add('hidden'));
-
-  fileInput?.addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    ocrLoading.classList.remove('hidden');
-    ocrResultBox.classList.add('hidden');
-    ocrProgressBar.style.width = '0%';
-    ocrProgressPercent.textContent = '0%';
-
-    try {
-      scannedResult = await scanReceiptWithTesseract(file, progress => {
-        ocrProgressBar.style.width = `${progress}%`;
-        ocrProgressPercent.textContent = `${progress}%`;
-      });
-
-      ocrLoading.classList.add('hidden');
-      ocrResultBox.classList.remove('hidden');
-      ocrDetectedAmount.textContent = `Rp ${scannedResult.amount.toLocaleString('id-ID')}`;
-      ocrDetectedNote.textContent = scannedResult.note;
-    } catch (err) {
-      console.warn('OCR error fallback to local extractor:', err);
-      // Fallback
-      scannedResult = { amount: 50000, note: 'Struk Pembayaran', category: 'Makanan & Minuman' };
-      ocrLoading.classList.add('hidden');
-      ocrResultBox.classList.remove('hidden');
-      ocrDetectedAmount.textContent = `Rp ${scannedResult.amount.toLocaleString('id-ID')}`;
-      ocrDetectedNote.textContent = scannedResult.note;
-    }
-  });
-
-  btnUseOcr?.addEventListener('click', () => {
-    if (scannedResult && scannedResult.amount > 0) {
-      const quickInput = document.getElementById('quickInput');
-      quickInput.value = `${scannedResult.note} ${scannedResult.amount}`;
-      quickInput.dispatchEvent(new Event('input'));
-      modalScanner.classList.add('hidden');
-      quickInput.focus();
-    }
-  });
-
-  // Modal: Settings & Couple Pairing
-  const modalSettings = document.getElementById('modalSettings');
-  const btnOpenSettings = document.getElementById('btnOpenSettings');
-  const btnCloseSettings = document.getElementById('btnCloseSettings');
-  const btnDoneSettings = document.getElementById('btnDoneSettings');
-  const btnJoinCode = document.getElementById('btnJoinCode');
-  const inputJoinCode = document.getElementById('inputJoinCode');
-
-  btnOpenSettings?.addEventListener('click', () => modalSettings.classList.remove('hidden'));
-  btnCloseSettings?.addEventListener('click', () => modalSettings.classList.add('hidden'));
-  btnDoneSettings?.addEventListener('click', () => modalSettings.classList.add('hidden'));
-
-  // Universal backdrop click-to-close on all modals
-  [modalWallet, modalScanner, modalSettings].forEach(modal => {
+  [modalWallet].forEach(modal => {
     modal?.addEventListener('click', e => {
       if (e.target === modal) modal.classList.add('hidden');
     });
   });
 
-  // Global keyboard Escape key dismissal
   window.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      [modalWallet, modalScanner, modalSettings].forEach(m => m?.classList.add('hidden'));
-    }
-  });
-
-  btnJoinCode?.addEventListener('click', () => {
-    const newCode = (inputJoinCode?.value || '').trim().toUpperCase();
-    if (!newCode) return;
-    coupleConfig.coupleCode = newCode;
-    saveLocalCoupleConfig(coupleConfig);
-    alert(`Berhasil terhubung ke Kode Pasangan: ${newCode}`);
-    renderCoupleBanner();
-    modalSettings.classList.add('hidden');
-  });
-
-  document.getElementById('btnSaveCloudConfig')?.addEventListener('click', () => {
-    const url = document.getElementById('inputSupabaseUrl')?.value.trim();
-    const key = document.getElementById('inputSupabaseKey')?.value.trim();
-    coupleConfig.supabaseUrl = url;
-    coupleConfig.supabaseAnonKey = key;
-    saveLocalCoupleConfig(coupleConfig);
-    initCloud();
-    alert('Konfigurasi Cloud disimpan!');
-    modalSettings.classList.add('hidden');
-  });
-
-  document.getElementById('btnResetData')?.addEventListener('click', () => {
-    if (confirm('Yakin ingin mereset data ke kondisi awal?')) {
-      localStorage.removeItem(STORAGE_WALLETS);
-      localStorage.removeItem(STORAGE_TXS);
-      loadData();
-      renderAll();
-      modalSettings.classList.add('hidden');
-    }
+    if (e.key === 'Escape') modalWallet?.classList.add('hidden');
   });
 }
 
@@ -807,6 +978,3 @@ function escapeHtml(text) {
   if (!text) return '';
   return String(text).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 }
-
-// Start app on DOMContentLoaded
-window.addEventListener('DOMContentLoaded', initApp);
