@@ -113,6 +113,31 @@
     .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #2C2C2E; border-radius: 4px; }
 
+    /* Dynamic Island Native Apple HUD (Independent of Tailwind JIT compilation) */
+    #dynamicIslandHUD {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-40px) scale(0.85);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.28s ease;
+      will-change: transform, opacity;
+    }
+    #dynamicIslandHUD.hud-visible {
+      transform: translateX(-50%) translateY(0) scale(1) !important;
+      opacity: 1 !important;
+      pointer-events: auto;
+    }
+    @keyframes quickFlash {
+      0%, 100% { border-color: rgba(255, 255, 255, 0.1); }
+      50% { border-color: #34C759; box-shadow: 0 0 16px rgba(52, 199, 89, 0.45); }
+    }
+    .input-flash-success {
+      animation: quickFlash 0.9s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, ::before, ::after {
         animation-duration: 0.01ms !important;
@@ -126,12 +151,15 @@
 <body class="bg-[#000000] text-white min-h-screen flex selection:bg-[#007AFF] selection:text-white">
 
   <!-- ================= APPLE DYNAMIC ISLAND HUD ================= -->
-  <aside id="dynamicIslandHUD" aria-live="polite" class="hidden fixed top-3 sm:top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] opacity-0 -translate-y-4 scale-90 pointer-events-none">
-    <div class="px-4 py-2 rounded-full bg-black/92 backdrop-blur-2xl border border-white/[0.16] shadow-2xl flex items-center gap-2.5 text-xs text-white">
-      <span id="dynamicIslandIcon" class="flex items-center justify-center shrink-0">
-        <i data-lucide="check" class="w-4 h-4 text-[#34C759]"></i>
+  <aside id="dynamicIslandHUD" aria-live="polite">
+    <div class="px-5 py-2.5 rounded-full bg-[#1C1C1E]/95 backdrop-blur-2xl border-2 border-[#007AFF]/60 shadow-[0_12px_40px_rgba(0,122,255,0.35)] flex items-center gap-3 text-xs text-white max-w-sm">
+      <span id="dynamicIslandIcon" class="w-7 h-7 rounded-full bg-[#34C759]/20 text-[#34C759] flex items-center justify-center shrink-0">
+        <svg class="w-4 h-4 text-[#34C759]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       </span>
-      <span id="dynamicIslandText" class="font-medium tracking-tight whitespace-nowrap">Berhasil</span>
+      <div class="flex flex-col min-w-0">
+        <span id="dynamicIslandTitle" class="text-[10px] font-bold uppercase tracking-wider text-[#34C759]">Tercatat</span>
+        <span id="dynamicIslandText" class="font-semibold tracking-tight text-white truncate text-xs">Transaksi berhasil disimpan</span>
+      </div>
     </div>
   </aside>
 

@@ -50,9 +50,10 @@
     requestAnimationFrame(frame);
   }
 
-  function showDynamicIslandHUD(iconName, message, accentColor = '#34C759') {
+  function showDynamicIslandHUD(iconName, message, accentColor = '#34C759', title = 'Tercatat') {
     const hud = document.getElementById('dynamicIslandHUD');
     const iconEl = document.getElementById('dynamicIslandIcon');
+    const titleEl = document.getElementById('dynamicIslandTitle');
     const textEl = document.getElementById('dynamicIslandText');
     if (!hud || !textEl) return;
 
@@ -64,38 +65,42 @@
     // Tactile mobile haptic feedback
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try {
-        navigator.vibrate([15, 30, 15]);
+        navigator.vibrate([20, 40, 20]);
       } catch (e) {
         // Fallback silently if not supported
       }
     }
 
+    if (titleEl) {
+      titleEl.textContent = title;
+      titleEl.style.color = accentColor;
+    }
     textEl.textContent = message;
+
     if (iconEl) {
       const svgs = {
-        'check-circle': `<svg class="w-4 h-4" fill="none" stroke="${accentColor}" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+        'check-circle': `<svg class="w-4 h-4 text-[#34C759]" fill="none" stroke="${accentColor}" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
         'trash-2': `<svg class="w-4 h-4" fill="none" stroke="${accentColor}" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>`,
         'download': `<svg class="w-4 h-4" fill="none" stroke="${accentColor}" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>`,
         'wallet': `<svg class="w-4 h-4" fill="none" stroke="${accentColor}" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>`,
         'camera': `<svg class="w-4 h-4" fill="none" stroke="${accentColor}" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="4"/></svg>`
       };
-      iconEl.innerHTML = svgs[iconName] || `<i data-lucide="${iconName || 'check'}" class="w-4 h-4" style="color: ${accentColor}"></i>`;
-      if (window.lucide && !svgs[iconName]) window.lucide.createIcons();
+      iconEl.innerHTML = svgs[iconName] || `<svg class="w-4 h-4" fill="none" stroke="${accentColor}" viewBox="0 0 24 24" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01"/></svg>`;
     }
 
-    hud.classList.remove('hidden');
-    // Force reflow
-    void hud.offsetWidth;
-    hud.classList.remove('opacity-0', '-translate-y-4', 'scale-90');
-    hud.classList.add('opacity-100', 'translate-y-0', 'scale-100');
+    // Direct, infallible CSS activation
+    hud.classList.add('hud-visible');
+
+    // Flash Spotlight bar border
+    const quickBar = document.getElementById('quickInput')?.closest('.ios-card');
+    if (quickBar) {
+      quickBar.classList.add('input-flash-success');
+      setTimeout(() => quickBar.classList.remove('input-flash-success'), 1000);
+    }
 
     hudTimer = setTimeout(() => {
-      hud.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
-      hud.classList.add('opacity-0', '-translate-y-4', 'scale-90');
-      setTimeout(() => {
-        hud.classList.add('hidden');
-      }, 300);
-    }, 2400);
+      hud.classList.remove('hud-visible');
+    }, 2800);
   }
 
   // ================= 1. STORE & PRIVACY ENGINE =================
