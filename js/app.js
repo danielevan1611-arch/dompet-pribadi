@@ -21,6 +21,13 @@ import {
   generateNextTick
 } from './market.js';
 import {
+  INITIAL_SAVINGS_TEMPLATES,
+  calculateGoalProgress,
+  calculateMonthlySavingsVelocity,
+  depositToGoal,
+  withdrawFromGoal
+} from './savings.js';
+import {
   getLocalCoupleConfig,
   saveLocalCoupleConfig,
   createSupabaseClient
@@ -36,12 +43,14 @@ import {
 let currentView = 'dashboard';
 let selectedCalendarDate = null;
 let userName = localStorage.getItem('dompetku_username') || 'Daniel';
+let currentTheme = localStorage.getItem('dompetku_theme') || 'dark';
 
 let prevNetWorth = 0;
 let prevIncome = 0;
 let prevExpense = 0;
 let prevCoupleKas = 0;
 let prevMarketPortfolio = 0;
+let prevSavingsTotal = 0;
 
 let wallets = [];
 let transactions = [];
@@ -49,6 +58,10 @@ let marketInstruments = [...INITIAL_MARKET_INSTRUMENTS];
 let personalHoldings = [];
 let currentMarketFilter = 'all';
 let tickerStreamTimer = null;
+
+let savingsGoals = [];
+let currentSavingsFilter = 'all';
+let pendingWithdrawalData = null;
 
 let splitParticipants = ['Daniel', 'Sarah', 'Budi'];
 let splitItems = [
@@ -71,12 +84,16 @@ const INITIAL_HOLDINGS = [
 const STORAGE_WALLETS = 'dompetku_wallets_v2';
 const STORAGE_TXS = 'dompetku_txs_v2';
 const STORAGE_HOLDINGS = 'dompetku_market_portfolio_v2';
+const STORAGE_SAVINGS = 'dompetku_savings_goals_v2';
+const STORAGE_THEME = 'dompetku_theme';
 
 export function initApp() {
+  initTheme();
   loadData();
   updateUserProfileDisplay();
   setupEventListeners();
   setupRouting();
+  setupSavingsEvents();
   renderAll();
   startRealTimeMarketEngine();
   switchView('dashboard');
@@ -88,15 +105,18 @@ function loadData() {
     const savedWallets = localStorage.getItem(STORAGE_WALLETS);
     const savedTxs = localStorage.getItem(STORAGE_TXS);
     const savedHoldings = localStorage.getItem(STORAGE_HOLDINGS);
+    const savedSavings = localStorage.getItem(STORAGE_SAVINGS);
 
     wallets = savedWallets ? JSON.parse(savedWallets) : [...INITIAL_WALLETS];
     transactions = savedTxs ? JSON.parse(savedTxs) : [...INITIAL_TRANSACTIONS];
     personalHoldings = savedHoldings ? JSON.parse(savedHoldings) : [...INITIAL_HOLDINGS];
+    savingsGoals = savedSavings ? JSON.parse(savedSavings) : [...INITIAL_SAVINGS_TEMPLATES];
   } catch (err) {
     console.error('Error loading local state:', err);
     wallets = [...INITIAL_WALLETS];
     transactions = [...INITIAL_TRANSACTIONS];
     personalHoldings = [...INITIAL_HOLDINGS];
+    savingsGoals = [...INITIAL_SAVINGS_TEMPLATES];
   }
 }
 
@@ -105,8 +125,49 @@ function persistData() {
     localStorage.setItem(STORAGE_WALLETS, JSON.stringify(wallets));
     localStorage.setItem(STORAGE_TXS, JSON.stringify(transactions));
     localStorage.setItem(STORAGE_HOLDINGS, JSON.stringify(personalHoldings));
+    localStorage.setItem(STORAGE_SAVINGS, JSON.stringify(savingsGoals));
   } catch (err) {
     console.error('Error saving local state:', err);
+  }
+}
+
+export function initTheme() {
+  currentTheme = localStorage.getItem(STORAGE_THEME) || 'dark';
+  applyTheme(currentTheme, false);
+}
+
+export function toggleTheme() {
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(STORAGE_THEME, currentTheme);
+  applyTheme(currentTheme, true);
+}
+
+function applyTheme(theme, showToast = false) {
+  const root = document.documentElement;
+  if (theme === 'light') {
+    root.classList.remove('dark');
+    root.classList.add('light');
+  } else {
+    root.classList.remove('light');
+    root.classList.add('dark');
+  }
+
+  const themeIcon = document.getElementById('themeIcon');
+  if (themeIcon) {
+    themeIcon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+    themeIcon.className = theme === 'dark' ? 'w-4 h-4 text-amber-400' : 'w-4 h-4 text-indigo-500';
+  }
+
+  const settingsIcon = document.getElementById('settingsThemeIcon');
+  const settingsText = document.getElementById('settingsThemeText');
+  if (settingsIcon) settingsIcon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+  if (settingsText) settingsText.textContent = theme === 'dark' ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap';
+
+  if (window.lucide) window.lucide.createIcons();
+
+  if (showToast) {
+    const label = theme === 'dark' ? 'Mode Gelap (Space Gray)' : 'Mode Terang (Apple Light)';
+    showDynamicIslandHUD(theme === 'dark' ? 'moon' : 'sun', `Tema Diubah: ${label}`, '#00D2D3');
   }
 }
 
@@ -126,6 +187,7 @@ export function switchView(viewName) {
     transactions: document.getElementById('viewTransactions'),
     splitbill: document.getElementById('viewSplitBill'),
     market: document.getElementById('viewMarket'),
+    savings: document.getElementById('viewSavings'),
     settings: document.getElementById('viewSettings')
   };
 
@@ -135,6 +197,7 @@ export function switchView(viewName) {
     transactions: 'Transactions & Calendar',
     splitbill: 'Smart Split Bill (PB1 & Resto Tax)',
     market: 'Market & Investment Dashboard',
+    savings: 'Tabungan & Impian (Savings Goals)',
     settings: 'Settings & Personal Profile'
   };
 
@@ -181,6 +244,7 @@ export function switchView(viewName) {
     renderTransactions(transactions);
   } else if (viewName === 'splitbill') renderSplitBill();
   else if (viewName === 'market') renderMarketDashboard();
+  else if (viewName === 'savings') renderSavingsDashboard();
   else if (viewName === 'dashboard') renderDashboard();
 
   if (window.lucide) window.lucide.createIcons();
@@ -211,6 +275,7 @@ export function renderAll() {
   renderTransactions(transactions);
   renderSplitBill();
   renderMarketDashboard();
+  renderSavingsDashboard();
 }
 
 function renderDashboard() {
@@ -1088,6 +1153,8 @@ function setupEventListeners() {
   });
 
   document.getElementById('btnSubmitQuick')?.addEventListener('click', handleQuickSubmit);
+  document.getElementById('btnThemeToggle')?.addEventListener('click', toggleTheme);
+  document.getElementById('btnSettingsThemeToggle')?.addEventListener('click', toggleTheme);
   document.getElementById('btnExecuteQuickTransfer')?.addEventListener('click', () => {
     handleInternalTransfer('quickTransferFrom', 'quickTransferTo', 'quickTransferAmount');
   });
@@ -1320,4 +1387,415 @@ function setupModals() {
 function escapeHtml(text) {
   if (!text) return '';
   return String(text).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+}
+
+// ================= SAVINGS & FINANCIAL GOALS CONTROLLER =================
+function getCategoryLabel(cat) {
+  const map = {
+    darurat: 'Darurat & Proteksi',
+    liburan: 'Liburan & Traveling',
+    gadget: 'Gadget & Hobi',
+    properti: 'Investasi & Properti',
+    lainnya: 'Lainnya'
+  };
+  return map[cat] || 'Impian';
+}
+
+export function renderSavingsDashboard() {
+  const totalSaved = savingsGoals.reduce((sum, g) => sum + (Number(g.current) || 0), 0);
+  const totalTarget = savingsGoals.reduce((sum, g) => sum + (Number(g.target) || 0), 0);
+  const avgProgress = totalTarget > 0 ? Math.min(100, Math.round((totalSaved / totalTarget) * 1000) / 10) : 0;
+
+  // KPI 1: Total Ditabung
+  const elTotalSaved = document.getElementById('savingsKpiTotalSaved');
+  animateNumber(elTotalSaved, prevSavingsTotal, totalSaved);
+  prevSavingsTotal = totalSaved;
+
+  // KPI 2: Rata-Rata Capaian
+  const elAvgProgress = document.getElementById('savingsKpiAvgProgress');
+  if (elAvgProgress) elAvgProgress.textContent = `${avgProgress}%`;
+
+  // KPI 3: Impian Terdekat Selesai
+  const elNearestGoal = document.getElementById('savingsKpiNearestGoal');
+  if (elNearestGoal) {
+    const sorted = [...savingsGoals].map(g => {
+      const prog = calculateGoalProgress(g.current, g.target);
+      return { ...g, pct: prog.percentage };
+    }).sort((a, b) => b.pct - a.pct);
+
+    if (sorted.length > 0) {
+      elNearestGoal.textContent = `${sorted[0].name} (${sorted[0].pct}%)`;
+    } else {
+      elNearestGoal.textContent = '-';
+    }
+  }
+
+  // KPI 4: Dana Darurat Terkumpul
+  const elEmergencyFund = document.getElementById('savingsKpiEmergencyFund');
+  const elEmergencyFundSub = document.getElementById('savingsKpiEmergencyFundSub');
+  const emergencyGoal = savingsGoals.find(g => g.category === 'darurat') || savingsGoals[0];
+  if (elEmergencyFund && emergencyGoal) {
+    elEmergencyFund.textContent = `Rp ${Number(emergencyGoal.current || 0).toLocaleString('id-ID')}`;
+    const emProg = calculateGoalProgress(emergencyGoal.current, emergencyGoal.target);
+    if (elEmergencyFundSub) {
+      elEmergencyFundSub.textContent = `${emProg.percentage}% dari target Rp ${(emergencyGoal.target / 1000000).toFixed(0)}jt`;
+    }
+  }
+
+  // Filter Goals
+  const filtered = savingsGoals.filter(g => {
+    if (currentSavingsFilter === 'all') return true;
+    return g.category === currentSavingsFilter;
+  });
+
+  // Render Grid
+  const grid = document.getElementById('savingsGoalsGrid');
+  if (!grid) return;
+
+  grid.innerHTML = filtered.map(goal => {
+    const prog = calculateGoalProgress(goal.current, goal.target);
+    const vel = calculateMonthlySavingsVelocity(prog.remainingNominal, goal.targetDate);
+    const targetDateFormatted = goal.targetDate ? new Date(goal.targetDate).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) : '-';
+
+    const lockBadge = goal.isLocked
+      ? `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/25 flex items-center gap-1 font-compact">
+           <i data-lucide="lock" class="w-3 h-3 text-amber-400"></i>
+           Terkunci s/d ${targetDateFormatted}
+         </span>`
+      : `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/25 flex items-center gap-1 font-compact">
+           <i data-lucide="unlock" class="w-3 h-3 text-[#10B981]"></i>
+           Fleksibel
+         </span>`;
+
+    let velocityText = '';
+    if (prog.isCompleted) {
+      velocityText = `<div class="p-2.5 rounded-xl bg-[#10B981]/15 border border-[#10B981]/30 text-[11px] text-[#10B981] font-semibold flex items-center gap-1.5">
+        <i data-lucide="check-circle" class="w-3.5 h-3.5 shrink-0"></i>
+        <span>🎉 Target impian ini telah tercapai 100%!</span>
+      </div>`;
+    } else {
+      velocityText = `<div class="p-2.5 rounded-xl bg-[#13141F] border border-white/5 text-[11px] text-slate-300 leading-snug">
+        <span class="text-[#8E8E93]">Kalkulasi Kecepatan:</span><br/>
+        Sisa <strong class="text-white font-mono">Rp ${prog.remainingNominal.toLocaleString('id-ID')}</strong> lagi (cukup sisihkan <strong class="text-[#00D2D3] font-mono">Rp ${vel.monthlyAmount.toLocaleString('id-ID')}/bln</strong> selama ${vel.monthsRemaining} bulan)
+      </div>`;
+    }
+
+    return `
+      <div class="dompet-card-specular rounded-3xl p-5 space-y-4 flex flex-col justify-between" style="border-top: 3px solid ${goal.color || '#00D2D3'}">
+        <div class="space-y-3">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="text-[10px] uppercase font-bold tracking-wider text-[#8E8E93] block font-compact">${escapeHtml(goal.categoryLabel || getCategoryLabel(goal.category))}</span>
+              <h4 class="font-editorial text-base font-bold text-white tracking-tight leading-snug">${escapeHtml(goal.name)}</h4>
+            </div>
+            ${lockBadge}
+          </div>
+
+          <!-- Balance Display -->
+          <div class="space-y-1">
+            <span class="text-[10px] text-[#8E8E93] uppercase font-semibold">Terkumpul</span>
+            <div class="flex items-baseline justify-between">
+              <span class="font-editorial text-2xl font-bold text-white tracking-tight">Rp ${(goal.current || 0).toLocaleString('id-ID')}</span>
+              <span class="text-xs font-bold text-[#00D2D3] font-mono">${prog.percentage}%</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-[#8E8E93] font-mono">
+              <span>Target: Rp ${(goal.target || 0).toLocaleString('id-ID')}</span>
+              <span>Deadline: ${targetDateFormatted}</span>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full h-2.5 bg-[#13141F] rounded-full overflow-hidden p-0.5 border border-white/5">
+            <div class="h-full rounded-full transition-all duration-500 shadow-sm" style="width: ${prog.percentage}%; background-color: ${goal.color || '#00D2D3'}"></div>
+          </div>
+
+          <!-- Velocity Advice -->
+          ${velocityText}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-2 border-t border-white/5 flex items-center gap-2">
+          <button data-action="deposit-goal" data-goal-id="${goal.id}" class="flex-1 py-2 px-3 rounded-xl bg-[#00D2D3] hover:bg-[#00B8B9] text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Setor</span>
+          </button>
+          <button data-action="withdraw-goal" data-goal-id="${goal.id}" class="flex-1 py-2 px-3 rounded-xl bg-[#13141F] hover:bg-white/10 border border-white/10 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>Cairkan</span>
+          </button>
+          <button data-action="delete-goal" data-goal-id="${goal.id}" class="p-2 rounded-xl bg-[#13141F] hover:bg-red-500/20 text-[#8E8E93] hover:text-red-400 transition-colors cursor-pointer" title="Hapus Impian">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function setupSavingsEvents() {
+  // Category Filter Pills
+  document.querySelectorAll('.savings-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentSavingsFilter = btn.getAttribute('data-savings-filter') || 'all';
+      document.querySelectorAll('.savings-filter-btn').forEach(b => {
+        if (b === btn) {
+          b.className = 'savings-filter-btn px-4 py-2 rounded-xl bg-[#00D2D3]/15 text-[#00D2D3] font-semibold border border-[#00D2D3]/30 transition-all cursor-pointer';
+        } else {
+          b.className = 'savings-filter-btn px-4 py-2 rounded-xl bg-[#1E1E2D] text-[#8E8E93] hover:text-white border border-white/5 transition-all cursor-pointer';
+        }
+      });
+      renderSavingsDashboard();
+    });
+  });
+
+  // Modal Openers
+  const modalAddGoal = document.getElementById('modalAddGoal');
+  const btnOpenAddGoal = document.getElementById('btnOpenAddGoal');
+  const btnCloseAddGoal = document.getElementById('btnCloseAddGoal');
+  const formAddGoal = document.getElementById('formAddGoal');
+
+  function populateWalletOptions(selectEl) {
+    if (!selectEl) return;
+    selectEl.innerHTML = wallets.map(w => `<option value="${w.id}">${escapeHtml(w.name)} (Saldo: Rp ${Number(w.balance || 0).toLocaleString('id-ID')})</option>`).join('');
+  }
+
+  function populateGoalOptions(selectEl) {
+    if (!selectEl) return;
+    selectEl.innerHTML = savingsGoals.map(g => `<option value="${g.id}">${escapeHtml(g.name)} (Tersimpan: Rp ${Number(g.current || 0).toLocaleString('id-ID')})</option>`).join('');
+  }
+
+  btnOpenAddGoal?.addEventListener('click', () => {
+    populateWalletOptions(document.getElementById('goalFormWalletSelect'));
+    const nextYear = new Date();
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    const dateInput = document.getElementById('goalFormTargetDate');
+    if (dateInput && !dateInput.value) dateInput.value = nextYear.toISOString().split('T')[0];
+    modalAddGoal?.classList.remove('hidden');
+  });
+
+  btnCloseAddGoal?.addEventListener('click', () => modalAddGoal?.classList.add('hidden'));
+
+  // Form Add Goal
+  formAddGoal?.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('goalFormName')?.value.trim();
+    const category = document.getElementById('goalFormCategory')?.value || 'darurat';
+    const targetDate = document.getElementById('goalFormTargetDate')?.value;
+    const target = Number(document.getElementById('goalFormTarget')?.value) || 0;
+    const initial = Number(document.getElementById('goalFormInitial')?.value) || 0;
+    const walletId = document.getElementById('goalFormWalletSelect')?.value;
+    const isLocked = document.getElementById('goalFormLocked')?.checked;
+    const color = document.getElementById('goalFormColor')?.value || '#00D2D3';
+
+    if (!name || target <= 0) return;
+
+    const newGoal = {
+      id: 'goal_' + Date.now(),
+      name,
+      category,
+      categoryLabel: getCategoryLabel(category),
+      target,
+      current: 0,
+      targetDate,
+      isLocked: !!isLocked,
+      color,
+      icon: category === 'darurat' ? 'shield-check' : category === 'liburan' ? 'plane' : category === 'gadget' ? 'laptop' : 'home',
+      note: `Pos tabungan ${name}`
+    };
+
+    if (initial > 0 && walletId) {
+      const depRes = depositToGoal([newGoal], wallets, { goalId: newGoal.id, walletId, amount: initial });
+      if (!depRes.success) {
+        showDynamicIslandHUD('alert-circle', 'Saldo rekening tidak cukup untuk setoran awal!', '#EF4444');
+        return;
+      }
+      wallets = depRes.updatedWallets;
+      transactions.unshift(depRes.transaction);
+      newGoal.current = initial;
+    }
+
+    savingsGoals.push(newGoal);
+    persistData();
+    renderAll();
+    formAddGoal.reset();
+    modalAddGoal?.classList.add('hidden');
+    showDynamicIslandHUD('piggy-bank', `Pos Impian "${newGoal.name}" berhasil dibuat!`, '#00D2D3');
+  });
+
+  // Modal Deposit
+  const modalDeposit = document.getElementById('modalDepositGoal');
+  const btnCloseDeposit = document.getElementById('btnCloseDepositGoal');
+  const btnQuickDeposit = document.getElementById('btnOpenQuickDeposit');
+  const formDeposit = document.getElementById('formDepositGoal');
+
+  function openDepositModal(preferredGoalId = null) {
+    populateGoalOptions(document.getElementById('depositGoalSelect'));
+    populateWalletOptions(document.getElementById('depositWalletSelect'));
+    if (preferredGoalId) {
+      const gSel = document.getElementById('depositGoalSelect');
+      if (gSel) gSel.value = preferredGoalId;
+    }
+    modalDeposit?.classList.remove('hidden');
+  }
+
+  btnQuickDeposit?.addEventListener('click', () => openDepositModal());
+  btnCloseDeposit?.addEventListener('click', () => modalDeposit?.classList.add('hidden'));
+
+  // Quick Deposit Chips
+  document.querySelectorAll('.chip-deposit').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const val = chip.getAttribute('data-chip-deposit');
+      const input = document.getElementById('depositAmountInput');
+      if (input && val) input.value = val;
+    });
+  });
+
+  formDeposit?.addEventListener('submit', e => {
+    e.preventDefault();
+    const goalId = document.getElementById('depositGoalSelect')?.value;
+    const walletId = document.getElementById('depositWalletSelect')?.value;
+    const amount = Number(document.getElementById('depositAmountInput')?.value) || 0;
+
+    const res = depositToGoal(savingsGoals, wallets, { goalId, walletId, amount });
+    if (!res.success) {
+      const msg = res.error === 'SALDO_TIDAK_CUKUP' ? 'Saldo rekening Anda tidak mencukupi!' : 'Nominal tidak valid!';
+      showDynamicIslandHUD('alert-circle', msg, '#EF4444');
+      return;
+    }
+
+    savingsGoals = res.updatedGoals;
+    wallets = res.updatedWallets;
+    transactions.unshift(res.transaction);
+    persistData();
+    renderAll();
+
+    formDeposit.reset();
+    modalDeposit?.classList.add('hidden');
+    showDynamicIslandHUD('arrow-down-right', `Setor Rp ${amount.toLocaleString('id-ID')} berhasil disimpan!`, '#10B981');
+  });
+
+  // Modal Withdraw
+  const modalWithdraw = document.getElementById('modalWithdrawGoal');
+  const btnCloseWithdraw = document.getElementById('btnCloseWithdrawGoal');
+  const formWithdraw = document.getElementById('formWithdrawGoal');
+  const withdrawGoalSelect = document.getElementById('withdrawGoalSelect');
+
+  function openWithdrawModal(preferredGoalId = null) {
+    populateGoalOptions(withdrawGoalSelect);
+    populateWalletOptions(document.getElementById('withdrawWalletSelect'));
+    if (preferredGoalId && withdrawGoalSelect) {
+      withdrawGoalSelect.value = preferredGoalId;
+    }
+    updateWithdrawMaxLabel();
+    modalWithdraw?.classList.remove('hidden');
+  }
+
+  function updateWithdrawMaxLabel() {
+    const selectedGoalId = withdrawGoalSelect?.value;
+    const goal = savingsGoals.find(g => g.id === selectedGoalId);
+    const maxEl = document.getElementById('withdrawMaxAvailable');
+    if (maxEl) {
+      maxEl.textContent = `Tersedia: Rp ${Number(goal?.current || 0).toLocaleString('id-ID')}`;
+    }
+  }
+
+  withdrawGoalSelect?.addEventListener('change', updateWithdrawMaxLabel);
+  btnCloseWithdraw?.addEventListener('click', () => modalWithdraw?.classList.add('hidden'));
+
+  formWithdraw?.addEventListener('submit', e => {
+    e.preventDefault();
+    const goalId = withdrawGoalSelect?.value;
+    const walletId = document.getElementById('withdrawWalletSelect')?.value;
+    const amount = Number(document.getElementById('withdrawAmountInput')?.value) || 0;
+
+    const res = withdrawFromGoal(savingsGoals, wallets, { goalId, walletId, amount });
+    if (!res.success) {
+      if (res.requiresConfirmation) {
+        pendingWithdrawalData = { goalId, walletId, amount };
+        const msgEl = document.getElementById('antiKhilafMessage');
+        if (msgEl) msgEl.textContent = res.message;
+        modalWithdraw?.classList.add('hidden');
+        document.getElementById('modalAntiKhilafAlert')?.classList.remove('hidden');
+        return;
+      }
+      const msg = res.error === 'SALDO_TABUNGAN_TIDAK_CUKUP' ? 'Saldo tabungan tidak mencukupi nominal!' : 'Gagal mencairkan!';
+      showDynamicIslandHUD('alert-circle', msg, '#EF4444');
+      return;
+    }
+
+    savingsGoals = res.updatedGoals;
+    wallets = res.updatedWallets;
+    transactions.unshift(res.transaction);
+    persistData();
+    renderAll();
+
+    formWithdraw.reset();
+    modalWithdraw?.classList.add('hidden');
+    showDynamicIslandHUD('arrow-up-right', `Pencairan Rp ${amount.toLocaleString('id-ID')} berhasil!`, '#F59E0B');
+  });
+
+  // Anti-Khilaf Modal Actions
+  document.getElementById('btnAntiKhilafCancel')?.addEventListener('click', () => {
+    pendingWithdrawalData = null;
+    document.getElementById('modalAntiKhilafAlert')?.classList.add('hidden');
+  });
+
+  document.getElementById('btnAntiKhilafConfirmOverride')?.addEventListener('click', () => {
+    if (!pendingWithdrawalData) return;
+    const res = withdrawFromGoal(savingsGoals, wallets, { ...pendingWithdrawalData, forceOverride: true });
+    if (res.success) {
+      savingsGoals = res.updatedGoals;
+      wallets = res.updatedWallets;
+      transactions.unshift(res.transaction);
+      persistData();
+      renderAll();
+      showDynamicIslandHUD('alert-triangle', `Pencairan Darurat Rp ${pendingWithdrawalData.amount.toLocaleString('id-ID')} selesai`, '#F59E0B');
+    }
+    pendingWithdrawalData = null;
+    document.getElementById('modalAntiKhilafAlert')?.classList.add('hidden');
+  });
+
+  // Grid Action Delegation (+Setor, Cairkan, Hapus)
+  document.getElementById('savingsGoalsGrid')?.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.getAttribute('data-action');
+    const goalId = btn.getAttribute('data-goal-id');
+
+    if (action === 'deposit-goal') {
+      openDepositModal(goalId);
+    } else if (action === 'withdraw-goal') {
+      openWithdrawModal(goalId);
+    } else if (action === 'delete-goal') {
+      const g = savingsGoals.find(item => item.id === goalId);
+      if (confirm(`Apakah Anda yakin ingin menghapus pos impian "${g?.name || ''}"?`)) {
+        savingsGoals = savingsGoals.filter(item => item.id !== goalId);
+        persistData();
+        renderAll();
+        showDynamicIslandHUD('trash-2', `Pos Impian "${g?.name || ''}" dihapus`, '#8E8E93');
+      }
+    }
+  });
+
+  // Modal Backdrop Close & ESC
+  const allModals = [
+    modalAddGoal,
+    modalDeposit,
+    modalWithdraw,
+    document.getElementById('modalAntiKhilafAlert')
+  ];
+
+  allModals.forEach(m => {
+    m?.addEventListener('click', e => {
+      if (e.target === m) m.classList.add('hidden');
+    });
+  });
+
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      allModals.forEach(m => m?.classList.add('hidden'));
+    }
+  });
 }

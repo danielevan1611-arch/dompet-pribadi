@@ -53,7 +53,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <style>
-    /* Apple Official New York Font Family (Extracted from NY.dmg) */
+    /* ================= 1. APPLE OFFICIAL NEW YORK SERIF (Extracted from NY.dmg) ================= */
     @font-face {
       font-family: 'New York';
       src: url('assets/fonts/NewYorkLarge-Regular.otf') format('opentype');
@@ -90,12 +90,102 @@
       font-display: swap;
     }
 
-    /* Apple Ecosystem Typography Pairing */
+    /* ================= 2. APPLE OFFICIAL SF PRO DISPLAY (Extracted from SF-Pro.dmg) ================= */
+    @font-face {
+      font-family: 'SF Pro';
+      src: url('assets/fonts/SF-Pro-Display-Regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Pro';
+      src: url('assets/fonts/SF-Pro-Display-Medium.otf') format('opentype');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Pro';
+      src: url('assets/fonts/SF-Pro-Display-Semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Pro';
+      src: url('assets/fonts/SF-Pro-Display-Bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* ================= 3. APPLE OFFICIAL SF COMPACT (Extracted from SF-Compact.dmg) ================= */
+    @font-face {
+      font-family: 'SF Compact';
+      src: url('assets/fonts/SF-Compact-Display-Regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Compact';
+      src: url('assets/fonts/SF-Compact-Display-Medium.otf') format('opentype');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Compact';
+      src: url('assets/fonts/SF-Compact-Display-Semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Compact';
+      src: url('assets/fonts/SF-Compact-Display-Bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* ================= 4. APPLE OFFICIAL SF MONO (Extracted from SF-Mono.dmg) ================= */
+    @font-face {
+      font-family: 'SF Mono';
+      src: url('assets/fonts/SF-Mono-Regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Mono';
+      src: url('assets/fonts/SF-Mono-Medium.otf') format('opentype');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Mono';
+      src: url('assets/fonts/SF-Mono-Semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Mono';
+      src: url('assets/fonts/SF-Mono-Bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* ================= APPLE ECOSYSTEM TYPOGRAPHY ROLES ================= */
     :root {
-      color-scheme: dark;
       --font-editorial: 'New York', Georgia, serif;
-      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", 'Inter', system-ui, sans-serif;
-      --font-mono: 'JetBrains Mono', "SF Mono", Menlo, Consolas, monospace;
+      --font-sans: 'SF Pro', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", 'Inter', system-ui, sans-serif;
+      --font-compact: 'SF Compact', -apple-system, BlinkMacSystemFont, "SF Compact Display", "SF Compact Text", sans-serif;
+      --font-mono: 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
     }
 
     body {
@@ -105,13 +195,21 @@
       -moz-osx-font-smoothing: grayscale;
       -webkit-tap-highlight-color: transparent;
       letter-spacing: -0.012em;
+      transition: background-color 0.25s ease, color 0.25s ease;
     }
 
     .font-editorial {
       font-family: var(--font-editorial) !important;
       letter-spacing: -0.015em;
     }
-    .font-mono, .font-num {
+    .font-sans, .font-sf-pro {
+      font-family: var(--font-sans) !important;
+    }
+    .font-compact, .font-sf-compact {
+      font-family: var(--font-compact) !important;
+      letter-spacing: -0.01em;
+    }
+    .font-mono, .font-num, .font-sf-mono {
       font-family: var(--font-mono) !important;
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1, 'zero' 1;
@@ -120,6 +218,7 @@
     .dompet-card {
       background-color: #1E1E2D;
       border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     }
     .dompet-card-specular {
       background-color: #1E1E2D;
@@ -130,6 +229,77 @@
     .dompet-card-specular:hover {
       border-color: rgba(0, 210, 211, 0.35);
       transform: translateY(-2px);
+    }
+
+    /* ================= APPLE LIGHT MODE ADAPTATION (Versi Terang) ================= */
+    html.light body {
+      background-color: #F2F2F7 !important;
+      color: #1C1C1E !important;
+    }
+    html.light #mainWorkspace {
+      background-color: #F2F2F7 !important;
+    }
+    html.light #sidebarNav {
+      background-color: #FFFFFF !important;
+      border-right-color: rgba(0, 0, 0, 0.08) !important;
+    }
+    html.light header {
+      background-color: rgba(255, 255, 255, 0.88) !important;
+      border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+    }
+    html.light #mobileBottomNav {
+      background-color: rgba(255, 255, 255, 0.94) !important;
+      border-top-color: rgba(0, 0, 0, 0.08) !important;
+    }
+    html.light .dompet-card,
+    html.light .dompet-card-specular {
+      background-color: #FFFFFF !important;
+      border-color: rgba(0, 0, 0, 0.07) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+    }
+    html.light .dompet-card-specular:hover {
+      border-color: rgba(0, 168, 168, 0.45) !important;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08) !important;
+    }
+    html.light .bg-\[\#13141F\] {
+      background-color: #F2F2F7 !important;
+    }
+    html.light .bg-\[\#1E1E2D\] {
+      background-color: #FFFFFF !important;
+    }
+    html.light .bg-\[\#252538\] {
+      background-color: #E5E5EA !important;
+    }
+    html.light .border-white\/5,
+    html.light .border-white\/10,
+    html.light .border-white\/\[0\.08\] {
+      border-color: rgba(0, 0, 0, 0.08) !important;
+    }
+    html.light .text-white {
+      color: #1C1C1E !important;
+    }
+    html.light .text-slate-300,
+    html.light .text-slate-200 {
+      color: #3A3A3C !important;
+    }
+    html.light .text-\[\#8E8E93\] {
+      color: #636366 !important;
+    }
+    html.light input,
+    html.light select,
+    html.light textarea {
+      background-color: #F2F2F7 !important;
+      color: #1C1C1E !important;
+      border-color: rgba(0, 0, 0, 0.12) !important;
+    }
+    html.light input::placeholder {
+      color: #8E8E93 !important;
+    }
+    html.light .hover\:bg-white\/5:hover {
+      background-color: rgba(0, 0, 0, 0.04) !important;
+    }
+    html.light .hover\:bg-white\/10:hover {
+      background-color: rgba(0, 0, 0, 0.07) !important;
     }
 
     .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -264,6 +434,14 @@
             <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#10B981]/20 text-[#10B981]">LIVE</span>
           </span>
         </button>
+
+        <button data-view="savings" class="nav-item w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-[#8E8E93] hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+          <span class="flex items-center gap-3">
+            <i data-lucide="piggy-bank" class="w-4 h-4 text-[#00D2D3]"></i>
+            <span>Tabungan & Impian</span>
+          </span>
+          <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#00D2D3]/20 text-[#00D2D3]">GOALS</span>
+        </button>
       </nav>
     </div>
 
@@ -321,6 +499,10 @@
 
         <!-- Right: Actions -->
         <div class="flex items-center gap-2 shrink-0">
+          <!-- Light / Dark Apple Theme Toggle -->
+          <button id="btnThemeToggle" title="Ganti Mode Gelap / Terang (Apple Theme)" class="w-9 h-9 rounded-full bg-[#1E1E2D] hover:bg-[#252538] border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-transform active:scale-90 cursor-pointer">
+            <i id="themeIcon" data-lucide="sun" class="w-4 h-4 text-amber-400"></i>
+          </button>
           <button id="btnTopReport" class="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#00D2D3]/15 text-[#00D2D3] border border-[#00D2D3]/30 text-xs font-semibold hover:bg-[#00D2D3] hover:text-black transition-all cursor-pointer">
             <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>
             <span>Generate Report</span>
@@ -832,6 +1014,21 @@
             </div>
           </div>
 
+          <!-- Apple Theme Selector (Light / Dark) -->
+          <div class="space-y-3 pt-2 border-t border-white/5">
+            <h4 class="font-editorial text-sm font-bold text-white">Tema Tampilan Apple Ecosystem</h4>
+            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-[#13141F] border border-white/5">
+              <div>
+                <span class="text-xs font-semibold text-white block">Mode Gelap / Terang</span>
+                <span class="text-[11px] text-[#8E8E93] block">Pilih palet tampilan favorit Daniel (Dark Space Gray atau iOS Light)</span>
+              </div>
+              <button id="btnSettingsThemeToggle" class="px-4 py-2 rounded-xl bg-[#1E1E2D] hover:bg-[#252538] border border-white/10 text-white text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all">
+                <i id="settingsThemeIcon" data-lucide="sun" class="w-4 h-4 text-amber-400"></i>
+                <span id="settingsThemeText">Ganti ke Mode Terang</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Telegram Bot Quick Guide -->
           <div class="p-4 rounded-2xl bg-[#13141F] border border-white/5 space-y-2">
             <div class="flex items-center justify-between">
@@ -985,6 +1182,111 @@
 
       </section>
 
+      <!-- ================= VIEW 7: DEDICATED SAVINGS & GOALS DASHBOARD ================= -->
+      <section id="viewSavings" class="view-screen hidden space-y-6">
+        
+        <!-- Header & Quick Actions -->
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <h3 class="font-editorial text-2xl font-bold text-white">Tabungan & Impian (Savings Goals)</h3>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#00D2D3]/20 text-[#00D2D3] flex items-center gap-1.5 border border-[#00D2D3]/30">
+                <i data-lucide="shield-check" class="w-3 h-3 text-[#00D2D3]"></i>
+                SMART LOCK
+              </span>
+            </div>
+            <p class="text-xs text-[#8E8E93]">Pos dana dingin dan target impian Daniel dengan perhitungan kecepatan menabung otomatis</p>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button id="btnOpenQuickDeposit" class="px-4 py-2.5 rounded-xl bg-[#1E1E2D] hover:bg-[#252538] border border-white/10 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer">
+              <i data-lucide="arrow-down-right" class="w-4 h-4 text-[#00D2D3]"></i>
+              <span>+ Setor Cepat</span>
+            </button>
+            <button id="btnOpenAddGoal" class="px-4 py-2.5 rounded-xl bg-[#00D2D3] hover:bg-[#00B8B9] text-black font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-[#00D2D3]/20">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>+ Buat Impian Baru</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Savings KPI Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- KPI 1: Total Uang Ditabung -->
+          <div class="relative overflow-hidden p-5 rounded-3xl bg-gradient-to-br from-[#0F766E] to-[#115E59] border border-emerald-400/20 shadow-xl">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-emerald-200 block mb-1">Total Tabungan Terkumpul</span>
+              <div class="w-7 h-7 rounded-full bg-emerald-400/20 flex items-center justify-center text-emerald-300">
+                <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <h3 id="savingsKpiTotalSaved" class="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-white">Rp 0</h3>
+            <span class="text-[11px] text-emerald-100/70 block mt-2">Seluruh pos impian aktif</span>
+          </div>
+
+          <!-- KPI 2: Rata-Rata Capaian Goals -->
+          <div class="relative overflow-hidden p-5 rounded-3xl bg-gradient-to-br from-[#1E1E2D] to-[#171724] border border-white/10 shadow-xl">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-[#8E8E93] block mb-1">Rata-Rata Capaian</span>
+              <div class="w-7 h-7 rounded-full bg-[#00D2D3]/20 flex items-center justify-center text-[#00D2D3]">
+                <i data-lucide="target" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <h3 id="savingsKpiAvgProgress" class="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-[#00D2D3]">0%</h3>
+            <span class="text-[11px] text-[#8E8E93] block mt-2">Dari seluruh target impian</span>
+          </div>
+
+          <!-- KPI 3: Impian Terdekat Selesai -->
+          <div class="relative overflow-hidden p-5 rounded-3xl bg-gradient-to-br from-[#1E1E2D] to-[#171724] border border-white/10 shadow-xl">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-[#8E8E93] block mb-1">Paling Dekat Selesai</span>
+              <div class="w-7 h-7 rounded-full bg-amber-400/20 flex items-center justify-center text-amber-300">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <h3 id="savingsKpiNearestGoal" class="font-editorial text-lg sm:text-xl font-bold tracking-tight text-white truncate">-</h3>
+            <span class="text-[11px] text-[#8E8E93] block mt-2">Target tercepat tercapai</span>
+          </div>
+
+          <!-- KPI 4: Dana Darurat Terkumpul -->
+          <div class="relative overflow-hidden p-5 rounded-3xl bg-gradient-to-br from-[#312E81] to-[#1E1B4B] border border-indigo-400/20 shadow-xl">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-indigo-200 block mb-1">Dana Darurat Siaga</span>
+              <div class="w-7 h-7 rounded-full bg-indigo-400/20 flex items-center justify-center text-indigo-300">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+              </div>
+            </div>
+            <h3 id="savingsKpiEmergencyFund" class="font-editorial text-xl sm:text-2xl font-bold tracking-tight text-white">Rp 0</h3>
+            <span id="savingsKpiEmergencyFundSub" class="text-[11px] text-indigo-200/80 font-medium block mt-2">Pos proteksi darurat</span>
+          </div>
+        </div>
+
+        <!-- Category Filter Pills -->
+        <div class="flex flex-wrap items-center gap-2 border-b border-white/5 pb-2 text-xs">
+          <button data-savings-filter="all" class="savings-filter-btn px-4 py-2 rounded-xl bg-[#00D2D3]/15 text-[#00D2D3] font-semibold border border-[#00D2D3]/30 transition-all cursor-pointer">
+            Semua Impian
+          </button>
+          <button data-savings-filter="darurat" class="savings-filter-btn px-4 py-2 rounded-xl bg-[#1E1E2D] text-[#8E8E93] hover:text-white border border-white/5 transition-all cursor-pointer">
+            Darurat & Proteksi
+          </button>
+          <button data-savings-filter="liburan" class="savings-filter-btn px-4 py-2 rounded-xl bg-[#1E1E2D] text-[#8E8E93] hover:text-white border border-white/5 transition-all cursor-pointer">
+            Liburan & Traveling
+          </button>
+          <button data-savings-filter="gadget" class="savings-filter-btn px-4 py-2 rounded-xl bg-[#1E1E2D] text-[#8E8E93] hover:text-white border border-white/5 transition-all cursor-pointer">
+            Gadget & Hobi
+          </button>
+          <button data-savings-filter="properti" class="savings-filter-btn px-4 py-2 rounded-xl bg-[#1E1E2D] text-[#8E8E93] hover:text-white border border-white/5 transition-all cursor-pointer">
+            Investasi & Properti
+          </button>
+        </div>
+
+        <!-- Savings Goals Grid -->
+        <div id="savingsGoalsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+      </section>
+
     </main>
   </div>
 
@@ -1009,6 +1311,10 @@
     <button data-view="market" class="mobile-tab-btn flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white py-1 px-2 cursor-pointer">
       <i data-lucide="trending-up" class="w-5 h-5"></i>
       <span class="text-[9px] font-medium tracking-tight">Market</span>
+    </button>
+    <button data-view="savings" class="mobile-tab-btn flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white py-1 px-2 cursor-pointer">
+      <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+      <span class="text-[9px] font-medium tracking-tight">Tabungan</span>
     </button>
     <button data-view="settings" class="mobile-tab-btn flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white py-1 px-2.5 cursor-pointer">
       <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
@@ -1158,6 +1464,205 @@
           Simpan ke Portofolio
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: BUAT / EDIT TABUNGAN & IMPIAN ================= -->
+  <div id="modalAddGoal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md">
+    <div class="w-full sm:max-w-md bg-[#1E1E2D] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="piggy-bank" class="w-4 h-4 text-[#00D2D3]"></i>
+          <span>Buat Pos Impian Baru</span>
+        </h3>
+        <button id="btnCloseAddGoal" type="button" class="w-8 h-8 rounded-full bg-[#13141F] hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="formAddGoal" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Nama Impian / Pos Dana</label>
+          <input id="goalFormName" type="text" placeholder="misal: DP Mobil, Liburan Jepang, MacBook M-Series" required class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#00D2D3]" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[#8E8E93] mb-1">Kategori</label>
+            <select id="goalFormCategory" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#00D2D3]">
+              <option value="darurat">Darurat & Proteksi</option>
+              <option value="liburan">Liburan & Traveling</option>
+              <option value="gadget">Gadget & Hobi</option>
+              <option value="properti">Investasi & Properti</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[#8E8E93] mb-1">Target Tanggal Selesai</label>
+            <input id="goalFormTargetDate" type="date" required class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2 text-white focus:outline-none focus:border-[#00D2D3]" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[#8E8E93] mb-1">Target Nominal (Rp)</label>
+            <input id="goalFormTarget" type="number" min="10000" step="10000" placeholder="misal: 25000000" required class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white font-mono focus:outline-none focus:border-[#00D2D3]" />
+          </div>
+          <div>
+            <label class="block text-[#8E8E93] mb-1">Setoran Awal (Rp)</label>
+            <input id="goalFormInitial" type="number" min="0" step="1000" value="0" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white font-mono focus:outline-none focus:border-[#00D2D3]" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Sumber Rekening Setoran Awal</label>
+          <select id="goalFormWalletSelect" class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#00D2D3]">
+            <!-- Populated via JS with active wallets -->
+          </select>
+        </div>
+
+        <!-- Smart Lock Switch -->
+        <div class="p-3 rounded-2xl bg-[#13141F] border border-white/5 flex items-center justify-between">
+          <div class="pr-2">
+            <span class="text-xs font-semibold text-white flex items-center gap-1.5">
+              <i data-lucide="lock" class="w-3.5 h-3.5 text-[#00D2D3]"></i>
+              Smart Lock (Anti-Khilaf)
+            </span>
+            <span class="text-[10px] text-[#8E8E93] block">Kunci tabungan sampai target tanggal agar disiplin menabung</span>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input id="goalFormLocked" type="checkbox" checked class="sr-only peer" />
+            <div class="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#00D2D3]"></div>
+          </label>
+        </div>
+
+        <!-- Accent Color Picker -->
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Warna Aksen Kartu Impian</label>
+          <div class="flex items-center gap-2">
+            <input id="goalFormColor" type="color" value="#00D2D3" class="w-10 h-8 rounded-lg cursor-pointer bg-transparent border-0" />
+            <span class="text-[11px] text-[#8E8E93]">Pilih palet visual kartu</span>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-[#00D2D3] hover:bg-[#00B8B9] text-black font-bold rounded-xl text-xs transition-colors mt-2 cursor-pointer shadow">
+          Simpan Pos Impian
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: SETOR TABUNGAN ================= -->
+  <div id="modalDepositGoal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md">
+    <div class="w-full sm:max-w-md bg-[#1E1E2D] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="arrow-down-right" class="w-4 h-4 text-[#10B981]"></i>
+          <span>Setor Dana ke Tabungan</span>
+        </h3>
+        <button id="btnCloseDepositGoal" type="button" class="w-8 h-8 rounded-full bg-[#13141F] hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="formDepositGoal" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Pilih Pos Impian Tujuan</label>
+          <select id="depositGoalSelect" required class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#00D2D3]">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Dari Rekening / Dompet Mana</label>
+          <select id="depositWalletSelect" required class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#00D2D3]">
+            <!-- Populated via JS with active wallets -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Nominal Setoran (Rp)</label>
+          <input id="depositAmountInput" type="number" min="1000" step="1000" placeholder="misal: 1000000" required class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white font-mono focus:outline-none focus:border-[#00D2D3]" />
+        </div>
+
+        <!-- Quick nominal chips -->
+        <div class="flex flex-wrap items-center gap-1.5 pt-1">
+          <button type="button" data-chip-deposit="100000" class="chip-deposit px-2.5 py-1 rounded-lg bg-[#13141F] hover:bg-white/10 border border-white/5 text-[10px] text-slate-300">+100rb</button>
+          <button type="button" data-chip-deposit="500000" class="chip-deposit px-2.5 py-1 rounded-lg bg-[#13141F] hover:bg-white/10 border border-white/5 text-[10px] text-slate-300">+500rb</button>
+          <button type="button" data-chip-deposit="1000000" class="chip-deposit px-2.5 py-1 rounded-lg bg-[#13141F] hover:bg-white/10 border border-white/5 text-[10px] text-[#00D2D3] font-semibold">+1 Juta</button>
+          <button type="button" data-chip-deposit="2500000" class="chip-deposit px-2.5 py-1 rounded-lg bg-[#13141F] hover:bg-white/10 border border-white/5 text-[10px] text-slate-300">+2.5 Juta</button>
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-[#10B981] hover:bg-[#059669] text-white font-bold rounded-xl text-xs transition-colors mt-2 cursor-pointer shadow">
+          Konfirmasi Setoran
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: CAIRKAN TABUNGAN ================= -->
+  <div id="modalWithdrawGoal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md">
+    <div class="w-full sm:max-w-md bg-[#1E1E2D] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="arrow-up-right" class="w-4 h-4 text-amber-400"></i>
+          <span>Cairkan Dana Tabungan</span>
+        </h3>
+        <button id="btnCloseWithdrawGoal" type="button" class="w-8 h-8 rounded-full bg-[#13141F] hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="formWithdrawGoal" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Dari Pos Impian Mana</label>
+          <select id="withdrawGoalSelect" required class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#00D2D3]">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[#8E8E93] mb-1">Kembalikan ke Rekening / Dompet</label>
+          <select id="withdrawWalletSelect" required class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#00D2D3]">
+            <!-- Populated via JS with active wallets -->
+          </select>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-[#8E8E93]">Nominal Penarikan (Rp)</label>
+            <span id="withdrawMaxAvailable" class="text-[10px] text-[#00D2D3] font-mono">Tersedia: Rp 0</span>
+          </div>
+          <input id="withdrawAmountInput" type="number" min="1000" step="1000" placeholder="0" required class="w-full bg-[#13141F] border border-white/10 rounded-xl p-2.5 text-white font-mono focus:outline-none focus:border-[#00D2D3]" />
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl text-xs transition-colors mt-2 cursor-pointer shadow">
+          Cairkan Dana
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: APPLE-STYLE ANTI-KHILAF ALERT DIALOG ================= -->
+  <div id="modalAntiKhilafAlert" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="w-full max-w-sm bg-[#1E1E2D] rounded-3xl p-6 border border-amber-500/30 text-center space-y-4 shadow-2xl">
+      <div class="w-14 h-14 rounded-full bg-amber-500/20 text-amber-400 mx-auto flex items-center justify-center border border-amber-500/30">
+        <i data-lucide="shield-alert" class="w-7 h-7"></i>
+      </div>
+      <div>
+        <h3 class="font-editorial text-lg font-bold text-white mb-1">Pos Impian Masih Terkunci!</h3>
+        <p id="antiKhilafMessage" class="text-xs text-slate-300 leading-relaxed">
+          Pos impian ini dikunci sampai target tanggal. Menarik dana sebelum target tercapai dapat menghambat rencana keuanganmu. Apakah Anda yakin ini keadaan darurat?
+        </p>
+      </div>
+      <div class="space-y-2 pt-2">
+        <button id="btnAntiKhilafCancel" type="button" class="w-full py-2.5 rounded-xl bg-[#00D2D3] hover:bg-[#00B8B9] text-black font-bold text-xs transition-colors cursor-pointer shadow">
+          Batal — Tetap Disiplin Menabung
+        </button>
+        <button id="btnAntiKhilafConfirmOverride" type="button" class="w-full py-2 rounded-xl bg-transparent hover:bg-white/5 text-[#EF4444] text-xs font-semibold transition-colors cursor-pointer">
+          Ya, Tetap Cairkan (Kebutuhan Darurat)
+        </button>
+      </div>
     </div>
   </div>
 
