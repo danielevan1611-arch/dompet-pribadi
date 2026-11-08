@@ -52,6 +52,11 @@
     }
   </script>
 
+  <!-- Google Fonts: Inter (UI Sans) & JetBrains Mono (Financial Tabular Figures) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <!-- Lucide Icons & Chart.js & Tesseract.js & Supabase Client & GSAP Motion -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -60,16 +65,25 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <style>
-    /* Apple HIG Smooth Scroll, Safe Areas, and Tactile Touch */
+    /* Apple HIG & UI-UX-PRO-MAX Unified Typography & Design System */
     :root {
       color-scheme: dark;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', "SF Mono", Menlo, Consolas, monospace;
     }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif;
+      font-family: var(--font-sans);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       -webkit-tap-highlight-color: transparent;
       background-color: #000000;
+      letter-spacing: -0.011em;
+    }
+    /* Tabular lining figures for financial metrics & currency */
+    .font-mono, .font-num {
+      font-family: var(--font-mono) !important;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: 'tnum' 1, 'zero' 1;
     }
     .ios-card {
       background-color: #1C1C1E;
@@ -161,22 +175,22 @@
       </nav>
     </div>
 
-    <!-- Sidebar Bottom: Couple Pairing & Settings -->
+    <!-- Sidebar Bottom: Personal Cloud & Settings -->
     <div class="p-4 border-t border-white/[0.08] space-y-2">
-      <div class="p-3 rounded-2xl bg-[#1C1C1E] border border-white/5 space-y-1 text-[11px]">
+      <div class="p-3 rounded-2xl bg-[#1C1C1E] border border-white/5 space-y-1.5 text-xs">
         <div class="flex items-center justify-between">
-          <span class="text-[#8E8E93]">Kode Pasangan:</span>
-          <span id="sidebarCoupleCode" class="font-mono text-white font-semibold">KITA-7890</span>
+          <span class="text-[#8E8E93] text-[11px] font-medium">Mode Aplikasi</span>
+          <span class="text-white font-semibold text-[11px] px-2 py-0.5 rounded-md bg-[#2C2C2E]">Personal Pro</span>
         </div>
-        <span class="text-[10px] text-[#34C759] flex items-center gap-1 font-medium">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#34C759]"></span> Terisolasi & Aman 🔒
+        <span class="text-[11px] text-[#34C759] flex items-center gap-1.5 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#34C759] animate-pulse"></span> Sinkronisasi Realtime ⚡
         </span>
       </div>
 
-      <button id="btnSidebarSettings" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-[#8E8E93] hover:text-white hover:bg-[#1C1C1E] text-xs transition-colors">
-        <span class="flex items-center gap-2">
-          <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-          <span>Pengaturan Cloud & Sync</span>
+      <button id="btnSidebarSettings" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[#8E8E93] hover:text-white hover:bg-[#1C1C1E] text-xs transition-colors cursor-pointer">
+        <span class="flex items-center gap-2.5">
+          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[#007AFF]"></i>
+          <span>Pengaturan & Cloud Sync</span>
         </span>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
       </button>
@@ -226,24 +240,15 @@
           </div>
         </div>
 
-        <!-- Right: Role Switcher & Cloud Indicator -->
+        <!-- Right: Personal Status & Settings Button -->
         <div class="flex items-center gap-2 shrink-0">
-          <div id="segmentedControlTrack" class="relative inline-flex p-1 rounded-full bg-[#1C1C1E] border border-white/10 text-xs font-medium">
-            <div id="rolePillIndicator" class="absolute top-1 bottom-1 rounded-full bg-[#2C2C2E] shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] pointer-events-none" style="left: 4px; width: 62px;"></div>
-            
-            <button id="btnRoleA" class="relative z-10 px-3 py-1 rounded-full text-white transition-colors duration-200 font-medium">
-              Kamu
-            </button>
-            <button id="btnRoleShared" class="relative z-10 px-3 py-1 rounded-full text-[#8E8E93] hover:text-white transition-colors duration-200 font-medium">
-              Bersama
-            </button>
-            <button id="btnRoleB" class="relative z-10 px-3 py-1 rounded-full text-[#8E8E93] hover:text-white transition-colors duration-200 font-medium">
-              Pacar
-            </button>
+          <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1C1C1E] border border-white/10 text-[11px] text-[#8E8E93]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#34C759]"></span>
+            <span class="text-white font-medium">Personal Finance</span>
           </div>
 
-          <button id="btnOpenSettings" title="Pengaturan & Pairing" class="w-8 h-8 rounded-full bg-[#1C1C1E] hover:bg-[#2C2C2E] border border-white/10 text-[#8E8E93] hover:text-white flex items-center justify-center transition-transform active:scale-90">
-            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+          <button id="btnOpenSettings" title="Pengaturan & Cloud Sync" class="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-[#1C1C1E] hover:bg-[#2C2C2E] border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           </button>
         </div>
       </div>
@@ -254,35 +259,21 @@
         <span id="previewAmount" class="px-2 py-0.5 rounded-md bg-[#34C759]/15 text-[#34C759] font-mono font-semibold">Rp 0</span>
         <span id="previewCategory" class="px-2 py-0.5 rounded-md bg-[#2C2C2E] text-slate-300">-</span>
         <span id="previewWallet" class="px-2 py-0.5 rounded-md bg-[#2C2C2E] text-slate-300">-</span>
-        <span id="previewVisibility" class="px-2 py-0.5 rounded-md bg-[#2C2C2E] text-slate-300">-</span>
       </div>
     </header>
 
-    <!-- MAIN DASHBOARD CONTENT (FULL WIDESCREEN) -->
-    <main class="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1 custom-scroll overflow-y-auto">
-
-      <!-- COUPLE PAIRING BANNER (Sync Status) -->
-      <div id="coupleBanner" class="flex items-center justify-between px-4 py-2.5 rounded-2xl bg-[#1C1C1E] border border-white/10 text-xs">
-        <div class="flex items-center gap-2 text-slate-300">
-          <span class="w-2 h-2 rounded-full bg-[#34C759]"></span>
-          <span>Kode Pasangan Aktif: <strong id="bannerCoupleCode" class="text-white font-mono font-semibold">KITA-7890</strong></span>
-          <span class="text-[#8E8E93]">•</span>
-          <span class="text-[#8E8E93]">Privasi dompet pribadi masing-masing 100% aman terisolasi</span>
-        </div>
-        <button id="btnCopyCoupleCode" class="px-3 py-1 rounded-lg bg-[#2C2C2E] hover:bg-[#3A3A3C] text-slate-200 border border-white/10 transition-colors text-[11px] font-medium flex items-center gap-1.5">
-          <i data-lucide="copy" class="w-3 h-3"></i> Salin Kode
-        </button>
-      </div>
+    <!-- MAIN DASHBOARD CONTENT (FULL WIDESCREEN & MOBILE SCROLL) -->
+    <main class="w-full px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-8 space-y-6 flex-1 custom-scroll overflow-y-auto">
 
       <!-- ================= SECTION 1: 4-COLUMN CRM KPI CARDS ================= -->
       <section id="sectionOverview" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <!-- KPI 1: Net Worth -->
         <div class="ios-card-specular rounded-2xl p-5 space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-xs text-[#8E8E93] font-medium tracking-wide uppercase">Total Kekayaan Bersih</span>
-            <span id="kpiNetWorthSubtitle" class="text-[10px] px-2 py-0.5 rounded-full bg-[#2C2C2E] text-[#8E8E93] font-medium">Mode Pribadi</span>
+            <span class="text-xs text-[#8E8E93] font-medium tracking-wide uppercase">Total Saldo Bersih</span>
+            <span id="kpiNetWorthSubtitle" class="text-[11px] px-2.5 py-0.5 rounded-full bg-[#2C2C2E] text-slate-300 font-medium">Personal Pro</span>
           </div>
-          <h2 id="kpiNetWorth" class="text-2xl sm:text-3xl font-bold tracking-tight text-white font-sans">Rp 0</h2>
+          <h2 id="kpiNetWorth" class="text-2xl sm:text-3xl font-bold tracking-tight text-white font-mono tabular-nums">Rp 0</h2>
           <span class="text-[11px] text-[#8E8E93] block">Akumulasi seluruh saldo aktif</span>
         </div>
 
@@ -294,7 +285,7 @@
               <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
             </div>
           </div>
-          <h2 id="kpiIncome" class="text-2xl sm:text-3xl font-bold tracking-tight text-[#34C759] font-sans">+Rp 0</h2>
+          <h2 id="kpiIncome" class="text-2xl sm:text-3xl font-bold tracking-tight text-[#34C759] font-mono tabular-nums">+Rp 0</h2>
           <span class="text-[11px] text-[#8E8E93] block">Gaji & cashflow masuk</span>
         </div>
 
@@ -306,20 +297,20 @@
               <i data-lucide="trending-down" class="w-3.5 h-3.5"></i>
             </div>
           </div>
-          <h2 id="kpiExpense" class="text-2xl sm:text-3xl font-bold tracking-tight text-[#FF3B30] font-sans">-Rp 0</h2>
+          <h2 id="kpiExpense" class="text-2xl sm:text-3xl font-bold tracking-tight text-[#FF3B30] font-mono tabular-nums">-Rp 0</h2>
           <span class="text-[11px] text-[#8E8E93] block">Biaya makan, tagihan & belanja</span>
         </div>
 
-        <!-- KPI 4: Kas Bersama (Couple) -->
-        <div class="ios-card-specular rounded-2xl p-5 space-y-2 border-[#FF2D55]/30">
+        <!-- KPI 4: Tabungan & Dana Darurat -->
+        <div class="ios-card-specular rounded-2xl p-5 space-y-2 border-[#5856D6]/30">
           <div class="flex items-center justify-between">
-            <span class="text-xs text-[#FF2D55] font-medium tracking-wide uppercase">Kas Bersama (Couple)</span>
-            <div class="w-6 h-6 rounded-full bg-[#FF2D55]/15 text-[#FF2D55] flex items-center justify-center">
-              <i data-lucide="heart" class="w-3.5 h-3.5"></i>
+            <span class="text-xs text-[#5856D6] font-medium tracking-wide uppercase">Tabungan & Cadangan</span>
+            <div class="w-6 h-6 rounded-full bg-[#5856D6]/15 text-[#5856D6] flex items-center justify-center">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
             </div>
           </div>
-          <h2 id="kpiCoupleKas" class="text-2xl sm:text-3xl font-bold tracking-tight text-white font-sans">Rp 0</h2>
-          <span class="text-[11px] text-[#8E8E93] block">Alokasi tabungan kencan</span>
+          <h2 id="kpiCoupleKas" class="text-2xl sm:text-3xl font-bold tracking-tight text-white font-mono tabular-nums">Rp 0</h2>
+          <span class="text-[11px] text-[#8E8E93] block">Dana darurat & alokasi simpanan</span>
         </div>
       </section>
 
@@ -421,16 +412,21 @@
               </div>
             </div>
 
-            <!-- Full-width Responsive Table -->
-            <div class="w-full overflow-x-auto custom-scroll">
+            <!-- Mobile Card Feed View (Visible on < 640px) -->
+            <div id="transactionsMobileCards" class="block sm:hidden divide-y divide-white/[0.06] p-3 space-y-2.5">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Full-width Responsive Table (Visible on >= 640px) -->
+            <div class="hidden sm:block w-full overflow-x-auto custom-scroll">
               <table class="w-full text-left text-xs whitespace-nowrap">
                 <thead class="bg-[#141416] text-[#8E8E93] border-b border-white/[0.06] uppercase text-[10px] tracking-wider font-semibold">
                   <tr>
                     <th class="py-3 px-4">Tanggal & Waktu</th>
                     <th class="py-3 px-4">Deskripsi / Item</th>
                     <th class="py-3 px-4">Kategori</th>
-                    <th class="py-3 px-4">Dompet</th>
-                    <th class="py-3 px-4">Visibilitas</th>
+                    <th class="py-3 px-4">Dompet Sumber</th>
+                    <th class="py-3 px-4">Tipe Aliran</th>
                     <th class="py-3 px-4 text-right">Nominal (Rp)</th>
                     <th class="py-3 px-4 text-center">Aksi</th>
                   </tr>
@@ -447,7 +443,7 @@
             <!-- Table Footer -->
             <div class="p-3 border-t border-white/[0.06] bg-[#141416] flex items-center justify-between text-[11px] text-[#8E8E93]">
               <span id="tableRecordCount">Menampilkan transaksi terbaru</span>
-              <span>DompetKu Secure Couple Sync</span>
+              <span class="text-slate-400">DompetKu Personal Pro</span>
             </div>
           </div>
         </div>
@@ -556,13 +552,13 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: PENGATURAN & PAIRING ================= -->
+  <!-- ================= MODAL: PENGATURAN & CLOUD SYNC ================= -->
   <div id="modalSettings" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md">
     <div class="w-full sm:max-w-md bg-[#1C1C1E] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
         <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[#AF52DE]"></i>
-          Pengaturan & Pairing Pasangan
+          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[#007AFF]"></i>
+          Pengaturan Personal & Cloud Sync
         </h3>
         <button id="btnCloseSettings" type="button" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-[#3A3A3C] text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup Pengaturan">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -570,45 +566,45 @@
       </div>
 
       <div class="space-y-4 text-xs">
-        <!-- Couple Code Box -->
-        <div class="p-3.5 rounded-2xl bg-[#2C2C2E]/60 border border-white/10 space-y-2">
-          <span class="text-[#8E8E93] font-medium block">Kode Pasangan Anda:</span>
-          <div class="flex items-center justify-between gap-2">
-            <span id="settingsCoupleCodeDisplay" class="font-mono text-base font-bold text-white tracking-wider">KITA-7890</span>
-            <button id="btnSettingsCopyCode" class="px-3 py-1.5 rounded-lg bg-[#3A3A3C] hover:bg-[#48484A] text-white font-medium transition-colors">
-              Salin Kode
-            </button>
+        <!-- Personal Edition Card -->
+        <div class="p-3.5 rounded-2xl bg-[#2C2C2E]/60 border border-white/10 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-white font-semibold text-xs flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[#34C759]"></span> DompetKu Personal Edition
+            </span>
+            <span class="text-[10px] text-[#34C759] font-medium px-2 py-0.5 rounded-full bg-[#34C759]/15">Pro Mandiri</span>
           </div>
-          <p class="text-[11px] text-[#8E8E93]">Kirim kode ini ke pacar Anda agar terhubung ke dompet bersama yang sama.</p>
+          <p class="text-[11px] text-[#8E8E93] leading-relaxed">Aplikasi keuangan mandiri. Anda dan pacar Anda masing-masing memiliki buku kas pribadi yang terisolasi aman.</p>
         </div>
 
-        <!-- Join Form -->
-        <div class="space-y-1.5">
-          <label class="block text-[#8E8E93]">Hubungkan ke Kode Pacar:</label>
-          <div class="flex gap-2">
-            <input id="inputJoinCode" type="text" placeholder="misal: LOVE-1234" class="flex-1 bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#007AFF] font-mono" />
-            <button id="btnJoinCode" class="px-4 py-2.5 bg-[#007AFF] hover:bg-[#0071E3] text-white rounded-xl font-medium transition-colors">
-              Hubungkan
-            </button>
+        <!-- Telegram Quick Logging Info -->
+        <div class="p-3.5 rounded-2xl bg-[#2C2C2E]/60 border border-white/10 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="text-white font-medium text-xs flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#0088CC]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+              <span>Telegram Bot Recording</span>
+            </span>
+            <span class="text-[10px] text-[#34C759] font-semibold">Tersedia</span>
           </div>
+          <p class="text-[11px] text-[#8E8E93] leading-relaxed">Catat transaksi langsung via chat Telegram: contoh <code class="text-white bg-black/50 px-1 py-0.5 rounded font-mono">kopi 25rb gopay</code> atau <code class="text-white bg-black/50 px-1 py-0.5 rounded font-mono">makan 35k</code> tanpa perlu membuka browser.</p>
         </div>
 
-        <!-- Supabase Credentials (Optional) -->
-        <div class="pt-3 border-t border-white/[0.08] space-y-2">
-          <span class="text-[#8E8E93] font-medium block flex items-center justify-between">
-            <span>Supabase Cloud Sync (Opsional):</span>
-            <span class="text-[10px] text-[#34C759]">Gratis</span>
+        <!-- Supabase Cloud Credentials -->
+        <div class="pt-2 border-t border-white/[0.08] space-y-2">
+          <span class="text-[#8E8E93] font-medium block flex items-center justify-between text-xs">
+            <span>Supabase Cloud Sync:</span>
+            <span class="text-[10px] text-[#34C759]">Tersambung</span>
           </span>
-          <input id="inputSupabaseUrl" type="text" placeholder="https://xyz.supabase.co" class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2 text-white text-[11px] font-mono" />
-          <input id="inputSupabaseKey" type="password" placeholder="anon key..." class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2 text-white text-[11px] font-mono" />
-          <button id="btnSaveCloudConfig" class="w-full py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-white rounded-xl font-medium text-xs transition-colors">
+          <input id="inputSupabaseUrl" type="text" placeholder="https://xyz.supabase.co" class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white text-xs font-mono focus:outline-none focus:border-[#007AFF]" />
+          <input id="inputSupabaseKey" type="password" placeholder="anon key..." class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2.5 text-white text-xs font-mono focus:outline-none focus:border-[#007AFF]" />
+          <button id="btnSaveCloudConfig" class="w-full py-2.5 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-white rounded-xl font-medium text-xs transition-colors cursor-pointer">
             Simpan Konfigurasi Cloud
           </button>
         </div>
 
         <!-- Done / Return to Dashboard Action -->
         <div class="pt-2">
-          <button id="btnDoneSettings" type="button" class="w-full py-2.5 rounded-xl bg-[#007AFF] hover:bg-[#0071E3] active:scale-[0.98] text-white font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#007AFF]/20">
+          <button id="btnDoneSettings" type="button" class="w-full py-3 rounded-xl bg-[#007AFF] hover:bg-[#0071E3] active:scale-[0.98] text-white font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#007AFF]/25">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
             <span>Selesai & Kembali ke Dashboard</span>
           </button>
@@ -616,13 +612,33 @@
 
         <!-- Reset Button -->
         <div class="pt-1">
-          <button id="btnResetData" class="w-full py-1.5 text-[#FF3B30] hover:underline text-[11px] text-center">
+          <button id="btnResetData" class="w-full py-2 text-[#FF3B30] hover:underline text-xs text-center cursor-pointer">
             Reset Data Lokal ke Awal
           </button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- ================= APPLE iOS MOBILE BOTTOM TAB BAR ================= -->
+  <nav id="mobileBottomNav" class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#141416]/92 backdrop-blur-2xl border-t border-white/[0.08] px-4 py-2 flex items-center justify-around shadow-2xl safe-area-bottom">
+    <a href="#sectionOverview" class="tab-item flex flex-col items-center gap-1 text-[#007AFF] transition-colors py-1.5 px-3" data-target="overview">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium tracking-tight">Ringkasan</span>
+    </a>
+    <a href="#sectionWallets" class="tab-item flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white transition-colors py-1.5 px-3" data-target="wallets">
+      <i data-lucide="credit-card" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium tracking-tight">Dompet</span>
+    </a>
+    <a href="#sectionTransactions" class="tab-item flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white transition-colors py-1.5 px-3" data-target="transactions">
+      <i data-lucide="table" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium tracking-tight">Transaksi</span>
+    </a>
+    <button id="btnBottomTabSettings" class="tab-item flex flex-col items-center gap-1 text-[#8E8E93] hover:text-white transition-colors py-1.5 px-3 cursor-pointer">
+      <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium tracking-tight">Pengaturan</span>
+    </button>
+  </nav>
 
   <!-- Main Application Script (Self-contained, zero-CORS) -->
   <script src="js/bundle.js"></script>
