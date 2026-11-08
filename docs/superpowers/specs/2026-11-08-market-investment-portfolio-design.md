@@ -1,126 +1,108 @@
-# Design Document: Real-Time Market Watcher & Asset Investment Portfolio
+# Design Document: Dedicated Market & Investment Dashboard (Multi-View SPA)
 
 **Date**: 2026-11-08  
-**Status**: Pending Plan Approval (Brainstorming & Design Phase)  
-**Selected Approach**: Pilihan A (Dedicated View "Market & Investasi" + Live Ticker Strip di Dashboard) + Pilihan 1B (Kalkulator Kepemilikan Aset & Portofolio Investasi)  
+**Status**: Approved Specification  
+**Architecture Rule**: Zero intrusion into the main Dashboard. Market & Investment lives completely on its own dedicated full-screen dashboard (`viewMarket`) accessible via Sidebar and Mobile Navigation.  
 **Target Spec File**: `docs/superpowers/specs/2026-11-08-market-investment-portfolio-design.md`
 
 ---
 
 ## 1. Intent & Purpose (The "Why")
-The user wants to monitor real-time financial market prices directly within their Dompet dashboard without leaving the application:
-1. **IHSG (Indeks Harga Saham Gabungan)** & Top Indonesian Bluechips (BBCA, BBRI, BMRI, TLKM, ASII).
-2. **Harga Emas Dunia (XAU/USD)** & Emas Batangan Antam (Rp/gram).
-3. **Bitcoin & Top Crypto** (BTC, ETH, SOL, BNB, XRP) with USD and IDR exchange rates and 24h performance.
-4. **Asset Portfolio Calculator (1B)**: Enable the user to record their personal asset holdings (e.g. 10g Emas Antam, 0.05 BTC, 25 lot BBCA) to automatically compute their total portfolio net worth and unrealized profit/loss (PnL) based on live prices.
+The user requested a **Real-Time Market & Investment Dashboard**:
+1. **Strict View Isolation**: The main executive Dashboard (`viewDashboard`) remains 100% clean—no tickers or market cards.
+2. **Dedicated Market Dashboard (`viewMarket`)**: When the user clicks the "Market & Investasi" nav item, the app transitions into a full standalone dashboard dedicated to financial markets and Daniel's investment holdings:
+   - **IHSG (Indeks Harga Saham Gabungan)** & Top Bluechips (BBCA, BBRI, BMRI, TLKM, ASII).
+   - **Harga Emas Dunia (XAU/USD)** & Emas Batangan Antam (Rp/gram).
+   - **Bitcoin & Top Crypto** (BTC, ETH, SOL, BNB, XRP) in IDR & USD with live tick movements.
+   - **Asset Portfolio Tracker (Fitur 1B)**: Record personal holdings (e.g. 10g Emas Antam, 0.05 BTC, 25 lot BBCA) with automatic real-time valuation and unrealized Profit/Loss (PnL).
 
 ---
 
-## 2. Multi-View SPA Architecture & Navigation
-The application routing is expanded to include the new screen:
+## 2. Multi-View Architecture & Navigation Map
 ```
 [Sidebar Nav & Mobile Bottom Tabs]
    │
-   ├── 'viewDashboard'    (Executive Overview + Live Running Ticker Strip)
-   ├── 'viewMyWallet'     (Dedicated Screen: Funding Sources, ATM Cards, Transfers)
+   ├── 'viewDashboard'    (Executive Personal Finance ONLY - No market clutter)
+   ├── 'viewMyWallet'     (Dedicated Screen: All Funding Sources, ATM Cards, Transfers)
    ├── 'viewTransactions' (Dedicated Screen: Financial Calendar & Full Ledger)
    ├── 'viewSplitBill'    (Dedicated Screen: Receipt/PDF OCR + PB1 Tax Splitter)
-   ├── 'viewMarket'       [NEW] (Dedicated Screen: Live Market Watcher & Investment Portfolio)
+   ├── 'viewMarket'       [NEW DEDICATED DASHBOARD] (Full Market & Investment Dashboard)
    └── 'viewSettings'     (Dedicated Screen: Profile Name "Daniel", Cloud/Telegram)
 ```
 
-### Dashboard Enhancement: Live Running Ticker Strip
-- Placed immediately beneath the Top Header on the Dashboard.
-- Horizontally scrollable marquee/ticker cards showing:
-  - `IHSG`: 7,285.40 (+0.42%)
-  - `Emas Antam`: Rp 1.485.000/g (+0.68%)
-  - `Bitcoin (BTC)`: Rp 1.542.800.000 ($96,400) (+3.15%)
-  - `Ethereum (ETH)`: Rp 54.300.000 ($3,410) (+2.40%)
-  - `BBCA`: Rp 10.250 (+1.23%)
-- When a price ticks upwards or downwards, a subtle green/red pulse effect highlights the price change (Apple-style specular micro-interaction).
+- **Sidebar Menu Item**:
+  - Label: `"Market & Investasi"`
+  - Icon: Lucide `trending-up`
+  - Attribute: `data-view="market"`
+- **Mobile Bottom Tab Bar**:
+  - Icon + Label: `"Market"`
+  - Attribute: `data-view="market"`
 
 ---
 
-## 3. Screen Design: View Market & Investasi (`#viewMarket`)
+## 3. Dedicated Market Dashboard UI Structure (`#viewMarket`)
 
-The `#viewMarket` section contains three main zones:
+The `#viewMarket` screen is designed as a complete, self-contained dashboard following the Dompet DexignLab dark aesthetic (`#13141F`, `#1E1E2D`, `#00D2D3`) and Apple typography (New York serif for balances, SF for UI labels, SF Mono for prices):
 
-### Zone 1: Summary Header & Portfolio Valuation Banner
-- **Total Nilai Investasi (Portfolio Net Worth)**: Displayed in large Apple New York font (`Rp ...`).
-- **Total Keuntungan / Kerugian (Unrealized PnL)**: Color-coded green (`+Rp ... (+12.4%)`) or red (`-Rp ... (-3.2%)`).
-- **Kurs Acuan**: USD/IDR (e.g. `1 USD = Rp 15.850`) and status bursa IDX (Buka / Tutup).
-- Quick Action Button: **`+ Tambah Aset Portofolio`** (opens modal to record asset holdings).
+### ROW 1: Market Executive Header & Status Bar
+- Title: **"Market & Investment Dashboard"** (Apple New York font).
+- Subtitle: "Pantauan harga real-time IHSG, Emas Antam, dan Top Crypto serta nilai portofolio Anda".
+- Status Badges:
+  - `Bursa Efek Indonesia (IDX)`: Buka / Tutup badge.
+  - `Crypto Market`: 24/7 Aktif badge.
+  - `Kurs Referensi`: 1 USD = Rp 15.850.
+- Top Action: **`+ Catat Aset Portofolio`** (Button to record new asset holdings).
 
-### Zone 2: Category Filter Tabs
-1. **Semua Aset** (Overview of all tracked instruments).
-2. **IHSG & Saham Indonesia**: IHSG Composite Index, BBCA (Bank Central Asia), BBRI (Bank Rakyat Indonesia), BMRI (Bank Mandiri), TLKM (Telkom Indonesia), ASII (Astra International).
-3. **Emas & Logam Mulia**: Emas Antam Batangan (Rp/gram), Emas Spot Dunia (XAU/USD per troy ounce), Perak Dunia (XAG/USD).
-4. **Crypto Majors**: Bitcoin (BTC), Ethereum (ETH), Solana (SOL), Binance Coin (BNB), Ripple (XRP).
-5. **Portofolio Saya**: Dedicated breakdown of only assets owned by Daniel with purchase price, current value, and profit/loss.
+### ROW 2: 4 Market KPI Cards (Apple Specular Gradients)
+1. **Total Portofolio Investasi**:
+   - Total current market value of all assets owned by Daniel in New York serif font (e.g. `Rp 48.650.000`).
+2. **Total Keuntungan / Kerugian (Unrealized PnL)**:
+   - Net profit or loss with badge (e.g. `+Rp 4.350.000 (+9.8%)` in Emerald `#10B981` or `-Rp ...` in Rose `#FF3B30`).
+3. **Top Performing Asset (Hari Ini)**:
+   - The highest gaining asset today (e.g. `SOL/IDR +6.4%` or `BBCA +1.8%`).
+4. **Emas Batangan Antam Hari Ini**:
+   - Current price per gram (e.g. `Rp 1.485.000/g (+0.6%)`).
 
-### Zone 3: Market Instrument Cards & Sparklines
-Each market card features:
-- Asset Icon & Badge (e.g. Bitcoin gold coin, Antam gold bar, IDX stock bull icon).
-- Asset Name & Ticker Code (`BTC/IDR`, `ANTAM`, `IHSG`, `BBCA`).
-- Live Price in Rupiah (`Rp ...`) and USD secondary notation where relevant.
-- 24h Change Badge: `+3.45%` (Emerald `#10B981`) or `-1.20%` (Rose `#FF3B30`).
-- Mini SVG Sparkline: 7-point visual trend line showing intraday movement.
-- High/Low 24h range bar.
+### ROW 3: Category Filter Pills
+- `Semua Aset`
+- `Saham Indonesia (IHSG)`
+- `Emas & Logam Mulia`
+- `Crypto Terbesar`
+- `Portofolio Saya (1B)` (Displays only holdings owned by Daniel with purchase cost and profit calculation).
 
----
+### ROW 4: Live Market Cards Grid & Real-Time Price Stream
+Each asset card includes:
+- Asset Icon & Badge (Bitcoin, Ethereum, Solana, Gold Bar Antam, IDX Bull, etc.).
+- Asset Name & Ticker Code.
+- Live Price in Rupiah (`Rp ...`) and USD where applicable.
+- 24h Change Badge: `+3.45%` (Green) or `-1.20%` (Red).
+- Mini SVG Sparkline trend line.
+- Real-Time Tick Micro-Interaction: Smooth flash animation when price updates.
 
-## 4. Asset Portfolio Calculator Engine (`js/portfolio.js`)
-
-### Math Specifications
-1. **Stock Valuation (IDX / Lot Standard)**:
-   - In Indonesia, 1 lot = 100 shares.
-   - `totalCost = lots * 100 * buyPricePerShare`
-   - `currentValue = lots * 100 * currentPricePerShare`
-   - `pnlNominal = currentValue - totalCost`
-   - `pnlPercentage = (pnlNominal / totalCost) * 100`
-
-2. **Gold Valuation (Grams Standard)**:
-   - `totalCost = grams * buyPricePerGram`
-   - `currentValue = grams * currentPricePerGram`
-   - `pnlNominal = currentValue - totalCost`
-   - `pnlPercentage = (pnlNominal / totalCost) * 100`
-
-3. **Crypto Valuation (Coin Fraction Standard)**:
-   - `totalCost = coinUnits * buyPriceIDR`
-   - `currentValue = coinUnits * currentPriceIDR`
-   - `pnlNominal = currentValue - totalCost`
-   - `pnlPercentage = (pnlNominal / totalCost) * 100`
-
-4. **Integration with Net Worth**:
-   - Total Net Worth = `Sum(Wallet Balances) + Sum(Portfolio Asset Values)`.
-   - Toggle available in Settings or Header: "Sertakan Nilai Portofolio Investasi ke Net Worth".
+### ROW 5: Portfolio Asset Holdings Ledger (Feature 1B)
+- A clean CRM table listing all owned assets:
+  - Nama Aset & Kategori
+  - Jumlah Kepemilikan (misal: 10 gram, 0.05 BTC, 20 lot)
+  - Modal Rata-rata Beli
+  - Harga Terkini Real-Time
+  - Total Nilai Pasar Terkini
+  - Untung / Rugi (PnL)
+  - Aksi: Edit / Hapus
 
 ---
 
-## 5. Real-Time Data Streaming & Resilient Fallback
-
-### Zero-CORS & Offline-First Protocol
-- To ensure full compatibility with standalone double-click execution (`file:///`) and deployed web servers:
-  1. **Live Network Strategy**:
-     - Attempts live fetch from public CORS-friendly crypto endpoints (CoinGecko Simple Price API: `api.coingecko.com/api/v3/simple/price`).
-     - Attempts live currency rate fetch from open exchange rate APIs.
-  2. **Intelligent Live Simulation Engine (Fallback)**:
-     - If network access is blocked by local file security policies (CORS) or user is offline, the engine initializes from authentic baseline prices (BTC ~Rp 1.54B, Gold ~Rp 1.48M/g, IHSG ~7,285).
-     - Every 3.5 seconds, generates authentic micro-jitter ticks (within realistic ±0.08% bounds), updating sparklines and flashing green/red indicators.
-     - Preserves 100% responsiveness without throwing uncaught exceptions in browser devtools.
+## 4. Calculation Engine & Logic (`js/market.js`)
+- Standard 1 lot = 100 shares for Indonesian stocks.
+- Grams conversion for Gold.
+- Fractional coin precision for Crypto.
+- Live price streaming protocol with resilient zero-CORS offline fallback.
+- Persisted to `localStorage` under `dompetku_market_portfolio_v1`.
 
 ---
 
-## 6. Verification Plan & Test Matrix
-
-### Automated Test Suite (`tests/market.test.js`)
-1. **Test 1**: Asset portfolio valuation for IDX stocks with 100x lot conversion.
-2. **Test 2**: Asset portfolio valuation for Gold in grams and Crypto in fractional coins.
-3. **Test 3**: Unrealized PnL calculation (positive profit & negative loss percentages).
-4. **Test 4**: Real-time tick generator bounds and data format consistency.
-
-### Manual Browser Verification
-- Verify navigation to "Market & Investasi" via sidebar and mobile bottom nav.
-- Verify live running ticker strip on Dashboard with animated price ticks.
-- Verify adding a sample asset (e.g. 10g Emas Antam or 0.05 BTC) and seeing live portfolio value update.
-- Verify switching category tabs (All, Saham, Emas, Crypto, Portofolio).
+## 5. Verification Plan
+- Unit tests in `tests/market.test.js` validating valuation, PnL calculations, lot multiplier, and tick generator.
+- Browser test validating:
+  - Main Dashboard (`viewDashboard`) has ZERO market widgets or tickers.
+  - Clicking "Market & Investasi" opens the dedicated full-screen Market Dashboard.
+  - Adding an asset in Portofolio Saya computes accurate real-time PnL.
