@@ -1371,11 +1371,27 @@
     const modalSettings = document.getElementById('modalSettings');
     const btnOpenSettings = document.getElementById('btnOpenSettings');
     const btnCloseSettings = document.getElementById('btnCloseSettings');
+    const btnDoneSettings = document.getElementById('btnDoneSettings');
     const btnJoinCode = document.getElementById('btnJoinCode');
     const inputJoinCode = document.getElementById('inputJoinCode');
 
     btnOpenSettings?.addEventListener('click', () => modalSettings?.classList.remove('hidden'));
     btnCloseSettings?.addEventListener('click', () => modalSettings?.classList.add('hidden'));
+    btnDoneSettings?.addEventListener('click', () => modalSettings?.classList.add('hidden'));
+
+    // Universal backdrop click-to-close on all modals
+    [modalWallet, modalScanner, modalSettings].forEach(modal => {
+      modal?.addEventListener('click', e => {
+        if (e.target === modal) modal.classList.add('hidden');
+      });
+    });
+
+    // Global keyboard Escape key dismissal
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        [modalWallet, modalScanner, modalSettings].forEach(m => m?.classList.add('hidden'));
+      }
+    });
 
     btnJoinCode?.addEventListener('click', () => {
       const newCode = (inputJoinCode?.value || '').trim().toUpperCase();

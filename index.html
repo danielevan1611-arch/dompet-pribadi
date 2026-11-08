@@ -463,11 +463,11 @@
     <div class="w-full sm:max-w-md bg-[#1C1C1E] rounded-t-3xl sm:rounded-2xl p-5 border-t sm:border border-white/10 space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
         <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-          <i data-lucide="camera" class="w-4 h-4 text-[#007AFF]"></i>
+          <svg class="w-4 h-4 text-[#007AFF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="4"/></svg>
           Pindai Bukti Transfer / Resi
         </h3>
-        <button id="btnCloseScanner" class="text-[#8E8E93] hover:text-white p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
+        <button id="btnCloseScanner" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-[#3A3A3C] text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
@@ -520,8 +520,8 @@
           <i data-lucide="plus-circle" class="w-4 h-4 text-[#007AFF]"></i>
           Tambah Dompet Baru
         </h3>
-        <button id="btnCloseAddWallet" class="text-[#8E8E93] hover:text-white p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
+        <button id="btnCloseAddWallet" type="button" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-[#3A3A3C] text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
@@ -564,8 +564,8 @@
           <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[#AF52DE]"></i>
           Pengaturan & Pairing Pasangan
         </h3>
-        <button id="btnCloseSettings" class="text-[#8E8E93] hover:text-white p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
+        <button id="btnCloseSettings" type="button" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-[#3A3A3C] text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup Pengaturan">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
@@ -603,6 +603,14 @@
           <input id="inputSupabaseKey" type="password" placeholder="anon key..." class="w-full bg-[#2C2C2E] border border-white/10 rounded-xl p-2 text-white text-[11px] font-mono" />
           <button id="btnSaveCloudConfig" class="w-full py-2 bg-[#2C2C2E] hover:bg-[#3A3A3C] text-white rounded-xl font-medium text-xs transition-colors">
             Simpan Konfigurasi Cloud
+          </button>
+        </div>
+
+        <!-- Done / Return to Dashboard Action -->
+        <div class="pt-2">
+          <button id="btnDoneSettings" type="button" class="w-full py-2.5 rounded-xl bg-[#007AFF] hover:bg-[#0071E3] active:scale-[0.98] text-white font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#007AFF]/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <span>Selesai & Kembali ke Dashboard</span>
           </button>
         </div>
 
