@@ -1,8 +1,8 @@
-# Design Spec: Dashboard Dompet Uang Pribadi (Personal Finance Dashboard)
+# Design Spec: DompetKu — Couple & Personal Finance PWA
 
 **Tanggal:** 2026-11-08  
 **Status:** Menunggu Persetujuan Pengguna (Pending User Approval)  
-**Tipe Aplikasi:** Single-File / Standalone Responsive Web App (HTML5, Tailwind CSS, Vanilla JS, Chart.js, Lucide Icons, Tesseract.js)  
+**Tipe Aplikasi:** Progressive Web App (PWA) + Supabase Realtime Cloud Sync + Deploy Vercel  
 **Target Lokasi:** `C:\Users\NITRO\.gemini\antigravity\scratch\dompet-pribadi`  
 
 ---
@@ -10,159 +10,141 @@
 ## 1. Intent & The Why
 
 ### Mengapa aplikasi ini dibuat?
-Pengguna membutuhkan sarana pencatatan dan visualisasi keuangan pribadi yang:
-1. **Multi-Dompet Terintegrasi**: Menggabungkan berbagai akun keuangan (rekening bank, e-wallet, dan uang tunai/cash) dalam satu dashboard tunggal agar total saldo riil (*net cash*) terlihat jelas.
-2. **Visualisasi & Analisis Cepat**: Memberikan representasi visual berupa grafik pengeluaran per kategori (donut chart) dan tren arus kas pemasukan vs pengeluaran bulanan.
-3. **Catat Cepat Serba Instan (Natural Language Quick Input)**: Pengguna tidak perlu mengisi formulir panjang satu per satu. Cukup ketik teks seperti *"makan 15k"* atau *"kopi 25rb gopay"*, dan sistem langsung mengenali nominal, kategori, serta dompet.
-4. **Scan Screenshot Bukti Transfer / Resi (Receipt & Payment OCR)**: Pengguna bisa melampirkan/mengunggah screenshot bukti transfer m-banking atau foto struk kasir, lalu sistem otomatis mengekstrak nominal, tanggal, dan menebak kategorinya.
-5. **Auto-Categorization Otomatis**: Semua pengeluaran langsung diklasifikasikan ke dalam kategori yang tepat berdasarkan kamus kata kunci pintar (*smart keyword rules*).
-6. **Privasi Penuh & Zero Friction**: Berjalan 100% di sisi klien (*client-side*) tanpa kewajiban mendaftar akun, tanpa server pihak ketiga, data tersimpan aman di browser lokal (`IndexedDB` / `localStorage`).
-7. **Responsif Fleksibel**: Nyaman dan ergonomis digunakan baik di laptop/desktop maupun di smartphone/HP.
+Pengguna membutuhkan aplikasi keuangan pribadi dan berpasangan (*Couple Finance*) yang:
+1. **Privasi Ketat Antar-Pasangan**: Data keuangan pribadi masing-masing (saldo rekening rahasia, pengeluaran pribadi) **100% terisolasi dan tidak dapat dilihat oleh pasangan**.
+2. **Dompet Bersama (Shared Space)**: Memiliki ruang bersama khusus untuk pos pengeluaran kencan, patungan, atau tabungan rencana masa depan yang bisa dipantau dan diisi oleh kedua belah pihak secara transparan.
+3. **Ekosistem HP (PWA Native Feel)**: Dapat di-*install* langsung ke layar utama (*Home Screen*) HP Android & iPhone tanpa melalui App Store, layar penuh tanpa address bar, mendukung akses kamera untuk scan resi.
+4. **Sinkronisasi Multi-Perangkat Realtime**: Ketika salah satu mencatat pengeluaran di dompet bersama, HP pasangan langsung ter-update seketika via cloud database (Supabase Realtime).
+5. **Catat Cepat Natural Language**: Mendukung input instan bergaya chat (`makan 15k` atau `nonton 90k bersama`).
+6. **Scan Resi / Bukti Transfer**: Upload atau foto struk/bukti transfer dengan OCR client-side.
+7. **Online & Siap Diakses**: Di-deploy ke Vercel dengan URL HTTPS resmi yang bisa langsung dibagikan dan dibuka di HP masing-masing.
 
 ---
 
-## 2. Goals, Non-Goals, & Anti-Goals
+## 2. Model Privasi & Akses Data (Strict Privacy Isolation)
 
-### Goals (Tujuan Utama):
-- **Manajemen Akun/Dompet**: Tambah, edit, dan pantau saldo masing-masing dompet (misal: BCA, Mandiri, GoPay, OVO, Cash).
-- **Pencatatan Transaksi Cepat & Fleksibel**:
-  - Pemasukan (Income) -> menambah saldo dompet tujuan.
-  - Pengeluaran (Expense) -> mengurangi saldo dompet asal, dialokasikan ke kategori.
-  - Transfer Antar-Dompet -> memindahkan saldo dari dompet A ke dompet B tanpa tercatat sebagai pengeluaran/pemasukan bersih.
-- **Smart Quick Input Bar (Bot / Chat Input)**:
-  - Input teks satu baris bergaya pesan chat: `makan siang 25k bca` atau `bensin 30rb tunai`.
-  - Otomatis mem-parsing:
-    - Nominal: format `15k`, `15rb`, `15.000`, `15000` menjadi angka integer.
-    - Dompet: mencocokkan nama dompet (bca, gopay, mandiri, tunai/cash). Default ke dompet aktif/utama jika tidak disebutkan.
-    - Kategori: mencocokkan kata kunci ke kategori terkait.
-  - Muncul konfirmasi instan 1-klik (*Quick Preview Card*) sebelum disimpan.
-- **Scan Struk & Bukti Transfer (Image OCR & Vision)**:
-  - Tombol upload / drag-and-drop / paste (Ctrl+V) foto bukti transfer m-banking (BCA, Mandiri, BRI, dll.), QRIS, e-wallet (GoPay, OVO, DANA), atau struk belanja.
-  - Menggunakan engine OCR client-side (`Tesseract.js` via CDN) untuk mengekstrak nominal Rp dan teks transaksi secara lokal tanpa perlu internet/server.
-  - *Opsi AI Pintar Tambahan*: Slot konfigurasi opsional untuk memasukkan Google Gemini API Key jika pengguna ingin ekstraksi AI multimodal tingkat lanjut yang lebih presisi pada foto struk fisik yang kusut/buram.
-- **Auto-Categorization Engine**:
-  - Kamus kata kunci otomatis lokal (100+ kata kunci sehari-hari: *makan, bakso, kopi, indomaret, alfamart, bensin, spbu, parkir, grab, gojek, pln, wifi, netflix, pulsa, obat, apotek*, dll.).
-  - Pengguna bisa menambah kata kunci kustom untuk tiap kategori.
-- **Kategori Kustom**: Pengguna bisa membuat dan mengelola kategori transaksi sendiri lengkap dengan pilihan ikon dan warna aksen.
-- **Visual Analytics**:
-  - Donut Chart: Alokasi pengeluaran per kategori bulan berjalan.
-  - Bar/Line Chart: Tren pemasukan vs pengeluaran (cashflow bulanan).
-  - Ringkasan Metrik: Total Kekayaan Bersih (Total Net Worth), Total Pemasukan Bulan Ini, Total Pengeluaran Bulan Ini.
-- **Responsif Mobile & Desktop**: Layout kartu metrik, wallet slider, tombol aksi cepat terapung (*floating action button*), dan modal interaktif di layar sentuh.
-
-### Non-Goals (Bukan Tujuan Versi 1 / MVP):
-- Integrasi scraping API bank otomatis secara langsung (Open Banking berbayar).
-- Fitur multi-user atau login berbasis cloud database.
-
-### Anti-Goals:
-- **Jangan sampai lambat / bloatware**: Menghindari framework raksasa atau build-step rumit jika aplikasi bisa disajikan dalam arsitektur mandiri yang instan dibuka cukup dengan double-click `index.html`.
-- **Jangan ada ketergantungan server wajib**: Fitur parser cepat dan OCR dasar harus tetap dapat berjalan 100% di browser pengguna secara offline.
-
----
-
-## 3. Pendekatan yang Dipertimbangkan (Approaches)
-
-| Pendekatan | Kelebihan | Kekurangan | Status |
-| :--- | :--- | :--- | :--- |
-| **Opsi 1: Standalone Web App (HTML5 + Tailwind CSS + Vanilla JS + Chart.js + Tesseract.js)** | Instan dijalankan, 0 dependensi `node_modules`, 100% offline-ready, privasi total di IndexedDB lokal, parser teks instan dengan zero-latency. | Memerlukan CDN scripts untuk library visual & OCR. | **Dipilih oleh Pengguna** (Rekomendasi) |
-| **Opsi 2: React + Vite SPA** | Ekosistem komponen React, modular. | Memerlukan instalasi Node.js, npm build, dan folder dependencies ratusan MB. | Ditolak (terlalu berat untuk kebutuhan awal) |
-| **Opsi 3: Fullstack Next.js** | Fitur SSR dan rute API bawaan. | Overkill untuk aplikasi offline tanpa kebutuhan backend database terpusat. | Ditolak (melanggar prinsip YAGNI) |
-
----
-
-## 4. Rincian Desain & Arsitektur
-
-### A. Struktur File
-```text
-dompet-pribadi/
-├── index.html              # Entry point HTML UI + Tailwind CDN + Lucide Icons + Chart.js + Tesseract.js
-├── css/
-│   └── styles.css          # Kustom styling (scrollbar, modal animation, theme tokens)
-├── js/
-│   ├── app.js              # Inisialisasi UI & Event Listeners
-│   ├── store.js            # State management & Storage Engine (IndexedDB + fallback LocalStorage)
-│   ├── quickParser.js      # Natural Language Parser (nominal 'k'/'rb', kategori kata kunci, dompet)
-│   ├── receiptScanner.js   # Image OCR scanner (Tesseract.js lokal + opsional Gemini API)
-│   ├── charts.js           # Chart.js rendering (Donut Breakdown & Bar Cashflow)
-│   └── mockData.js         # Initial seed data agar dashboard langsung terlihat hidup saat pertama dibuka
-├── tests/
-│   ├── store.test.js       # Unit test logika saldo, transfer, & filtering
-│   └── quickParser.test.js # Unit test parser natural language ("makan 15k", dll.)
-├── docs/
-│   └── superpowers/specs/  # Dokumen spesifikasi & plan
-└── README.md               # Dokumentasi cara pakai
-```
-
-### B. Aturan Parser Bahasa Alami (`quickParser.js`)
-Aturan pengenalan teks:
-1. **Pola Nominal**:
-   - `\b(\d+)\s*(k|rb|ribu)\b` -> dikalikan 1.000 (contoh: `15k` -> 15.000, `25rb` -> 25.000).
-   - `\b(\d+)\s*(jt|juta)\b` -> dikalikan 1.000.000 (contoh: `1.5jt` -> 1.500.000).
-   - Format standar angka: `15.000` atau `15000`.
-2. **Pola Dompet**:
-   - Pencocokan nama/alias dompet: `bca`, `gopay`, `ovo`, `dana`, `mandiri`, `cash`, `tunai`.
-3. **Pola Kategori & Auto-Categorization**:
-   - Kamus mapping kata:
-     - `Makanan & Minuman`: makan, sarapan, lunch, makan siang, dinner, nasi, bakso, kopi, cafe, warteg, mcd, kfc, grabfood, gofood.
-     - `Transportasi`: bensin, spbu, pertalite, pertamax, parkir, grab, gojek, tol, kereta, krl, mrt, busway.
-     - `Belanja & Kebutuhan`: indomaret, alfamart, supermarket, baju, sabun, shopee, tokopedia.
-     - `Tagihan & Utilitas`: pln, listrik, pdam, air, wifi, indihome, pulsa, kuota, netflix, spotify.
-     - `Kesehatan`: obat, apotek, dokter, vitamin, klinik.
-     - `Gaji & Pendapatan`: gaji, bonus, thr, dividen, cashback, refund.
-   - Sisa kata di luar nominal dan dompet akan otomatis disimpan sebagai **Catatan/Keterangan Transaksi** (*note*).
-
----
-
-## 5. Sketsa Tampilan Antarmuka (UI Layout Sketch)
+Aplikasi menerapkan **Two-Tier Isolation**:
 
 ```text
-+-----------------------------------------------------------------------------------+
-|  [Logo] DompetKu                [Bulan: November 2026 v]   [+ Transaksi] [⚙ Pengaturan]
-+-----------------------------------------------------------------------------------+
-|  💬 CATAT CEPAT (NATURAL LANGUAGE BAR)                                           |
-|  [ 💬 Ketik misal: "makan siang 15k gopay" atau "bensin 25rb"..... ]  [ 📸 Scan ] |
-|  -> Quick Preview: Kategori: Makanan | Dompet: GoPay | Rp 15.000      [ Simpan ] |
-+-----------------------------------------------------------------------------------+
-|  [ Total Kekayaan Bersih ]    [ Pemasukan Bulan Ini ]    [ Pengeluaran Bulan Ini ]|
-|  Rp 28.750.000                + Rp 12.500.000            - Rp 4.350.000           |
-+-----------------------------------------------------------------------------------+
-|  DOMPET & AKUN SAYA                              [+ Tambah Dompet]                |
-|  +----------------+  +----------------+  +----------------+  +----------------+   |
-|  | BCA Utama      |  | GoPay          |  | Dompet Tunai   |  | Mandiri        |   |
-|  | Rp 18.500.000  |  | Rp 750.000     |  | Rp 500.000     |  | Rp 9.000.000   |   |
-|  +----------------+  +----------------+  +----------------+  +----------------+   |
-+-----------------------------------------------------------------------------------+
-|  ANALISIS KEUANGAN                                                                |
-|  +-------------------------------------+  +-------------------------------------+ |
-|  | Pengeluaran per Kategori (Donut)    |  | Arus Kas Masuk vs Keluar (Bar Chart)| |
-|  |      [ Donut Chart ]                |  |      [ Bar Comparison ]             | |
-|  | - Makanan: 40%   - Transport: 20%   |  | In:  ████████████ (Nov)             | |
-|  | - Belanja: 25%   - Tagihan: 15%     |  | Out: █████                          | |
-|  +-------------------------------------+  +-------------------------------------+ |
-+-----------------------------------------------------------------------------------+
-|  RIWAYAT TRANSAKSI TERAKHIR                   [Filter Kategori v] [Search ...]    |
-|  - 08 Nov | Makan Siang       | Makanan     | GoPay     | -Rp 15.000   | [Edit/Hapus] |
-|  - 07 Nov | Beli Bensin       | Transport   | Cash      | -Rp 25.000   | [Edit/Hapus] |
-|  - 05 Nov | Gaji Bulanan      | Gaji/Income | BCA Utama | +Rp 12.500.000 [Edit/Hapus] |
-|  - 04 Nov | Topup GoPay dr BCA| Transfer    | BCA->GoPay| Rp 200.000   | [Edit/Hapus] |
-+-----------------------------------------------------------------------------------+
-|  [Modal Upload Bukti / Resi]:                                                     |
-|  Drop/Upload foto transfer atau struk -> Ekstraksi OCR -> Nominal otomatis terisi |
-+-----------------------------------------------------------------------------------+
-|  (Floating Action Button di Mobile: [+] Catat Cepat di pojok kanan bawah)        |
-+-----------------------------------------------------------------------------------+
++-------------------------------------------------------------------------+
+|                              PASANGAN (COUPLE)                          |
+|                                                                         |
+|   +-----------------------------+     +-----------------------------+   |
+|   |       USER A (KAMU)         |     |       USER B (PACAR)        |   |
+|   |  [PIN / Akun: User A]       |     |  [PIN / Akun: User B]       |   |
+|   |                             |     |                             |   |
+|   |  🔒 RUANG PRIBADI USER A    |     |  🔒 RUANG PRIBADI USER B    |   |
+|   |  - Dompet: BCA, Mandiri     |     |  - Dompet: BRI, OVO         |   |
+|   |  - Saldo Pribadi: RAHASIA   |     |  - Saldo Pribadi: RAHASIA   |   |
+|   |  - Transaksi: RAHASIA       |     |  - Transaksi: RAHASIA       |   |
+|   |  (Pacar TIDAK BISA lihat)   |     |  (Kamu TIDAK BISA lihat)    |   |
+|   +--------------+--------------+     +--------------+--------------+   |
+|                  |                                   |                  |
+|                  +-----------------+-----------------+                  |
+|                                    |                                    |
+|                                    v                                    |
+|               +----------------------------------------+                |
+|               |       🤝 RUANG BERSAMA (SHARED SPACE)  |                |
+|               |  - Dompet: "Kas Kencan / Liburan"      |                |
+|               |  - Saldo Bersama: Terlihat berdua      |                |
+|               |  - Transaksi Bersama: Terlihat berdua  |                |
+|               |  - Riwayat kontribusi & split bill     |                |
+|               +----------------------------------------+                |
++-------------------------------------------------------------------------+
 ```
+
+### Aturan Visibilitas:
+1. **Dompet Pribadi**:
+   - Kolom `visibility = 'private'` dan `owner_id = '<user_id>'`.
+   - Hanya di-query dan didekripsi di perangkat pemilik. Pasangan tidak memiliki akses membaca data ini.
+2. **Dompet Bersama**:
+   - Kolom `visibility = 'shared'` dan `couple_id = '<couple_code>'`.
+   - Kedua pasangan dapat melihat saldo dompet bersama dan mutasi pengeluaran bersama.
+3. **Pencatatan Transaksi**:
+   - Transaksi biasa: masuk ke dompet pribadi (otomatis rahasia).
+   - Transaksi berlabel `bersama` / `patungan`: masuk ke dompet bersama (terlihat oleh kedua belah pihak dengan label pembuat, misal: *"Dicatat oleh: Kamu"*).
 
 ---
 
-## 6. Apa yang Diserahkan ke Tahap Implementasi (Builder Scope)
-1. **Penerapan TDD (Test-Driven Development)**:
-   - Menulis unit test untuk `quickParser.js` (memastikan input seperti `makan 15k`, `kopi 20rb bca`, `bensin 30.000 cash` terurai dengan tepat).
-   - Menulis unit test untuk `store.js` (saldo dompet, transfer saldo, dan kalkulasi agregat grafik).
-2. **Scanner Bukti Transfer / Resi**:
-   - Integrasi drag-and-drop / file selector untuk image file.
-   - Ekstraksi teks pembayaran (regex mencari pola nominal `Rp xxx.xxx` atau `Total: xxx`).
-   - UI indikator loading/processing saat OCR memindai gambar.
-3. **Penyimpanan Lokal & Backup**:
-   - IndexedDB engine dengan fallback ke LocalStorage.
-   - Fitur ekspor/impor JSON untuk cadangan data pengguna.
+## 3. Ekosistem Mobile (PWA & Kamera HP)
+
+1. **Progressive Web App (PWA)**:
+   - File manifest: `manifest.webmanifest` dengan `display: standalone`, `theme_color: #0f172a`, icon 192x192 & 512x512.
+   - Di Android: Muncul prompt otomatis "Install App" / "Tambahkan ke Layar Utama".
+   - Di iPhone/iOS: Buka di Safari -> Share -> "Add to Home Screen". Berjalan seperti aplikasi native tanpa header URL Safari.
+   - Service Worker (`sw.js`): Menyediakan caching offline untuk aset statis agar aplikasi terbuka seketika bahkan saat koneksi lambat.
+2. **Kamera & Scan Bukti Bayar**:
+   - Tombol kamera langsung mengaktifkan kamera smartphone (`<input type="file" capture="environment" accept="image/*">`).
+   - Hasil foto bukti transfer (QRIS, m-Banking, struk kasir) langsung diproses OCR via `Tesseract.js` lokal untuk mengisi nominal dan tanggal otomatis.
+
+---
+
+## 4. Arsitektur Teknis & Database Cloud Sync
+
+### A. Stack:
+- **Frontend PWA**: HTML5, Tailwind CSS, Vanilla Modern JS (ES Modules), Lucide Icons, Chart.js, Tesseract.js.
+- **Backend & Cloud Sync**: **Supabase** (PostgreSQL + Realtime WebSocket subscription).
+- **Deployment**: **Vercel** (Deploy otomatis via CLI / Git dengan domain HTTPS gratis `https://dompetku-<name>.vercel.app`).
+
+### B. Skema Database Supabase:
+
+1. **Table `couples`**:
+   - `id`: UUID (Primary Key)
+   - `couple_code`: string unik (misal: `KITA-2026-LOVE`)
+   - `created_at`: timestamp
+
+2. **Table `users`**:
+   - `id`: UUID (Primary Key)
+   - `couple_id`: UUID (Foreign Key ke `couples`)
+   - `name`: string ("Kamu" / "Pacar")
+   - `role`: string ("partner_a" / "partner_b")
+   - `pin_hash`: string (PIN 4-digit untuk buka kunci pribadi di HP)
+
+3. **Table `wallets`**:
+   - `id`: UUID (Primary Key)
+   - `owner_id`: UUID (ID user pemilik)
+   - `couple_id`: UUID (ID pasangan)
+   - `name`: string ("BCA Utama", "Kas Kencan", dll.)
+   - `type`: string ("bank", "ewallet", "cash")
+   - `balance`: numeric
+   - `visibility`: string (`'private'` | `'shared'`)
+
+4. **Table `transactions`**:
+   - `id`: UUID
+   - `wallet_id`: UUID
+   - `created_by`: UUID (siapa yang mencatat)
+   - `couple_id`: UUID
+   - `type`: string (`'income'`, `'expense'`, `'transfer'`)
+   - `amount`: numeric
+   - `category`: string
+   - `note`: string
+   - `visibility`: string (`'private'` | `'shared'`)
+   - `date`: timestamp
+
+---
+
+## 5. Alur Kerja Catat Cepat (Natural Language Command)
+
+Input bar cerdas mengenali konteks pribadi vs bersama:
+- `makan siang 15k` ➔ Pengeluaran Pribadi **Rp 15.000**, Kategori Makanan, Dompet Pribadi (Rahasia).
+- `bensin 25rb bca` ➔ Pengeluaran Pribadi **Rp 25.000**, Kategori Transport, Dompet BCA Pribadi (Rahasia).
+- `nonton bioskop 90k bersama` ➔ Pengeluaran Bersama **Rp 90.000**, Kategori Hiburan, Dompet Bersama (Terlihat berdua).
+- `makan malam berdua 120rb kas-kencan` ➔ Pengeluaran Bersama **Rp 120.000**, Dompet Kas Kencan (Terlihat berdua).
+
+---
+
+## 6. Rencana Pengerjaan & Deployment End-to-End
+
+Pengerjaan akan diselesaikan tuntas sampai tahap *live deployment*:
+1. **Fase 1: Core Engine & TDD**:
+   - Unit test logika kalkulasi saldo, transfer saldo, dan isolasi privasi (`visibility === 'private'` vs `'shared'`).
+   - Unit test untuk `quickParser.js` (deteksi kata `bersama` / `patungan` vs transaksi pribadi).
+2. **Fase 2: UI PWA Mobile-First**:
+   - Pembuatan antarmuka responsif mobile modern (dark/light theme, wallet switch tab: "Pribadi Saya" vs "Dompet Bersama").
+   - PWA assets: `manifest.webmanifest`, `sw.js`, icons, splash screen, camera capture OCR.
+3. **Fase 3: Cloud Sync Engine (Supabase)**:
+   - Integrasi konektor Supabase Client untuk sinkronisasi instan saat online, dengan caching IndexedDB saat offline.
+   - Modul Pairing Pasangan (masukkan Couple Code sekali di masing-masing HP).
+4. **Fase 4: Deployment ke Vercel**:
+   - Menyiapkan konfigurasi `vercel.json` dan skrip build/preview.
+   - Melakukan deployment hingga menghasilkan live HTTPS URL yang siap dibagikan ke pacar.
