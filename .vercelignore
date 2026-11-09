@@ -1,0 +1,10 @@
+.git
+.gitignore
+.superpowers
+.vercel
+docs
+tests
+*.bat
+HANDOVER.md
+scripts
+assets/fonts
