@@ -14,5 +14,8 @@ scripts
 scripts/**
 *.bat
 *.md
+assets/fonts
+assets/fonts/
+assets/fonts/**
 .gitignore
 .vercelignore
