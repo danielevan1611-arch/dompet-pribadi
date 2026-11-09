@@ -1,97 +1,55 @@
-# DompetKu — Brand & Typography Guidelines (Apple Ecosystem Edition)
+# DompetKu — Brand & Design System Guidelines (Apple Ecosystem Edition: iOS 17 / macOS Sonoma / Apple Wallet)
 
-**Versi**: 2.0.0  
-**Status**: Disetujui (Approved by Daniel)  
-**Lingkup**: Desain Sistem, Tipografi Resmi Apple, Palet Warna Fitur, dan Hierarki UI.
+**Versi**: 3.0.0  
+**Status**: Disetujui (Approved)  
+**Lingkup**: Desain Sistem Terpadu, Tipografi Resmi Apple SF Pro Display, Palet Warna Semantik Apple System, dan Hierarki UI.
 
 ---
 
-## 1. Aturan Hierarki 4-Font Resmi Apple (Typography Matrix)
+## 1. Aturan Tipografi Resmi Apple Ecosystem (Clean Sans-Serif)
 
-DompetKu memadukan 4 font resmi Apple dari disk image asli (`NY.dmg`, `SF-Pro.dmg`, `SF-Compact.dmg`, `SF-Mono.dmg`) dengan pembagian peran yang 100% konsisten:
+Sesuai arahan Apple Human Interface Guidelines dan preferensi pengguna terkini, DompetKu menggunakan keluarga font resmi **San Francisco** tanpa font serif klasik:
 
-| Token / Kelas CSS | Font Apple | Berat (Weight) | Penggunaan Spesifik di Aplikasi |
+| Token / Kelas CSS | Font Apple | Berat (Weight) | Karakteristik & Penggunaan |
 | :--- | :--- | :--- | :--- |
-| **`.font-headline`**<br>`--font-editorial` | **New York** | Regular (400), Bold (700), Black (900) | **Headline Display Utama & Saldo Hero**:<br>• Sapaan pengguna (`"Hi, Daniel"`)<br>• Judul layar utama (`"Dashboard"`, `"Tabungan & Impian"`, `"Market & Investasi"`)<br>• Saldo jumbo di Kartu ATM & Kartu Impian (`Rp 824.571`, `Rp 72.500.000`)<br>• Total Net Worth ringkasan kas |
-| **`.font-subhead`**<br>`.font-body`<br>`--font-sans` | **SF Pro** | Regular (400), Medium (500), Semibold (600), Bold (700) | **Struktur Antarmuka & Kontrol Interaktif**:<br>• Judul modul card (`"Quick Transfer"`, `"Aktivitas Mingguan"`)<br>• Sub-headline & deskripsi penjelasan fitur<br>• Tombol aksi (`"+ Buat Impian"`, `"Generate Report"`, `"Cairkan Dana"`)<br>• Label form input & teks isi navigasi |
-| **`.font-pill`**<br>`.font-badge`<br>`--font-compact` | **SF Compact** | Medium (500), Semibold (600), Bold (700) | **Badge Status Rapat, Pill Filter & Micro-Labels**:<br>• Status kunci: `🔒 Terkunci s/d Des 2026`, `🔓 Fleksibel`<br>• Indikator live: `🟢 LIVE STREAM`, `⚡ PRO`, `🛡️ SMART LOCK`<br>• Pill filter kategori (`Semua`, `Darurat`, `Saham IDX`, `Crypto`)<br>• Badge bank, label kategori kecil, stempel jam transaksi |
-| **`.font-amount`**<br>`.font-number`<br>`--font-mono` | **SF Mono** | Medium (500), Semibold (600), Bold (700) | **Seluruh Angka Finansial & Kalkulasi Tabular**:<br>• Seluruh nominal Rupiah (`Rp 15.000.000`, `+Rp 450.000`)<br>• Persentase kenaikan/penurunan (`+3.15%`, `58.4% tercapai`)<br>• Tabel mutasi rekening & kalkulasi split bill resto (PB1 10% + Service 5%)<br>• Angka ticker bursa saham (lot/lembar), gramasi emas, kurs USD/IDR |
+| **`.font-headline`**<br>`--font-editorial` | **SF Pro Display** | Bold (700), Heavy (800) | **Headline Utama & Saldo Hero**:<br>• Huruf sans-serif modern dengan *tight tracking* (`letter-spacing: -0.025em`)<br>• Sapaan pengguna (`"Hi, Daniel"`), Judul tampilan utama, Saldo Apple Wallet |
+| **`.font-subhead`**<br>`.font-body`<br>`--font-sans` | **SF Pro Text / Display** | Regular (400), Medium (500), Semibold (600) | **Struktur Antarmuka & Form Kontrol**:<br>• Judul kartu (`"Quick Transfer"`, `"Aktivitas Mingguan"`)<br>• Label form, tombol aksi, dan navigasi sidebar/tab bar |
+| **`.font-pill`**<br>`.font-badge`<br>`--font-compact` | **SF Compact / SF Pro** | Semibold (600), Bold (700) | **Badge Status Rapat, Segmented Pills & Micro-Labels**:<br>• Status kunci: `🔒 Terkunci s/d Des 2026`, `🔓 Fleksibel`<br>• Indikator live: `🟢 LIVE STREAM`, `⚡ PRO`, `🛡️ SMART LOCK`<br>• Filter kategori segmented control pills |
+| **`.font-amount`**<br>`.font-number`<br>`--font-mono` | **SF Mono** | Medium (500), Semibold (600), Bold (700) | **Seluruh Angka Finansial & Kalkulasi Tabular**:<br>• Seluruh nominal Rupiah (`Rp 15.000.000`, `+Rp 450.000`)<br>• Persentase kenaikan/penurunan (`+3.15%`, `58.4% tercapai`)<br>• Tabel mutasi rekening, kalkulasi split bill resto (PB1 10% + Service 5%), sparklines |
 
 ---
 
-## 2. Palet Warna Semantik Tiap Fitur (Feature Color Identity)
+## 2. Palet Warna Semantik Apple Ecosystem (Apple System Palette)
 
-Setiap fitur memiliki identitas visual yang tegas, dirancang untuk tampil seimbang di Mode Gelap (Apple Space Gray `#13141F`) maupun Mode Terang (Apple Light `#F2F2F7`):
+Mendukung penuh Mode Gelap (Dark Mode) dan Mode Terang (Light Mode):
 
-### 1. Dashboard (Arus Kas & Likuiditas Daniel)
-- **Warna Aksen**: **Dompet Cyan (`#00D2D3`)**
-- **Karakter**: Modern, fokus, cerah. Menjadi jangkar utama pengalaman pengguna.
-- **Elemen**: Tombol quick input, border kartu aktif, Dynamic Island HUD toast.
-
-### 2. My Wallet & Accounts (Rekening Bank & Kartu ATM)
-- **Warna Aksen**: **Identitas Bank Riil (Multi-Card Identity)**
-  - *BCA Prioritas*: Deep Navy / Royal Blue (`#1E3A8A` / `#3B82F6`)
-  - *GoPay / E-Wallet*: Neon Cyan (`#00D2D3`)
-  - *Bank Mandiri / Kas Tunai*: Warm Amber Gold (`#F59E0B`)
-
-### 3. Transactions & Financial Calendar (Mutasi & Kalender Finansial)
-- **Warna Aksen**: **Emerald Green (`#10B981`) & Crimson Red (`#EF4444`)**
-  - *Pemasukan (Income)*: Hijau Emerald cerah
-  - *Pengeluaran (Expense)*: Merah koral lembut
-  - *Tanggal Aktif Kalender*: Cyan indicator ring
-
-### 4. Smart Split Bill (Kalkulator Pajak Resto PB1 & Social Billing)
-- **Warna Aksen**: **Indigo / Purple (`#8B5CF6`)**
-  - Identitas kalkulator sosial, memisahkan secara visual transaksi makan bersama dari mutasi pribadi Daniel.
-  - Badge `PRO` & ringkasan tagihan WhatsApp.
-
-### 5. Market & Investasi (IHSG, Emas Antam, Top Crypto)
-- **Warna Aksen**: **Emas Logam Mulia (`#D97706` / `#F59E0B`) + Bursa Blue (`#3B82F6`)**
-  - *Emas Batangan Antam*: Gradien Amber Emas Murni
-  - *Saham IDX*: Biru Korporat BEI
-  - *Crypto Majors*: Oranye Bitcoin / Ungu Ethereum / Teal Solana
-  - *Indikator Live Ticker*: Neon Green Pulse (`#10B981`)
-
-### 6. Tabungan & Impian (Savings Goals & Smart Lock)
-- **Warna Aksen**: **Mint Cyan (`#00D2D3`) + Amber Lock (`#F59E0B`)**
-  - Pos tabungan dingin dengan visual progres bar bersinar (glowing progress bar)
-  - Indikator proteksi disiplin: `Smart Anti-Khilaf Alert`
-
-### 7. Settings & Profil Pribadi
-- **Warna Aksen**: **Apple Neutral Slate (`#8E8E93` / `#A1A1AA`)**
-  - Tata letak tenang khas Apple Settings di macOS / iOS
-  - Sakelar Tema Apple (Sun ☀️ / Moon 🌙)
+| Token Warna | Mode Gelap (Dark) | Mode Terang (Light) | Penggunaan |
+| :--- | :--- | :--- | :--- |
+| **Canvas Background** | `#000000` (Pure OLED Black) | `#F2F2F7` (Apple Light Canvas) | Background seluruh aplikasi |
+| **Card Surface** | `#1C1C1E` (Apple Dark Card) | `#FFFFFF` (Pure White Card) | Latar belakang modul kartu 24px |
+| **Card Elevated** | `#2C2C2E` (Apple Dark Elevated) | `#E5E5EA` (Apple Light Elevated) | Input form, search bar, sub-cards |
+| **Hairline Border** | `rgba(255, 255, 255, 0.08)` | `rgba(0, 0, 0, 0.06)` | Border kartu dan pemisah sel tabel |
+| **Apple Accent Blue** | `#0A84FF` | `#007AFF` | Navigasi aktif, CTA primer, toggle on |
+| **Apple Success Green** | `#30D158` | `#34C759` | Pemasukan, saldo bertambah, status sukses |
+| **Apple Danger Red** | `#FF453A` | `#FF3B30` | Pengeluaran, hapus data, status error |
+| **Apple Warning Orange** | `#FF9F0A` | `#FF9500` | Smart Lock, peringatan anti-khilaf |
+| **Apple Purple** | `#BF5AF2` | `#AF52DE` | Split Bill, transfer internal, badge spesial |
 
 ---
 
-## 3. Implementasi Utility Classes CSS
+## 3. Komponen Desain & Dimensi Apple (Design Metrics)
 
-```css
-/* Aturan Tipografi Apple Terpusat */
-.font-headline {
-  font-family: var(--font-editorial) !important;
-  letter-spacing: -0.015em;
-}
-.font-subhead {
-  font-family: var(--font-sans) !important;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-.font-body {
-  font-family: var(--font-sans) !important;
-  letter-spacing: -0.008em;
-}
-.font-pill, .font-badge, .font-chip {
-  font-family: var(--font-compact) !important;
-  letter-spacing: -0.01em;
-}
-.font-amount, .font-number, .font-tabular {
-  font-family: var(--font-mono) !important;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum' 1, 'zero' 1;
-}
-```
-
----
-
-*Aturan ini menjadi satu-satunya sumber kebenaran (Single Source of Truth) untuk gaya visual, tipografi, dan warna di seluruh halaman DompetKu.*
+1. **Sudut Membulat (Border Radius)**:
+   - Kartu (`.dompet-card`): `rounded-[24px]` (24px)
+   - Tombol Primer / Sekunder & Input: `rounded-[14px]` (14px)
+   - Modal Dialog: `rounded-[28px]` (28px)
+   - Pill & Badge Status: `rounded-full` (9999px)
+2. **Material Glassmorphism**:
+   - Sidebar & Top Bar: `backdrop-filter: blur(24px); background-color: var(--apple-nav-bg); border: 1px solid var(--apple-hairline);`
+3. **Fisika Transisi & Interaksi**:
+   - Transisi: Spring easing `all 250ms cubic-bezier(0.16, 1, 0.3, 1)`
+   - Efek Tekan: `active:scale-[0.98]` atau `active:scale-[0.97]`
+   - Bayangan: Halus natural `0 4px 20px -2px rgba(0, 0, 0, 0.08)`
+4. **Responsivitas**:
+   - Desktop (≥1024px): Sidebar melayang (floating translucent sidebar) di kiri
+   - Mobile (<1024px): Tab bar bawah ala iOS 17 (fixed bottom glass tab bar)

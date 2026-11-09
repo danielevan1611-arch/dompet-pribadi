@@ -1,21 +1,26 @@
 # DompetKu — Dokumen Serah Terima (Handover Notes)
 
-**Tanggal Dibuat**: 8 November 2026  
+**Versi**: 3.0.0 (Apple Ecosystem: iOS 17 / macOS Sonoma / Apple Wallet Edition)  
+**Tanggal Diperbarui**: 8 November 2026  
 **Target Pengguna**: Daniel (@daniel) & AI Agent di Chat / Sesi Baru  
 **Repositori / Direktori Proyek**: `C:\Users\NITRO\.gemini\antigravity\scratch\dompet-pribadi`  
-**Cabang Git Aktif**: `master` (Commit Terakhir: `ee406af`)  
 **Status Pengujian**: 47/47 Unit Test Lulus (`node --test tests/*.test.js`)  
-**Audit Anti-Slop Konoha**: Skor 100/100 (0 Temuan Slop)
+**Audit Anti-Slop Konoha**: Skor 100/100 (0 Temuan Slop, Zero AI Slop)
 
 ---
 
 ## 1. Ringkasan Eksekutif & Karakter Aplikasi
-**DompetKu** adalah aplikasi web manajemen keuangan pribadi & pasangan (*Couple & Personal Finance*) berstandar **Apple Ecosystem** dengan arsitektur mandiri (*self-contained zero-CORS*).
+**DompetKu** adalah aplikasi web manajemen keuangan pribadi & pasangan (*Couple & Personal Finance*) berstandar estetika **Apple Ecosystem (macOS Sonoma / iOS 17 / Apple Wallet)** dengan arsitektur mandiri (*self-contained zero-CORS*).
 
-### Keunggulan Arsitektur:
-1. **Double-Click Executable**: Berjalan 100% langsung via `file:///` (klik dua kali `index.html`) tanpa memerlukan web server lokal atau bundling build step, didukung file `js/bundle.js`.
-2. **Modular ES Architecture**: Kode modul bersih di `js/*.js` siap untuk deployment cloud (Vercel, Node, dsb.) dan pengujian unit otomatis.
-3. **Standar Desain Apple**: Menggunakan 4 tipografi resmi Apple (New York, SF Pro, SF Compact, SF Mono) yang diekstrak langsung dari disk image asli Apple (`.dmg`), serta mendukung mode Gelap (*Space Gray* `#13141F`) dan mode Terang (*Apple Light* `#F2F2F7`).
+### Keunggulan Arsitektur & Desain:
+1. **Double-Click Executable**: Berjalan 100% langsung via `file:///` (klik dua kali `index.html`) tanpa memerlukan web server lokal atau build tools, didukung oleh file `js/bundle.js` yang tersinkronisasi 1:1.
+2. **Modular ES Architecture**: Kode modul bersih di `js/*.js` siap untuk deployment cloud (Vercel, Node, dsb.) dan pengujian unit otomatis 47/47.
+3. **Apple Ecosystem Design System**:
+   - Tipografi: SF Pro Display (`letter-spacing: -0.025em`), SF Pro Text, SF Compact, dan SF Mono untuk angka finansial tabular. Font serif lama telah dihapus untuk menghasilkan tampilan antarmuka yang bersih dan modern.
+   - Warna: Dark Mode (Pure Black `#000000` / `#1C1C1E` / `#2C2C2E`), Light Mode (Apple Canvas `#F2F2F7` / `#FFFFFF` / `#E5E5EA`), Apple Blue `#0A84FF`, Green `#30D158`, Red `#FF453A`, Orange `#FF9F0A`, Purple `#BF5AF2`.
+   - Radius: Kartu 24px, Tombol & Input 14px, Modal 28px, Pill 9999px.
+   - Glassmorphism: `backdrop-filter: blur(24px)` pada Sidebar, Top Bar, dan Bottom Tab Bar.
+   - Transisi: Spring easing `250ms cubic-bezier(0.16, 1, 0.3, 1)` dan efek tekan `active:scale-[0.98]`.
 
 ---
 
@@ -23,13 +28,13 @@
 
 ```text
 dompet-pribadi/
-├── index.html                   # Entry point aplikasi (7 Views, UI Header, Sidebar, Bottom Nav, Modals)
+├── index.html                   # Entry point aplikasi (7 Views, UI Header, Sidebar, Bottom Tab Bar, Modals)
 ├── package.json                 # Konfigurasi npm & test runner
 ├── HANDOVER.md                  # Dokumen serah terima ini
 ├── docs/
-│   └── brand-guidelines.md      # Single Source of Truth Tipografi & Palet Warna Apple
+│   └── brand-guidelines.md      # Single Source of Truth Desain Sistem Apple
 ├── assets/
-│   ├── fonts/                   # 147 file font resmi Apple (New York, SF Pro, SF Compact, SF Mono)
+│   ├── fonts/                   # File font resmi Apple (SF Pro, SF Compact, SF Mono)
 │   └── icons/                   # Aset ikon & gambar
 ├── js/
 │   ├── app.js                   # Logic interaktif aplikasi & dynamic DOM rendering
@@ -58,96 +63,13 @@ dompet-pribadi/
 
 ---
 
-## 3. Matriks Tipografi & Warna (Aturan Wajib Konsisten)
-Dokumentasi lengkap tersimpan di `docs/brand-guidelines.md`. Setiap penambahan fitur baru WAJIB mengikuti kelas utilitas berikut:
+## 3. Matriks 7 Halaman Terpadu (Unified 7 Views)
 
-| Token / Kelas CSS | Font Apple | Penggunaan Wajib |
-| :--- | :--- | :--- |
-| **`.font-headline`** | **New York (Serif)** | Sapaan `"Hi, Daniel"`, judul layar utama (`Dashboard`, `Market`, `Tabungan`), saldo hero jumbo di Kartu ATM & Kartu Impian. |
-| **`.font-subhead`** | **SF Pro (Semibold)** | Judul card/modul widget, tombol aksi (`+ Buat Impian`, `Setor`, `Simpan`), judul modal dialog. |
-| **`.font-body`** | **SF Pro (Regular/Med)** | Teks deskripsi fitur, label formulir, teks input user. |
-| **`.font-pill`** | **SF Compact (Sans Compact)** | Badges, filter category pills, status chips (`🟢 LIVE STREAM`, `🔒 Terkunci`, `⚡ PRO`), label kolom tabel kecil. |
-| **`.font-amount`** | **SF Mono (Tabular Num)** | Seluruh nominal Rupiah (`Rp ...`), harga live ticker bursa/kripto/emas, persentase (`+3.15%`), rincian pajak split bill. |
-
-### Identitas Warna Semantik Tiap Fitur:
-- **Dashboard**: Dompet Cyan (`#00D2D3`)
-- **My Wallet**: Bank Riil Multi-Card (BCA Navy `#1E3A8A`, GoPay Cyan `#00D2D3`, Mandiri Gold `#F59E0B`)
-- **Transactions & Calendar**: Emerald Green (`#10B981`) untuk Income & Crimson Red (`#EF4444`) untuk Expense
-- **Smart Split Bill**: Indigo Purple (`#8B5CF6`)
-- **Market & Investasi**: Emas Murni Antam (`#D97706` / `#F59E0B`) & BEI Blue (`#3B82F6`)
-- **Tabungan & Impian**: Mint Cyan (`#00D2D3`) + Amber Disiplin (`#F59E0B`)
-- **Settings**: Apple Slate Neutral (`#8E8E93`)
-
----
-
-## 4. Daftar Fitur Lengkap & Status Operasional
-
-### 1. View: Dashboard Utama
-- **Net Worth Hero**: Total kekayaan bersih dengan animasi *rolling numbers* khas Apple.
-- **Kartu ATM Dompet Utama**: Menampilkan saldo, nomor kartu masking (`•••• •••• •••• 4028`), dan tipe dompet.
-- **Apple Spotlight Quick Input**: Pencatatan cepat berbasis bahasa natural (NLP).
-- **Aktivitas Mingguan**: Bar chart HTML/Canvas untuk perbandingan pemasukan & pengeluaran.
-- **Recent Transactions**: 5 mutasi terkini dengan tautan cepat ke kalender finansial.
-
-### 2. View: My Wallet & Rekening (Fitur 1)
-- Grid kartu ATM multi-rekening interaktif (BCA Prioritas, GoPay, Kas Dompet Fisik).
-- Panel mutasi antar rekening sendiri (Top-Up / Transfer internal tanpa merusak kalkulasi expense).
-- Modal Tambah Dompet Baru dengan color picker aksen kartu.
-
-### 3. View: Transactions & Financial Calendar (Fitur 2)
-- Kalender finansial bulanan: grid 31 hari menampilkan total ringkasan pemasukan (`+k`) dan pengeluaran (`-k`) harian.
-- Klik tanggal kalender untuk memfilter tabel transaksi pada tanggal tersebut secara instan.
-- Tabel mutasi lengkap dengan pencarian item, filter kategori, dan tombol Export CSV.
-
-### 4. View: Smart Split Bill Indonesia (Fitur 3)
-- Dropzone unggah foto struk kasir/restoran (dengan parser simulasi OCR otomatis).
-- Input daftar teman (*participants*) dengan chip tags.
-- Perhitungan proporsional pesanan per orang.
-- **Standar Pajak Restoran Indonesia**: Subtotal + Service Charge (default 5%) + PB1 Resto Tax (default 10%).
-- Tombol satu-klik **"Salin Rincian ke WhatsApp"** yang memformat tagihan rapi beserta nomor rekening pembayaran.
-
-### 5. View: Market & Investment Dashboard (Fitur Real-Time)
-- **Tampilan Terpisah**: Dibuka lewat navigasi menu samping atau bottom nav "Market & Investasi" (bukan menumpuk di dashboard utama).
-- **Streaming Live Ticker**:
-  - Saham BEI / IHSG: Indeks IHSG, BBCA, BBRI, BMRI, TLKM, ASII.
-  - Emas & Logam Mulia: Emas Batangan Antam (Rp/gram) dan XAU Spot Gold Dunia.
-  - Crypto Majors: Bitcoin (BTC), Ethereum (ETH), Solana (SOL), BNB Chain (BNB), Ripple (XRP).
-  - Integrasi API publik live crypto (CoinCap) dengan fallback micro-jitter engine real-time.
-- **Mini Sparkline SVG**: Grafik tren mini untuk tiap instrumen.
-- **Portofolio Kepemilikan (1B)**: Tabel pencatatan aset riil Daniel dengan perhitungan otomatis nilai pasar terkini serta Untung/Rugi (PnL) nominal dan persentase.
-
-### 6. View: Tabungan & Impian / Savings Goals (Fitur Disiplin)
-- Pos tabungan dana dingin: Dana Darurat, Liburan Jepang, Mobil Baru, Gadget M-Series.
-- Indikator progres visual dengan animasi glow bar.
-- **Kalkulasi Kecepatan Menabung**: Menghitung sisa nominal dan rekomendasi setoran bulanan berdasarkan sisa waktu (*deadline*).
-- **Smart Lock (Anti-Khilaf Protection)**: Dialog konfirmasi khusus khas macOS/iOS saat pengguna hendak mencairkan tabungan sebelum target tercapai.
-- Alur setor dana cepat (*Quick Deposit*) dan cairkan dana tabungan ke dompet rekening.
-
-### 7. View: Settings & Profile
-- Pengaturan identitas nama Daniel (terhubung ke sapaan *"Hi, Daniel"*).
-- Sakelar Tema Apple (Dark Space Gray / Light iOS Mode) dengan persistensi preferensi.
-- Integrasi bot Telegram & panduan sintaks cepat.
-- Konfigurasi Supabase Cloud URL & Anon Key.
-- Tombol reset data lokal.
-
----
-
-## 5. Instruksi Pengembangan untuk Sesi Chat Baru
-
-Jika Anda adalah agen AI yang melanjutkan sesi ini:
-1. **Aturan Sinkronisasi File**:
-   - Setiap kali mengubah logika di `js/app.js`, pastikan bagian terkait di `js/bundle.js` diperbarui agar pengguna yang membuka via `file:///` (klik langsung dari Windows Explorer) mendapatkan pembaruan yang sama tanpa galat CORS.
-2. **Aturan Tipografi & Styling**:
-   - Jangan pernah mencampur kelas font (misal: jangan gunakan `font-editorial` untuk angka monospasi atau label kecil). Gunakan selalu `.font-headline` (New York), `.font-subhead` / `.font-body` (SF Pro), `.font-pill` (SF Compact), dan `.font-amount` (SF Mono).
-3. **Verifikasi Wajib Sebelum Serah Terima**:
-   - Jalankan `node --test tests/*.test.js` untuk memastikan ke-47 unit test selalu berstatus hijau (passing).
-   - Jalankan `node -c js/app.js` dan `node -c js/bundle.js` untuk memastikan tidak ada kesalahan sintaks JavaScript.
-   - Jalankan `konoha.anti_slop` untuk menjamin kualitas kode 100/100 bebas slop.
-
----
-
-## 6. Backlog Rekomendasi Fitur Berikutnya (Opsional untuk Didiskusikan dengan Daniel)
-- [ ] Integrasi webhook / polling aktif backend bot Telegram jika pengguna menginginkan serverless webhook.
-- [ ] Dukungan instalasi PWA (Service Worker & `manifest.json`) agar bisa diinstal ke home screen smartphone / tablet seperti aplikasi native iOS.
-- [ ] Export laporan keuangan bulanan berformat PDF atau Excel (.xlsx) dengan visual kartu ringkasan.
-- [ ] Backup & Restore file JSON terenkripsi untuk keamanan data cadangan offline.
+Semua 7 halaman telah sepenuhnya mengadopsi Apple Design System dan mendukung Dark / Light mode:
+1. **Dashboard**: Ringkasan Net Worth dengan animasi rolling number, kartu Apple Wallet dengan chip emas metallic dan aksen warna, donut chart & bar chart Chart.js, Spotlight quick input, dan mutasi terkini.
+2. **My Wallet & Accounts**: Grid kartu Apple Wallet dengan tekstur titanium hairline, panel mutasi saldo internal antar-rekening, dan modal tambah rekening Apple Sheet (28px radius).
+3. **Transactions & Financial Calendar**: Grid 31 hari kalender finansial dengan indikator dot pemasukan/pengeluaran, filter instan tanggal, kolom pencarian, export CSV, dan tabel mutasi.
+4. **Smart Split Bill (PB1 & Tax)**: Dropzone struk OCR, gelembung kontak peserta (*contact bubbles*), tabel pesanan dengan checklist pembagian porsi, rincian pajak PB1 10% + Service 5%, dan ekspor format WhatsApp.
+5. **Market & Investasi**: Live ticker bar, 4 KPI cards dengan sparkline SVG, iOS segmented control pills (`Semua`, `Saham IDX`, `Emas`, `Crypto`, `Portofolio`), tabel portofolio aset, dan modal catat kepemilikan aset.
+6. **Tabungan & Impian**: 4 KPI cards, status proteksi Smart Lock, segmented category pills, kartu target impian dengan progress bar bersinar, tombol Setor/Cairkan, dan Anti-Khilaf Alert.
+7. **Pengaturan & Cloud**: Tata letak macOS System Settings, foto avatar profil, toggle tema Apple (Dark/Light mode) yang responsif, integrasi Telegram Bot, dan sinkronisasi Supabase.
