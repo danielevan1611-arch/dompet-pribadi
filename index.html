@@ -62,75 +62,15 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <style>
-    /* ================= 1. APPLE OFFICIAL NEW YORK SERIF ================= */
-    @font-face {
-      font-family: 'New York';
-      src: url('assets/fonts/NewYorkLarge-Regular.otf') format('opentype');
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'New York';
-      src: url('assets/fonts/NewYorkLarge-Medium.otf') format('opentype');
-      font-weight: 500;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'New York';
-      src: url('assets/fonts/NewYorkLarge-Semibold.otf') format('opentype');
-      font-weight: 600;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'New York';
-      src: url('assets/fonts/NewYorkLarge-Bold.otf') format('opentype');
-      font-weight: 700;
-      font-style: normal;
-      font-display: swap;
-    }
-
-    /* ================= 2. APPLE OFFICIAL SF MONO TABULAR ================= */
-    @font-face {
-      font-family: 'SF Mono';
-      src: url('assets/fonts/SF-Mono-Regular.otf') format('opentype');
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'SF Mono';
-      src: url('assets/fonts/SF-Mono-Medium.otf') format('opentype');
-      font-weight: 500;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'SF Mono';
-      src: url('assets/fonts/SF-Mono-Semibold.otf') format('opentype');
-      font-weight: 600;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'SF Mono';
-      src: url('assets/fonts/SF-Mono-Bold.otf') format('opentype');
-      font-weight: 700;
-      font-style: normal;
-      font-display: swap;
-    }
-
-    /* ================= 3. APPLE DESIGN SYSTEM CORE TOKENS ================= */
+    /* ================= 1. APPLE DESIGN SYSTEM CORE TOKENS ================= */
     :root {
-      /* Full Apple 4-Font Typography System */
-      --font-editorial: 'New York', -apple-system-ui-serif, ui-serif, Georgia, serif;
-      --font-display: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --font-sans: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
-      --font-compact: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --font-mono: 'SF Mono', ui-monospace, Menlo, Monaco, Consolas, monospace;
-      --font: var(--font-sans);
+      /* Single Unified Apple Ecosystem Typography (Strictly Sans-Serif, Zero Serif, Zero Monospace) */
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", sans-serif;
+      --font-display: var(--font);
+      --font-sans: var(--font);
+      --font-compact: var(--font);
+      --font-mono: var(--font);
+      --font-editorial: var(--font);
 
       /* Typography Scale (Strict Apple Specification) */
       --text-h1: 28px;
@@ -336,9 +276,9 @@
       color: var(--apple-text-secondary) !important;
     }
 
-    /* Tabular figures for numbers - Strict Apple SF Mono */
+    /* Tabular figures for numbers - Strictly Apple Sans-Serif (No Monospace, No Serif) */
     .font-amount, .font-number, .font-tabular, .font-num, .font-sf-mono, .tabular-nums, .font-mono {
-      font-family: var(--font-mono) !important;
+      font-family: var(--font) !important;
       font-variant-numeric: tabular-nums !important;
       font-feature-settings: 'tnum' 1 !important;
       white-space: nowrap !important;
