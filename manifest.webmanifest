@@ -1,0 +1,18 @@
+{
+  "name": "DompetKu - Couple & Personal Finance",
+  "short_name": "DompetKu",
+  "description": "Aplikasi pelacak keuangan pribadi & dompet bersama dengan privasi ketat dan catat cepat.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/assets/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

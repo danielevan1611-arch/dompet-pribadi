@@ -1,0 +1,2452 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Dompet — Apple Ecosystem Finance & Wallet</title>
+  
+  <!-- Apple & PWA Meta Tags -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Dompet" />
+  <link rel="apple-touch-icon" href="assets/icon.svg" />
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
+
+  <!-- Google Fonts: Inter Fallback -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            apple: {
+              canvas: 'var(--apple-bg)',
+              card: 'var(--apple-card)',
+              cardSubtle: 'var(--apple-card-subtle)',
+              border: 'var(--apple-card-border)',
+              blue: '#0A84FF',
+              blueHover: '#0071E3',
+              green: '#30D158',
+              red: '#FF453A',
+              orange: '#FF9F0A',
+              purple: '#BF5AF2',
+              yellow: '#FFD60A',
+              teal: '#64D2FF'
+            }
+          },
+          borderRadius: {
+            'apple-card': '24px',
+            'apple-btn': '14px',
+            'apple-modal': '28px',
+            'apple-pill': '9999px'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons & Chart.js & Tesseract.js & Supabase Client & GSAP Motion -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    /* ================= 1. APPLE OFFICIAL SF PRO & COMPACT FONTS ================= */
+    @font-face {
+      font-family: 'SF Pro';
+      src: url('assets/fonts/SF-Pro-Display-Regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Pro';
+      src: url('assets/fonts/SF-Pro-Display-Medium.otf') format('opentype');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Pro';
+      src: url('assets/fonts/SF-Pro-Display-Semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Pro';
+      src: url('assets/fonts/SF-Pro-Display-Bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'SF Compact';
+      src: url('assets/fonts/SF-Compact-Display-Regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Compact';
+      src: url('assets/fonts/SF-Compact-Display-Medium.otf') format('opentype');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Compact';
+      src: url('assets/fonts/SF-Compact-Display-Semibold.otf') format('opentype');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SF Compact';
+      src: url('assets/fonts/SF-Compact-Display-Bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* ================= 2. APPLE DESIGN SYSTEM CORE TOKENS ================= */
+    :root {
+      /* Single Font Variable across Entire Application */
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", sans-serif;
+      --font-display: var(--font);
+      --font-sans: var(--font);
+      --font-compact: var(--font);
+      --font-mono: var(--font);
+
+      /* Typography Scale (Strict Apple Specification) */
+      --text-h1: 28px;
+      --text-h1-weight: 700;
+      --text-h1-letter-spacing: -0.02em;
+      --text-h1-line-height: 1.15;
+
+      --text-h2: 17px;
+      --text-h2-weight: 600;
+      --text-h2-letter-spacing: -0.01em;
+
+      --text-num-lg: clamp(22px, 2.5vw, 30px);
+      --text-num-lg-weight: 600;
+      --text-num-lg-letter-spacing: -0.02em;
+
+      --text-num-md: 15px;
+      --text-num-md-weight: 600;
+
+      --text-body: 14px;
+      --text-body-weight: 400;
+      --text-body-line-height: 1.45;
+
+      --text-label: 13px;
+      --text-label-weight: 500;
+
+      --text-caption: 12px;
+      --text-caption-weight: 400;
+
+      /* Dark Mode Tokens (macOS Sonoma / iOS 17 Dark) */
+      --apple-bg: #000000;
+      --apple-card: #1C1C1E;
+      --apple-card-hover: #2C2C2E;
+      --apple-card-subtle: #2C2C2E;
+      --apple-card-border: transparent;
+      --apple-card-border-hover: transparent;
+      --apple-text-primary: #FFFFFF;
+      --apple-text-secondary: #8E8E93;
+      --apple-text-tertiary: #636366;
+      --apple-accent: #0A84FF;
+      --apple-accent-hover: #0071E3;
+      --apple-accent-surface: rgba(10, 132, 255, 0.18);
+      --apple-green: #30D158;
+      --apple-red: #FF453A;
+      --apple-orange: #FF9F0A;
+      --apple-purple: #BF5AF2;
+
+      --radius-card: 24px;
+      --radius-btn: 14px;
+      --radius-input: 14px;
+      --radius-modal: 28px;
+      --radius-pill: 9999px;
+
+      --apple-spring: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html.light {
+      /* Light Mode Tokens (macOS Sonoma / iOS 17 Light) */
+      --apple-bg: #F2F2F7;
+      --apple-card: #FFFFFF;
+      --apple-card-hover: #F8F8FA;
+      --apple-card-subtle: #F2F2F7;
+      --apple-card-border: rgba(0, 0, 0, 0.06);
+      --apple-card-border-hover: rgba(0, 0, 0, 0.12);
+      --apple-text-primary: #1C1C1E;
+      --apple-text-secondary: #6C6C70;
+      --apple-text-tertiary: #8E8E93;
+      --apple-accent: #007AFF;
+      --apple-accent-hover: #0062CC;
+      --apple-accent-surface: rgba(0, 122, 255, 0.12);
+      --apple-green: #34C759;
+      --apple-red: #FF3B30;
+      --apple-orange: #FF9500;
+      --apple-purple: #AF52DE;
+    }
+
+    /* Universal Single Font Application */
+    html, body, button, input, select, textarea {
+      font-family: var(--font) !important;
+    }
+
+    /* Smooth 300ms theme transitions without color jumps */
+    body, aside, header, nav, main, .dompet-card, .kpi-metric-card, input, select, textarea, button, .segmented-control, .segmented-btn {
+      transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease, box-shadow 300ms ease;
+    }
+
+    body {
+      font-family: var(--font) !important;
+      background-color: var(--apple-bg);
+      color: var(--apple-text-primary);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-tap-highlight-color: transparent;
+      letter-spacing: -0.01em;
+    }
+
+    /* Apple Clean Card Elevation with Dynamic Micro-interactions */
+    .dompet-card,
+    .kpi-metric-card {
+      background-color: var(--apple-card);
+      border: 1px solid var(--apple-card-border);
+      border-radius: var(--radius-card);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      transition: transform 0.28s var(--apple-spring), 
+                  box-shadow 0.28s var(--apple-spring), 
+                  background-color 0.25s ease,
+                  border-color 0.25s ease;
+      cursor: default;
+    }
+    .dompet-card:hover,
+    .kpi-metric-card:hover {
+      transform: translateY(-4px) scale(1.006);
+    }
+    html.dark .dompet-card:hover,
+    html.dark .kpi-metric-card:hover,
+    html:not(.light) .dompet-card:hover,
+    html:not(.light) .kpi-metric-card:hover {
+      background-color: #24242A !important;
+      box-shadow: 0 16px 36px -8px rgba(10, 132, 255, 0.18), 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+    }
+    html.light .dompet-card:hover,
+    html.light .kpi-metric-card:hover {
+      background-color: #FFFFFF !important;
+      box-shadow: 0 16px 36px -8px rgba(0, 122, 255, 0.14), 0 6px 18px rgba(0, 0, 0, 0.06) !important;
+    }
+    .dompet-card:active,
+    .kpi-metric-card:active {
+      transform: scale(0.985) translateY(-1px) !important;
+      transition: transform 0.12s var(--apple-spring) !important;
+    }
+
+    /* Icon in Cards: Subtle joyful tilt & scale on hover */
+    .dompet-card:hover [data-lucide],
+    .dompet-card:hover svg:not(.sparkline-svg),
+    .kpi-metric-card:hover [data-lucide] {
+      transform: scale(1.12);
+      transition: transform 0.25s var(--apple-spring);
+    }
+
+    /* Market Sparkline Trendline Glow on Hover */
+    .dompet-card:hover polyline {
+      stroke-width: 2.8px;
+      filter: drop-shadow(0 2px 8px rgba(48, 209, 88, 0.5));
+      transition: stroke-width 0.25s ease, filter 0.25s ease;
+    }
+    .dompet-card:hover polyline[stroke="#FF453A"],
+    .dompet-card:hover polyline[stroke="#FF3B30"] {
+      filter: drop-shadow(0 2px 8px rgba(255, 69, 58, 0.5));
+    }
+
+    /* Standard Apple Typography Classes */
+    h1, .page-title, .text-apple-h1 {
+      font-family: var(--font) !important;
+      font-size: var(--text-h1) !important;
+      font-weight: var(--text-h1-weight) !important;
+      letter-spacing: var(--text-h1-letter-spacing) !important;
+      line-height: var(--text-h1-line-height) !important;
+    }
+
+    h2, .section-title, .card-title, .text-apple-h2 {
+      font-family: var(--font) !important;
+      font-size: var(--text-h2) !important;
+      font-weight: var(--text-h2-weight) !important;
+      letter-spacing: var(--text-h2-letter-spacing) !important;
+    }
+
+    .text-num-lg {
+      font-family: var(--font) !important;
+      font-size: var(--text-num-lg) !important;
+      font-weight: var(--text-num-lg-weight) !important;
+      letter-spacing: var(--text-num-lg-letter-spacing) !important;
+      font-variant-numeric: tabular-nums !important;
+      font-feature-settings: 'tnum' 1 !important;
+      white-space: nowrap !important;
+    }
+
+    .text-num-md {
+      font-family: var(--font) !important;
+      font-size: var(--text-num-md) !important;
+      font-weight: var(--text-num-md-weight) !important;
+      font-variant-numeric: tabular-nums !important;
+      font-feature-settings: 'tnum' 1 !important;
+      white-space: nowrap !important;
+    }
+
+    .text-apple-body, .font-body, .font-sans, .font-sf-pro {
+      font-family: var(--font) !important;
+      font-size: var(--text-body) !important;
+      font-weight: var(--text-body-weight) !important;
+      line-height: var(--text-body-line-height) !important;
+    }
+
+    .text-apple-label, .label-subtle {
+      font-family: var(--font) !important;
+      font-size: var(--text-label) !important;
+      font-weight: var(--text-label-weight) !important;
+      color: var(--apple-text-secondary) !important;
+    }
+
+    .text-apple-caption, .caption-subtle {
+      font-family: var(--font) !important;
+      font-size: var(--text-caption) !important;
+      font-weight: var(--text-caption-weight) !important;
+      color: var(--apple-text-secondary) !important;
+    }
+
+    /* Tabular figures for numbers - Strictly NO monospace */
+    .font-amount, .font-number, .font-tabular, .font-num, .font-sf-mono, .tabular-nums, .font-mono {
+      font-family: var(--font) !important;
+      font-variant-numeric: tabular-nums !important;
+      font-feature-settings: 'tnum' 1 !important;
+      white-space: nowrap !important;
+    }
+
+    /* All uppercase removed per Apple SF Pro specification */
+    .uppercase {
+      text-transform: none !important;
+      letter-spacing: normal !important;
+    }
+
+    /* Apple Spring Clickable Buttons with Vivid Glow on Hover & Haptic Snap on Click */
+    button,
+    .btn-apple,
+    .btn-apple-primary,
+    .btn-apple-secondary {
+      border-radius: var(--radius-btn);
+      font-family: var(--font) !important;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: transform 0.22s var(--apple-spring), 
+                  box-shadow 0.22s var(--apple-spring), 
+                  background-color 0.2s ease, 
+                  filter 0.2s ease;
+    }
+    button:hover,
+    .btn-apple:hover {
+      transform: translateY(-1.5px);
+    }
+    button:active,
+    .btn-apple:active,
+    .btn-apple-primary:active,
+    .btn-apple-secondary:active,
+    .chip-deposit:active {
+      transform: scale(0.94) translateY(0) !important;
+      transition: transform 0.1s var(--apple-spring) !important;
+    }
+
+    /* Primary Accent Buttons (Blue Glow) */
+    .btn-apple-primary,
+    button:not(.nav-item):not(.chip-deposit):not(.segmented-btn)[class~="bg-[#0A84FF]"],
+    button:not(.nav-item):not(.chip-deposit):not(.segmented-btn)[class~="bg-[#0071E3]"] {
+      background-color: var(--apple-accent);
+      color: #FFFFFF !important;
+      border: none;
+      box-shadow: 0 2px 8px rgba(10, 132, 255, 0.25);
+    }
+    .btn-apple-primary:hover,
+    button:not(.nav-item):not(.chip-deposit):not(.segmented-btn)[class~="bg-[#0A84FF]"]:hover,
+    button:not(.nav-item):not(.chip-deposit):not(.segmented-btn)[class~="bg-[#0071E3]"]:hover {
+      background-color: var(--apple-accent-hover);
+      filter: brightness(1.1);
+      box-shadow: 0 6px 20px rgba(10, 132, 255, 0.45) !important;
+    }
+
+    /* Green Success Buttons (Green Glow) */
+    button:not(.nav-item):not(.chip-deposit)[class~="bg-[#30D158]"],
+    button:not(.nav-item):not(.chip-deposit)[class~="bg-[#10B981]"] {
+      box-shadow: 0 2px 8px rgba(48, 209, 88, 0.25);
+    }
+    button:not(.nav-item):not(.chip-deposit)[class~="bg-[#30D158]"]:hover,
+    button:not(.nav-item):not(.chip-deposit)[class~="bg-[#10B981]"]:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 6px 20px rgba(48, 209, 88, 0.45) !important;
+    }
+
+    /* Orange Action Buttons (Orange Glow) */
+    button:not(.nav-item):not(.chip-deposit)[class~="bg-[#FF9F0A]"] {
+      box-shadow: 0 2px 8px rgba(255, 159, 10, 0.25);
+    }
+    button:not(.nav-item):not(.chip-deposit)[class~="bg-[#FF9F0A]"]:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 6px 20px rgba(255, 159, 10, 0.45) !important;
+    }
+
+    .btn-apple-secondary {
+      background-color: var(--apple-card-subtle);
+      border: 1px solid var(--apple-card-border);
+      color: var(--apple-text-primary);
+    }
+    .btn-apple-secondary:hover {
+      background-color: var(--apple-card-hover);
+    }
+
+    /* Utility & Icon Buttons (Theme toggle, Settings, Sidebar toggle) */
+    #btnThemeToggle,
+    #btnOpenSettings,
+    #btnToggleSidebar {
+      transition: transform 0.22s var(--apple-spring), background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    #btnThemeToggle:hover,
+    #btnOpenSettings:hover,
+    #btnToggleSidebar:hover {
+      transform: translateY(-2px) scale(1.06);
+    }
+    html.dark #btnThemeToggle:hover,
+    html.dark #btnOpenSettings:hover,
+    html.dark #btnToggleSidebar:hover,
+    html:not(.light) #btnThemeToggle:hover,
+    html:not(.light) #btnOpenSettings:hover,
+    html:not(.light) #btnToggleSidebar:hover {
+      background-color: #38383C !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    html.light #btnThemeToggle:hover,
+    html.light #btnOpenSettings:hover,
+    html.light #btnToggleSidebar:hover {
+      background-color: #E5E5EA !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    }
+    #btnThemeToggle:hover [data-lucide],
+    #btnThemeToggle:hover svg {
+      transform: rotate(20deg) scale(1.15);
+      transition: transform 0.3s var(--apple-spring);
+    }
+    #btnOpenSettings:hover [data-lucide],
+    #btnOpenSettings:hover svg {
+      transform: rotate(45deg) scale(1.15);
+      transition: transform 0.3s var(--apple-spring);
+    }
+
+    /* Sidebar Navigation Interactive Motion */
+    .nav-item {
+      color: var(--apple-text-secondary) !important;
+      background: transparent;
+      transition: transform 0.22s var(--apple-spring), 
+                  background-color 0.2s ease, 
+                  color 0.2s ease,
+                  box-shadow 0.22s var(--apple-spring) !important;
+    }
+    .nav-item.active {
+      background-color: var(--apple-accent-surface) !important;
+      color: var(--apple-accent) !important;
+      font-weight: 600 !important;
+    }
+    .nav-item.active [data-lucide],
+    .nav-item.active svg {
+      color: var(--apple-accent) !important;
+    }
+    .nav-item:not(.active):hover {
+      transform: translateX(4px);
+    }
+    html.dark .nav-item:not(.active):hover,
+    html:not(.light) .nav-item:not(.active):hover {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+      color: #FFFFFF !important;
+    }
+    html.light .nav-item:not(.active):hover {
+      background-color: rgba(0, 0, 0, 0.05) !important;
+      color: #1C1C1E !important;
+    }
+    .nav-item:hover [data-lucide],
+    .nav-item:hover svg {
+      transform: scale(1.16);
+      transition: transform 0.22s var(--apple-spring);
+    }
+    .nav-item:active {
+      transform: scale(0.96) translateX(2px) !important;
+      transition: transform 0.1s var(--apple-spring) !important;
+    }
+
+    /* Quick Deposit Chips */
+    .chip-deposit {
+      cursor: pointer;
+      transition: transform 0.2s var(--apple-spring), 
+                  box-shadow 0.2s var(--apple-spring), 
+                  filter 0.2s ease;
+    }
+    .chip-deposit:hover {
+      transform: translateY(-2px) scale(1.06);
+      filter: brightness(1.15);
+      box-shadow: 0 6px 18px rgba(10, 132, 255, 0.35);
+    }
+    .chip-deposit:active {
+      transform: scale(0.93) translateY(0) !important;
+      transition: transform 0.1s var(--apple-spring) !important;
+    }
+
+    /* Profile Card Interactive Motion */
+    #sidebarProfileCard {
+      transition: transform 0.24s var(--apple-spring), background-color 0.2s ease, box-shadow 0.24s var(--apple-spring);
+      cursor: pointer;
+    }
+    #sidebarProfileCard:hover {
+      transform: translateY(-2px);
+    }
+    html.dark #sidebarProfileCard:hover,
+    html:not(.light) #sidebarProfileCard:hover {
+      background-color: #38383C !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+    html.light #sidebarProfileCard:hover {
+      background-color: #FFFFFF !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+    #sidebarProfileCard:hover img {
+      transform: scale(1.08);
+      transition: transform 0.24s var(--apple-spring);
+    }
+    #sidebarProfileCard:active {
+      transform: scale(0.97) !important;
+      transition: transform 0.1s var(--apple-spring) !important;
+    }
+
+    /* Search Spotlight Interactive Motion */
+    #spotlightContainer {
+      transition: transform 0.24s var(--apple-spring), background-color 0.2s ease, box-shadow 0.24s var(--apple-spring);
+    }
+    #spotlightContainer:hover {
+      transform: translateY(-1px);
+    }
+    html.dark #spotlightContainer:hover,
+    html:not(.light) #spotlightContainer:hover {
+      background-color: #343438 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    html.light #spotlightContainer:hover {
+      background-color: #FFFFFF !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+    #spotlightContainer:focus-within {
+      transform: translateY(-1.5px) scale(1.008);
+      box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.25), 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* Calendar Day Cells Interactive Motion */
+    #calendarDaysGrid > div {
+      transition: transform 0.2s var(--apple-spring), 
+                  background-color 0.2s ease, 
+                  box-shadow 0.2s var(--apple-spring);
+      cursor: pointer;
+    }
+    #calendarDaysGrid > div:hover {
+      transform: translateY(-2px) scale(1.03);
+    }
+    html.dark #calendarDaysGrid > div:hover,
+    html:not(.light) #calendarDaysGrid > div:hover {
+      background-color: #343438 !important;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    }
+    html.light #calendarDaysGrid > div:hover {
+      background-color: #FFFFFF !important;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    }
+    #calendarDaysGrid > div:active {
+      transform: scale(0.95) !important;
+      transition: transform 0.1s var(--apple-spring) !important;
+    }
+
+    /* Interactive Table Rows */
+    tbody tr {
+      transition: background-color 0.2s ease, transform 0.2s var(--apple-spring);
+    }
+    tbody tr:hover {
+      transform: translateX(2px);
+    }
+    html.dark tbody tr:hover,
+    html:not(.light) tbody tr:hover {
+      background-color: rgba(10, 132, 255, 0.08) !important;
+    }
+    html.light tbody tr:hover {
+      background-color: rgba(0, 122, 255, 0.06) !important;
+    }
+
+    /* Apple Inputs & Dropdowns (Clean fill in dark mode without white outlines) */
+    input:not(#quickInput),
+    select,
+    textarea {
+      background-color: #2C2C2E !important;
+      border: 1px solid transparent !important;
+      border-radius: var(--radius-input) !important;
+      color: #FFFFFF !important;
+      font-family: var(--font-sans);
+      transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input:not(#quickInput):hover,
+    select:hover,
+    textarea:hover {
+      background-color: #343438 !important;
+    }
+    input:not(#quickInput):focus,
+    select:focus,
+    textarea:focus {
+      outline: none !important;
+      border-color: #0A84FF !important;
+      box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.25) !important;
+    }
+    input::placeholder,
+    textarea::placeholder {
+      color: #8E8E93 !important;
+    }
+
+    /* Quick Input: Transparent without gray background box */
+    #quickInput {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+      color: #FFFFFF !important;
+      padding: 0 !important;
+    }
+    #quickInput::placeholder {
+      color: #8E8E93 !important;
+    }
+
+    /* iOS Segmented Control with Fluid Hover & Click */
+    .segmented-control {
+      display: inline-flex;
+      align-items: center;
+      background-color: var(--apple-card-subtle);
+      border: 1px solid var(--apple-card-border);
+      border-radius: 14px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .segmented-btn {
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--apple-text-secondary);
+      cursor: pointer;
+      transition: transform 0.2s var(--apple-spring), 
+                  background-color 0.2s ease, 
+                  color 0.2s ease, 
+                  box-shadow 0.2s var(--apple-spring);
+    }
+    .segmented-btn:hover {
+      transform: translateY(-1px);
+      color: var(--apple-text-primary);
+    }
+    html.dark .segmented-btn:not(.active):hover,
+    html:not(.light) .segmented-btn:not(.active):hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+    html.light .segmented-btn:not(.active):hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+    .segmented-btn.active {
+      background-color: var(--apple-card);
+      color: var(--apple-text-primary) !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      font-weight: 600;
+    }
+    .segmented-btn:active {
+      transform: scale(0.93) !important;
+      transition: transform 0.1s var(--apple-spring) !important;
+    }
+
+    /* Apple Top Bar & Sidebar (Blur 30px & Saturation 180%, seamless border in dark mode) */
+    header {
+      background-color: rgba(0, 0, 0, 0.6) !important;
+      backdrop-filter: blur(30px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+      border-bottom: 1px solid transparent !important;
+    }
+    #sidebarNav {
+      background-color: rgba(28, 28, 30, 0.7) !important;
+      backdrop-filter: blur(30px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+      border-right: 1px solid transparent !important;
+    }
+    #mobileBottomNav {
+      background-color: rgba(28, 28, 30, 0.75) !important;
+      backdrop-filter: blur(30px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+      border-top: 1px solid transparent !important;
+    }
+    .safe-area-bottom {
+      padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    }
+    @media (max-width: 640px) {
+      input:not([type="checkbox"]):not([type="radio"]),
+      select,
+      textarea {
+        font-size: 16px !important;
+      }
+    }
+    @media (pointer: coarse) {
+      button, a, input, select {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+    }
+
+    /* Apple Debit Card (Always dark gradient with crisp white text in both modes) */
+    .atm-card-face,
+    .wallet-card-face {
+      background: linear-gradient(135deg, #3A3A3C 0%, #242426 50%, #1C1C1E 100%) !important;
+      color: #FFFFFF !important;
+      border: 1px solid transparent !important;
+      border-radius: 24px !important;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+      transition: transform 0.28s var(--apple-spring), box-shadow 0.28s var(--apple-spring);
+      cursor: pointer;
+    }
+    .atm-card-face:hover,
+    .wallet-card-face:hover {
+      transform: translateY(-6px) scale(1.015);
+      box-shadow: 0 20px 48px -8px rgba(0, 0, 0, 0.6), 0 0 24px rgba(255, 255, 255, 0.08) !important;
+    }
+    .atm-card-face:active,
+    .wallet-card-face:active {
+      transform: scale(0.97) translateY(-2px) !important;
+      transition: transform 0.1s var(--apple-spring) !important;
+    }
+
+    /* ================= APPLE DARK MODE: ELIMINATE ALL WHITE BORDERS ("LIS PUTIH") ================= */
+    html.dark [class*="border-white"],
+    html:not(.light) [class*="border-white"],
+    html.dark .dompet-card,
+    html:not(.light) .dompet-card,
+    html.dark .kpi-metric-card,
+    html:not(.light) .kpi-metric-card,
+    html.dark #sidebarProfileCard,
+    html:not(.light) #sidebarProfileCard,
+    html.dark #spotlightContainer,
+    html:not(.light) #spotlightContainer,
+    html.dark .segmented-control,
+    html:not(.light) .segmented-control,
+    html.dark #btnThemeToggle,
+    html:not(.light) #btnThemeToggle,
+    html.dark #btnOpenSettings,
+    html:not(.light) #btnOpenSettings,
+    html.dark #btnToggleSidebar,
+    html:not(.light) #btnToggleSidebar {
+      border-color: transparent !important;
+    }
+
+    /* Dashed receipt dropzone remains visible */
+    html.dark label[for="splitBillFileInput"],
+    html:not(.light) label[for="splitBillFileInput"] {
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    .atm-card-face *,
+    .wallet-card-face * {
+      color: #FFFFFF !important;
+    }
+    .atm-card-face .card-dim,
+    .wallet-card-face .card-dim {
+      color: rgba(255, 255, 255, 0.75) !important;
+    }
+    .atm-card-face .card-muted,
+    .wallet-card-face .card-muted {
+      color: rgba(255, 255, 255, 0.6) !important;
+    }
+
+    /* ================= 3. APPLE LIGHT MODE SPECIFICS ================= */
+    html.light body {
+      background-color: #F2F2F7 !important;
+      color: #1C1C1E !important;
+    }
+    html.light #mainWorkspace {
+      background-color: #F2F2F7 !important;
+    }
+    html.light header {
+      background-color: rgba(255, 255, 255, 0.7) !important;
+      backdrop-filter: blur(30px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+    }
+    html.light #sidebarNav {
+      background-color: rgba(255, 255, 255, 0.7) !important;
+      backdrop-filter: blur(30px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+      border-right: 1px solid rgba(0, 0, 0, 0.06) !important;
+    }
+    html.light #mobileBottomNav {
+      background-color: rgba(255, 255, 255, 0.75) !important;
+      backdrop-filter: blur(30px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+      border-top: 1px solid rgba(0, 0, 0, 0.06) !important;
+    }
+    html.light .dompet-card,
+    html.light .kpi-metric-card {
+      background-color: #FFFFFF !important;
+      border-color: rgba(0, 0, 0, 0.06) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 4px 16px rgba(0, 0, 0, 0.02) !important;
+    }
+    html.light #sidebarProfileCard {
+      background-color: rgba(255, 255, 255, 0.75) !important;
+      border: 1px solid rgba(0, 0, 0, 0.06) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+    }
+    html.light #sidebarUserName {
+      color: #1C1C1E !important;
+    }
+    html.light #sidebarUserEmail {
+      color: #6C6C70 !important;
+    }
+
+    /* Light Mode Inputs, Dropdowns & Search */
+    html.light input:not(#quickInput),
+    html.light select,
+    html.light textarea {
+      background-color: #F2F2F7 !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      color: #1C1C1E !important;
+    }
+    html.light input:not(#quickInput):focus,
+    html.light select:focus,
+    html.light textarea:focus {
+      background-color: #FFFFFF !important;
+      border-color: #007AFF !important;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15) !important;
+    }
+    html.light #spotlightContainer {
+      background-color: #F2F2F7 !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    }
+    html.light #spotlightContainer:focus-within {
+      background-color: #FFFFFF !important;
+      border-color: #007AFF !important;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15) !important;
+    }
+    html.light #quickInput {
+      background: transparent !important;
+      color: #1C1C1E !important;
+    }
+    html.light #quickInput::placeholder {
+      color: #8E8E93 !important;
+    }
+
+    /* Light Mode Text Contrast Audit */
+    html.light .text-white:not(.card-face-text):not(.btn-apple-primary):not([class*="bg-[#0A84FF]"]):not([class*="bg-[#30D158]"]):not([class*="bg-[#10B981]"]):not([class*="bg-[#FF453A]"]):not(.atm-card-face *):not(.wallet-card-face *) {
+      color: #1C1C1E !important;
+    }
+    html.light .text-white/90 { color: #1C1C1E !important; }
+    html.light .text-white/80 { color: #2C2C2E !important; }
+    html.light .text-white/70 { color: #3A3A3C !important; }
+    html.light .text-white/60 { color: #48484A !important; }
+    html.light .text-white/50 { color: #636366 !important; }
+    html.light .text-slate-300,
+    html.light .text-slate-200 { color: #3A3A3C !important; }
+    html.light .text-[#8E8E93] { color: #6C6C70 !important; }
+
+    /* Light Mode Modals (Apple iOS / macOS Dialog Style) */
+    html.light .apple-modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.45) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+    }
+    html.light .apple-modal-card {
+      background-color: #FFFFFF !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18) !important;
+      color: #1C1C1E !important;
+    }
+    html.light .apple-modal-card h3,
+    html.light .apple-modal-card h4,
+    html.light .apple-modal-card p,
+    html.light .apple-modal-card label,
+    html.light .apple-modal-card span:not([class*="text-"]):not([class*="bg-"]) {
+      color: #1C1C1E !important;
+    }
+    html.light .apple-modal-card .border-b,
+    html.light .apple-modal-card .border-t {
+      border-color: rgba(0, 0, 0, 0.08) !important;
+    }
+    html.light .apple-modal-card input:not([type="color"]):not([type="checkbox"]):not([type="radio"]),
+    html.light .apple-modal-card select,
+    html.light .apple-modal-card textarea {
+      background-color: #F2F2F7 !important;
+      border-color: rgba(0, 0, 0, 0.1) !important;
+      color: #1C1C1E !important;
+    }
+    html.light .apple-modal-card input::placeholder {
+      color: #8E8E93 !important;
+    }
+    html.light .apple-modal-card button[id^="btnClose"] {
+      background-color: #F2F2F7 !important;
+      color: #1C1C1E !important;
+    }
+    html.light .apple-modal-card button[id^="btnClose"]:hover {
+      background-color: #E5E5EA !important;
+    }
+    html.light .apple-modal-card button[id^="btnClose"] svg {
+      stroke: #1C1C1E !important;
+    }
+    html.light .apple-modal-card #dropzone {
+      background-color: #F8F8FA !important;
+      border-color: rgba(0, 0, 0, 0.15) !important;
+    }
+    html.light .apple-modal-card #dropzone span.text-white {
+      color: #1C1C1E !important;
+    }
+    html.light .apple-modal-card #ocrResultBox {
+      background-color: #F2F2F7 !important;
+      border-color: rgba(0, 0, 0, 0.08) !important;
+    }
+    html.light .apple-modal-card #ocrDetectedNote {
+      color: #1C1C1E !important;
+    }
+    html.light thead {
+      background-color: #F2F2F7 !important;
+      border-color: rgba(0, 0, 0, 0.06) !important;
+    }
+    html.light thead th {
+      color: #6C6C70 !important;
+    }
+    html.light #donutCenterAmount {
+      color: #1C1C1E !important;
+    }
+    html.light #donutCenterLabel {
+      color: #6C6C70 !important;
+    }
+
+    /* Top Bar Utility Buttons in Light Mode */
+    html.light #btnThemeToggle,
+    html.light #btnOpenSettings,
+    html.light #btnToggleSidebar,
+    html.light #btnOpenScanner {
+      background-color: #F2F2F7 !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      color: #1C1C1E !important;
+    }
+    html.light #btnThemeToggle:hover,
+    html.light #btnOpenSettings:hover,
+    html.light #btnToggleSidebar:hover,
+    html.light #btnOpenScanner:hover {
+      background-color: #E5E5EA !important;
+    }
+
+    /* Calendar Day Cells in Light Mode */
+    html.light #calendarDaysGrid > div:not(.calendar-day-selected):not(.opacity-30) {
+      background-color: #F2F2F7 !important;
+      border-color: rgba(0, 0, 0, 0.06) !important;
+    }
+    html.light #calendarDaysGrid > div:not(.calendar-day-selected):not(.opacity-30):hover {
+      background-color: #E5E5EA !important;
+      border-color: rgba(0, 0, 0, 0.14) !important;
+    }
+    html.light #calendarDaysGrid > div:not(.calendar-day-selected) .calendar-day-num,
+    html.light #calendarDaysGrid > div:not(.calendar-day-selected) span {
+      color: #1C1C1E !important;
+    }
+    html.light #calendarDaysGrid > div.calendar-day-selected,
+    html.light #calendarDaysGrid > div.border-\[\#0A84FF\] {
+      background-color: rgba(0, 122, 255, 0.12) !important;
+      border-color: #007AFF !important;
+    }
+    html.light #calendarDaysGrid > div.calendar-day-selected .calendar-day-num,
+    html.light #calendarDaysGrid > div.calendar-day-selected span,
+    html.light #calendarDaysGrid > div.border-\[\#0A84FF\] span {
+      color: #007AFF !important;
+    }
+
+    /* Internal Dark Card Panels & Headers in Light Mode */
+    html.light .dompet-card .bg-\[\#1C1C1E\],
+    html.light .dompet-card .bg-\[\#13141F\],
+    html.light .dompet-card .bg-\[\#2C2C2E\],
+    html.light .dompet-card .bg-\[\#171724\],
+    html.light .dompet-card .bg-\[\#1E1E2D\] {
+      background-color: #F8F8FA !important;
+      border-color: rgba(0, 0, 0, 0.06) !important;
+    }
+    html.light .dompet-card .text-slate-200,
+    html.light .dompet-card .text-slate-300 {
+      color: #3A3A3C !important;
+    }
+
+    /* Split Bill in Light Mode */
+    html.light #viewSplitBill label[for="splitBillFileInput"] {
+      background-color: #F8F8FA !important;
+      border-color: rgba(0, 0, 0, 0.12) !important;
+    }
+    html.light #viewSplitBill label[for="splitBillFileInput"]:hover {
+      background-color: #F2F2F7 !important;
+      border-color: #007AFF !important;
+    }
+    html.light #splitParticipantsList > div {
+      background-color: #F2F2F7 !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      color: #1C1C1E !important;
+    }
+    html.light #splitIndividualBreakdown > div {
+      background-color: #F8F8FA !important;
+      border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    }
+    html.light #splitIndividualBreakdown .font-bold.text-white,
+    html.light #splitIndividualBreakdown span.font-bold {
+      color: #1C1C1E !important;
+    }
+
+    /* Market Dashboard in Light Mode */
+    html.light #marketCardsGrid .bg-\[\#2C2C2E\] {
+      background-color: #F2F2F7 !important;
+      border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    }
+    html.light #marketCardsGrid .text-white {
+      color: #1C1C1E !important;
+    }
+
+    /* Savings Goals in Light Mode */
+    html.light #savingsGoalsGrid .bg-\[\#13141F\] {
+      background-color: #F8F8FA !important;
+      border: 1px solid rgba(0, 0, 0, 0.06) !important;
+      color: #3A3A3C !important;
+    }
+    html.light #savingsGoalsGrid .text-white {
+      color: #1C1C1E !important;
+    }
+    html.light #savingsGoalsGrid .bg-\[\#2C2C2E\] {
+      background-color: #E5E5EA !important;
+    }
+
+    /* Dashboard Recent Transactions in Light Mode */
+    html.light #dashboardRecentTxs .text-white {
+      color: #1C1C1E !important;
+    }
+
+    /* Preserve Apple Card in Light Mode */
+    html.light .atm-card-face,
+    html.light .wallet-card-face {
+      background: linear-gradient(135deg, #3A3A3C 0%, #242426 50%, #1C1C1E 100%) !important;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22) !important;
+    }
+    html.light .atm-card-face *,
+    html.light .wallet-card-face * {
+      color: #FFFFFF !important;
+    }
+
+    /* Dynamic Island HUD */
+    #dynamicIslandHUD {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-40px) scale(0.85);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.28s ease;
+      will-change: transform, opacity;
+    }
+    #dynamicIslandHUD.hud-visible {
+      transform: translateX(-50%) translateY(0) scale(1) !important;
+      opacity: 1 !important;
+      pointer-events: auto;
+    }
+    html.light #dynamicIslandHUD > div {
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      border-color: rgba(0, 0, 0, 0.08) !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+      color: #1C1C1E !important;
+    }
+    html.light #dynamicIslandHUD #dynamicIslandText {
+      color: #1C1C1E !important;
+    }
+
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #2C2C2E; border-radius: 4px; }
+    html.light .custom-scroll::-webkit-scrollbar-thumb { background: #D1D1D6; }
+  </style>
+</head>
+<body class="bg-[#000000] text-white h-screen h-dvh flex overflow-hidden selection:bg-[#0A84FF] selection:text-white">
+
+  <!-- ================= APPLE DYNAMIC ISLAND HUD ================= -->
+  <aside id="dynamicIslandHUD" aria-live="polite">
+    <div class="px-5 py-2.5 rounded-full bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/8 shadow-[0_12px_32px_rgba(0,0,0,0.5)] flex items-center gap-3 text-xs text-white max-w-sm">
+      <span id="dynamicIslandIcon" class="w-7 h-7 rounded-full bg-[#0A84FF]/20 text-[#0A84FF] flex items-center justify-center shrink-0">
+        <i data-lucide="check-circle" class="w-4 h-4 text-[#0A84FF]"></i>
+      </span>
+      <div class="flex flex-col min-w-0">
+        <span id="dynamicIslandTitle" class="text-[13px] font-medium text-[#0A84FF]">Tercatat</span>
+        <span id="dynamicIslandText" class="font-semibold tracking-tight text-white truncate text-xs">Transaksi berhasil disimpan</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================= MOBILE SIDEBAR BACKDROP ================= -->
+  <div id="sidebarBackdrop" class="hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm lg:hidden transition-opacity"></div>
+
+  <!-- ================= DOMPET LEFT SIDEBAR (macOS SONOMA STYLE) ================= -->
+  <aside id="sidebarNav" class="fixed top-0 bottom-0 left-0 z-50 w-64 h-screen bg-[#1C1C1E]/70 backdrop-blur-2xl border-r border-white/6 flex flex-col justify-between transition-transform duration-300 -translate-x-full lg:translate-x-0 lg:sticky lg:top-0 lg:shrink-0 overflow-y-auto">
+    <div class="py-6 space-y-6">
+      
+      <!-- Brand Logo (Apple Minimalist Style) -->
+      <div class="px-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-[12px] bg-[#0A84FF] flex items-center justify-center text-white shadow-sm shadow-[#0A84FF]/30">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold tracking-tight text-white font-headline flex items-center gap-1.5">
+              dompet
+              <span class="text-[12px] text-[#0A84FF] bg-[#0A84FF]/15 px-2 py-0.5 rounded-full font-medium">Wallet</span>
+            </h1>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Profile Card (Hi, Daniel) -->
+      <div class="px-4">
+        <div id="sidebarProfileCard" class="p-3 rounded-[16px] bg-[#2C2C2E]/60 border border-white/8 flex items-center gap-3 transition-colors hover:bg-[#2C2C2E]">
+          <div class="relative w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-[#0A84FF] to-[#BF5AF2] p-0.5 shrink-0 shadow-sm">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Daniel" class="w-full h-full object-cover rounded-full" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5">
+              <h4 id="sidebarUserName" class="font-subhead text-xs font-semibold text-white tracking-tight truncate">Hi, Daniel</h4>
+              <span class="w-1.5 h-1.5 rounded-full bg-[#30D158]"></span>
+            </div>
+            <span id="sidebarUserEmail" class="text-[11px] text-[#8E8E93] block truncate font-body">daniel@finance.id</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Menu Items (Multi-View Switchers) -->
+      <nav class="px-3 space-y-1 text-xs font-medium">
+        <button data-view="dashboard" class="nav-item active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-[12px] font-semibold transition-all cursor-pointer">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <span>Dashboard</span>
+        </button>
+
+        <button data-view="wallet" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-[12px] transition-all cursor-pointer">
+          <span class="flex items-center gap-3">
+            <i data-lucide="credit-card" class="w-4 h-4"></i>
+            <span>My Wallet</span>
+          </span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-50"></i>
+        </button>
+
+        <button data-view="transactions" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-[12px] transition-all cursor-pointer">
+          <span class="flex items-center gap-3">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+            <span>Transactions & Calendar</span>
+          </span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-50"></i>
+        </button>
+
+        <button data-view="splitbill" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-[12px] transition-all cursor-pointer">
+          <span class="flex items-center gap-3">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+            <span>Split Bill (PB1 & Tax)</span>
+          </span>
+          <span class="px-2 py-0.5 rounded-full text-[12px] font-medium bg-[#BF5AF2]/15 text-[#BF5AF2]">Pro</span>
+        </button>
+
+        <button data-view="market" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-[12px] transition-all cursor-pointer">
+          <span class="flex items-center gap-3">
+            <i data-lucide="trending-up" class="w-4 h-4"></i>
+            <span>Market & Investasi</span>
+          </span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#30D158] animate-pulse"></span>
+            <span class="px-2 py-0.5 rounded-full text-[12px] font-medium bg-[#30D158]/15 text-[#30D158]">Live</span>
+          </span>
+        </button>
+
+        <button data-view="savings" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-[12px] transition-all cursor-pointer">
+          <span class="flex items-center gap-3">
+            <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+            <span>Tabungan & Impian</span>
+          </span>
+          <span class="px-2 py-0.5 rounded-full text-[12px] font-medium bg-[#0A84FF]/15 text-[#0A84FF]">Goals</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Sidebar Bottom: Settings -->
+    <div class="p-4 border-t border-white/6 space-y-1">
+      <button data-view="settings" class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-[12px] text-xs transition-colors cursor-pointer">
+        <span class="flex items-center gap-2.5">
+          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[#0A84FF]"></i>
+          <span>Pengaturan & Cloud</span>
+        </span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-50"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN WORKSPACE (FULL WIDTH & MULTI-VIEW) ================= -->
+  <div id="mainWorkspace" class="flex-1 flex flex-col min-w-0 h-screen h-dvh overflow-hidden bg-[#000000]">
+
+    <!-- TOP HEADER BAR (macOS GLASS BAR: blur 30px & sat 180%) -->
+    <header class="sticky top-0 z-40 shrink-0 bg-black/60 backdrop-blur-2xl border-b border-white/6 px-3.5 sm:px-6 py-2.5 sm:py-3">
+      <div class="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
+        
+        <!-- Mobile Top Row: Menu & Title & Mobile Quick Actions -->
+        <div class="flex items-center justify-between sm:justify-start gap-2.5 shrink-0">
+          <div class="flex items-center gap-2.5">
+            <button id="btnToggleSidebar" class="lg:hidden p-2 rounded-[12px] bg-[#2C2C2E]/60 border border-white/8 text-[#8E8E93] hover:text-white transition-colors cursor-pointer" title="Buka Menu">
+              <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+            <h2 id="topHeaderTitle" class="lg:hidden text-sm font-semibold text-white tracking-tight">Dashboard</h2>
+          </div>
+
+          <!-- Mobile Right Quick Actions -->
+          <div class="flex sm:hidden items-center gap-2 shrink-0">
+            <button id="btnVoiceCommandMobile" title="Perintah Suara Langsung (Voice Command)" class="w-9 h-9 rounded-[12px] bg-black/5 dark:bg-[#2C2C2E]/60 hover:bg-black/10 dark:hover:bg-[#2C2C2E] border border-black/[0.08] dark:border-white/8 text-[#0A84FF] flex items-center justify-center transition-all active:scale-95 cursor-pointer">
+              <i data-lucide="mic" class="w-4 h-4"></i>
+            </button>
+            <button id="btnThemeToggleMobile" title="Ganti Mode Gelap / Terang (Apple Theme)" class="theme-toggle-btn w-9 h-9 rounded-[12px] bg-black/5 dark:bg-[#2C2C2E]/60 hover:bg-black/10 dark:hover:bg-[#2C2C2E] border border-black/[0.08] dark:border-white/8 text-slate-800 dark:text-slate-300 flex items-center justify-center transition-all active:scale-95 cursor-pointer">
+              <i data-lucide="sun" class="w-4 h-4 text-[#FF9F0A]"></i>
+            </button>
+            <button id="btnOpenSettingsMobile" title="Pengaturan" class="settings-open-btn w-9 h-9 rounded-[12px] bg-black/5 dark:bg-[#2C2C2E]/60 hover:bg-black/10 dark:hover:bg-[#2C2C2E] border border-black/[0.08] dark:border-white/8 text-slate-800 dark:text-slate-300 flex items-center justify-center transition-all active:scale-95 cursor-pointer">
+              <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Center: Apple Spotlight Quick Input Bar (Full Width on Mobile) -->
+        <div class="flex-1 w-full max-w-xl sm:mx-2">
+          <div id="spotlightContainer" class="w-full rounded-[14px] px-3.5 py-1.5 sm:py-2 flex items-center gap-2.5 border border-white/8 bg-[#2C2C2E]/60 focus-within:border-[#0A84FF] focus-within:ring-2 focus-within:ring-[#0A84FF]/25 transition-all">
+            <div class="text-[#8E8E93] shrink-0">
+              <i data-lucide="sparkles" class="w-4 h-4 text-[#0A84FF]"></i>
+            </div>
+            <input
+              id="quickInput"
+              type="text"
+              placeholder='Ketik cepat: "makan 15k", "kopi 25rb gopay"...'
+              class="flex-1 min-w-0 bg-transparent border-0 text-xs sm:text-sm text-white placeholder-[#8E8E93] focus:outline-none focus:ring-0 p-0"
+            />
+            <!-- Voice Command Button -->
+            <button id="btnVoiceCommand" class="w-8 h-8 rounded-[10px] bg-black/5 dark:bg-white/5 hover:bg-[#0A84FF]/20 text-[#0A84FF] flex items-center justify-center transition-all shrink-0 cursor-pointer" title="Perintah Suara Langsung (Live Voice)">
+              <i data-lucide="mic" class="w-3.5 h-3.5"></i>
+            </button>
+            <!-- Camera OCR Button -->
+            <button id="btnOpenScanner" class="w-8 h-8 rounded-[10px] bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 flex items-center justify-center transition-colors shrink-0 cursor-pointer" title="Scan Resi">
+              <i data-lucide="camera" class="w-3.5 h-3.5 text-[#0A84FF]"></i>
+            </button>
+            <!-- Submit Button -->
+            <button id="btnSubmitQuick" class="w-8 h-8 rounded-[10px] bg-[#0A84FF] hover:bg-[#0071E3] active:scale-95 text-white font-bold flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-sm">
+              <i data-lucide="arrow-up" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Desktop Right: Actions -->
+        <div class="hidden sm:flex items-center gap-2 shrink-0">
+          <!-- Light / Dark Apple Theme Toggle -->
+          <button id="btnThemeToggle" title="Ganti Mode Gelap / Terang (Apple Theme)" class="theme-toggle-btn w-9 h-9 rounded-[12px] bg-black/5 dark:bg-[#2C2C2E]/60 hover:bg-black/10 dark:hover:bg-[#2C2C2E] border border-black/[0.08] dark:border-white/8 text-slate-800 dark:text-slate-300 flex items-center justify-center transition-all active:scale-95 cursor-pointer">
+            <i id="themeIcon" data-lucide="sun" class="w-4 h-4 text-[#FF9F0A]"></i>
+          </button>
+          <button id="btnTopReport" class="flex items-center gap-2 px-4 py-2 rounded-[14px] bg-[#0A84FF] hover:bg-[#0071E3] text-white text-xs font-semibold transition-all cursor-pointer active:scale-95 shadow-sm border-0">
+            <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>
+            <span>Report</span>
+          </button>
+          <button id="btnOpenSettings" title="Pengaturan" class="settings-open-btn w-9 h-9 rounded-[12px] bg-black/5 dark:bg-[#2C2C2E]/60 hover:bg-black/10 dark:hover:bg-[#2C2C2E] border border-black/[0.08] dark:border-white/8 text-slate-800 dark:text-slate-300 flex items-center justify-center transition-all active:scale-95 cursor-pointer">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Preview Pill -->
+      <div id="quickPreview" class="hidden mt-2 px-3.5 py-1.5 rounded-[12px] bg-[#1C1C1E] border border-white/6 flex flex-wrap items-center gap-2 text-xs">
+        <span class="text-[#8E8E93] text-[11px]">Terdeteksi:</span>
+        <span id="previewAmount" class="px-2 py-0.5 rounded-full bg-[#30D158]/20 text-[#30D158] tabular-nums font-semibold">Rp 0</span>
+        <span id="previewCategory" class="px-2 py-0.5 rounded-full bg-[#2C2C2E] text-slate-300">-</span>
+        <span id="previewWallet" class="px-2 py-0.5 rounded-full bg-[#2C2C2E] text-slate-300">-</span>
+      </div>
+    </header>
+
+    <!-- ================= MULTI-VIEW VIEWPORT CONTAINER ================= -->
+    <main class="w-full px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-8 space-y-6 flex-1 custom-scroll overflow-y-auto">
+
+      <!-- ================= VIEW 1: DASHBOARD ================= -->
+      <section id="viewDashboard" class="view-screen space-y-6">
+        <div>
+          <h1 class="page-title text-apple-h1 text-white">Dashboard</h1>
+          <p class="text-apple-caption mt-1">Ringkasan finansial, saldo kas, dan pantauan pengeluaran</p>
+        </div>
+        
+        <!-- ROW 1: 4 CLEAN APPLE KPI CARDS (Sentence Case, 13px, weight 500, 36px circular icon) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <!-- Card 1: Total Saldo Bersih -->
+          <div class="kpi-metric-card dompet-card rounded-[24px] p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[13px] font-medium text-[#8E8E93]">Total saldo bersih</span>
+              <div class="w-9 h-9 rounded-full bg-[#0A84FF]/15 flex items-center justify-center text-[#0A84FF] shrink-0">
+                <i data-lucide="wallet" class="w-4 h-4" stroke-width="1.8"></i>
+              </div>
+            </div>
+            <h3 id="kpiNetWorth" class="text-num-lg text-white">Rp 0</h3>
+            <span class="font-body text-xs text-[#8E8E93] block">Seluruh saldo kas & rekening</span>
+          </div>
+
+          <!-- Card 2: Pemasukan Bulan Ini -->
+          <div class="kpi-metric-card dompet-card rounded-[24px] p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[13px] font-medium text-[#8E8E93]">Pemasukan bulan ini</span>
+              <div class="w-9 h-9 rounded-full bg-[#30D158]/15 flex items-center justify-center text-[#30D158] shrink-0">
+                <i data-lucide="trending-up" class="w-4 h-4" stroke-width="1.8"></i>
+              </div>
+            </div>
+            <h3 id="kpiIncome" class="text-num-lg text-[#30D158]">+Rp 0</h3>
+            <span class="font-body text-xs text-[#8E8E93] block">Gaji & cashflow masuk</span>
+          </div>
+
+          <!-- Card 3: Pengeluaran Bulan Ini -->
+          <div class="kpi-metric-card dompet-card rounded-[24px] p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[13px] font-medium text-[#8E8E93]">Pengeluaran bulan ini</span>
+              <div class="w-9 h-9 rounded-full bg-[#FF453A]/15 flex items-center justify-center text-[#FF453A] shrink-0">
+                <i data-lucide="trending-down" class="w-4 h-4" stroke-width="1.8"></i>
+              </div>
+            </div>
+            <h3 id="kpiExpense" class="text-num-lg text-[#FF453A]">-Rp 0</h3>
+            <span class="font-body text-xs text-[#8E8E93] block">Biaya konsumsi & tagihan</span>
+          </div>
+
+          <!-- Card 4: Tabungan & Cadangan -->
+          <div class="kpi-metric-card dompet-card rounded-[24px] p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[13px] font-medium text-[#8E8E93]">Tabungan & cadangan</span>
+              <div class="w-9 h-9 rounded-full bg-[#BF5AF2]/15 flex items-center justify-center text-[#BF5AF2] shrink-0">
+                <i data-lucide="shield-check" class="w-4 h-4" stroke-width="1.8"></i>
+              </div>
+            </div>
+            <h3 id="kpiCoupleKas" class="text-num-lg text-white">Rp 0</h3>
+            <span class="font-body text-xs text-[#8E8E93] block">Dana darurat & impian aktif</span>
+          </div>
+        </div>
+
+        <!-- ROW 2: APPLE CARD (DEBIT) + DONUT CHART + ACTIVITY BAR CHART -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Visual Apple Card (Debit Card Style: Always dark gradient & white text) -->
+          <div class="atm-card-face rounded-[24px] p-6 relative overflow-hidden flex flex-col justify-between min-h-[220px] select-none text-white">
+            <div class="absolute -top-10 -right-10 w-40 h-40 bg-radial from-white/12 to-transparent rounded-full blur-lg pointer-events-none"></div>
+
+            <div class="relative z-10 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="flex -space-x-2">
+                  <div class="w-6 h-6 rounded-full bg-[#FF453A]/90"></div>
+                  <div class="w-6 h-6 rounded-full bg-[#FF9F0A]/90"></div>
+                </div>
+                <span class="ml-2 font-sans text-xs tracking-wide text-white font-semibold">Debit</span>
+              </div>
+              <svg class="w-6 h-6 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M8.5 16.5a5 5 0 0 1 0-7"/>
+                <path d="M12 19a8.5 8.5 0 0 0 0-14"/>
+                <path d="M15.5 21.5a12 12 0 0 0 0-19"/>
+              </svg>
+            </div>
+            
+            <div class="relative z-10 my-3 space-y-1">
+              <div class="flex items-center justify-between mb-2">
+                <svg class="w-10 h-7 rounded-[4px] shadow-sm" viewBox="0 0 40 28" fill="none">
+                  <rect width="40" height="28" rx="4" fill="#D4AF37"/>
+                  <path d="M12 0v28M28 0v28M0 10h12M0 18h12M28 10h12M28 18h12" stroke="#996515" stroke-width="1.2"/>
+                  <circle cx="20" cy="14" r="4" fill="#E6CA65" stroke="#996515" stroke-width="1"/>
+                </svg>
+                <span class="tabular-nums text-xs text-white/80">•••• 4821</span>
+              </div>
+              <span class="text-[11px] font-medium text-white/70 block">Saldo Dompet Utama</span>
+              <h2 id="atmCardBalance" class="text-num-lg text-white">Rp 0</h2>
+            </div>
+
+            <div class="relative z-10 flex items-center justify-between text-xs text-white/80 pt-2 border-t border-white/10">
+              <span class="text-[11px] text-[#30D158] font-medium flex items-center gap-1">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                <span>Siap digunakan</span>
+              </span>
+              <span class="text-[12px] font-medium text-white/90">Daniel</span>
+            </div>
+          </div>
+
+          <!-- Donut Chart: Alokasi Pengeluaran with Center Total -->
+          <div class="dompet-card rounded-[24px] p-6 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-apple-h2 text-white">Alokasi Pengeluaran</h4>
+              <span class="text-xs text-[#8E8E93] font-medium">Bulan Ini</span>
+            </div>
+            <div class="h-44 relative flex items-center justify-center">
+              <canvas id="categoryDonutCanvas"></canvas>
+              <!-- Center Total Overlay -->
+              <div id="donutCenterDisplay" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-1">
+                <span id="donutCenterLabel" class="text-[12px] font-medium text-[#8E8E93]">Belum Ada Belanja</span>
+                <span id="donutCenterAmount" class="tabular-nums text-sm sm:text-base font-semibold text-white tracking-tight">Rp 0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Activity Chart: Weekly Arus Kas -->
+          <div class="dompet-card rounded-[24px] p-6 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-apple-h2 text-white">Arus Kas Mingguan</h4>
+                <span class="text-xs text-[#0A84FF] font-medium">Income vs Outcome</span>
+              </div>
+              <div class="flex items-center gap-3 text-xs">
+                <span class="flex items-center gap-1.5 text-[#8E8E93]">
+                  <span class="w-2 h-2 rounded-full bg-[#30D158]"></span> In
+                </span>
+                <span class="flex items-center gap-1.5 text-[#8E8E93]">
+                  <span class="w-2 h-2 rounded-full bg-[#FF453A]"></span> Out
+                </span>
+              </div>
+            </div>
+            <div class="h-44 relative">
+              <canvas id="cashflowBarCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 3: SPENDINGS PROGRESS BARS -->
+        <div class="w-full">
+          <!-- Spendings Budget Progress Bars (8px height, rounded, Apple palette, circular category icons) -->
+          <div class="dompet-card rounded-[24px] p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <h4 class="text-apple-h2 text-white">Spendings by Category</h4>
+              <span class="text-xs text-[#8E8E93] font-medium">Bulan Ini</span>
+            </div>
+            <div class="space-y-4 text-xs font-body">
+              <!-- Makanan & Minuman -->
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#FF9F0A]/15 text-[#FF9F0A] flex items-center justify-center shrink-0">
+                  <i data-lucide="utensils" class="w-4 h-4"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between text-xs mb-1.5">
+                    <span class="text-[#8E8E93] text-[12px] font-medium">Makanan & Minuman</span>
+                    <span id="spendFoodVal" class="tabular-nums text-white font-semibold text-[13px]">Rp 0</span>
+                  </div>
+                  <div class="w-full h-2 bg-black/[0.06] dark:bg-white/[0.08] rounded-full overflow-hidden">
+                    <div id="spendFoodBar" class="h-full bg-[#FF9F0A] rounded-full transition-all duration-500" style="width: 0%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Transportasi -->
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#0A84FF]/15 text-[#0A84FF] flex items-center justify-center shrink-0">
+                  <i data-lucide="car" class="w-4 h-4"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between text-xs mb-1.5">
+                    <span class="text-[#8E8E93] text-[12px] font-medium">Transportasi</span>
+                    <span id="spendTransportVal" class="tabular-nums text-white font-semibold text-[13px]">Rp 0</span>
+                  </div>
+                  <div class="w-full h-2 bg-black/[0.06] dark:bg-white/[0.08] rounded-full overflow-hidden">
+                    <div id="spendTransportBar" class="h-full bg-[#0A84FF] rounded-full transition-all duration-500" style="width: 0%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Belanja & Kebutuhan -->
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#BF5AF2]/15 text-[#BF5AF2] flex items-center justify-center shrink-0">
+                  <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between text-xs mb-1.5">
+                    <span class="text-[#8E8E93] text-[12px] font-medium">Belanja & Kebutuhan</span>
+                    <span id="spendShoppingVal" class="tabular-nums text-white font-semibold text-[13px]">Rp 0</span>
+                  </div>
+                  <div class="w-full h-2 bg-black/[0.06] dark:bg-white/[0.08] rounded-full overflow-hidden">
+                    <div id="spendShoppingBar" class="h-full bg-[#BF5AF2] rounded-full transition-all duration-500" style="width: 0%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tagihan & Utilitas -->
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#FF453A]/15 text-[#FF453A] flex items-center justify-center shrink-0">
+                  <i data-lucide="receipt" class="w-4 h-4"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between text-xs mb-1.5">
+                    <span class="text-[#8E8E93] text-[12px] font-medium">Tagihan & Utilitas</span>
+                    <span id="spendBillsVal" class="tabular-nums text-white font-semibold text-[13px]">Rp 0</span>
+                  </div>
+                  <div class="w-full h-2 bg-black/[0.06] dark:bg-white/[0.08] rounded-full overflow-hidden">
+                    <div id="spendBillsBar" class="h-full bg-[#FF453A] rounded-full transition-all duration-500" style="width: 0%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 4: RECENT TRANSACTIONS (LATEST 5) -->
+        <div class="dompet-card rounded-[24px] p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="text-apple-h2 text-white">Transaksi Terakhir</h4>
+            <button data-view="transactions" class="text-xs text-[#0A84FF] hover:underline font-subhead font-medium cursor-pointer">
+              Buka Semua di Kalender →
+            </button>
+          </div>
+          <div id="dashboardRecentTxs" class="divide-y divide-white/6">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 2: MY WALLET & ACCOUNTS ================= -->
+      <section id="viewMyWallet" class="view-screen hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 class="page-title text-apple-h1 text-white">My Wallet & Accounts</h1>
+            <p class="text-apple-caption mt-1">Kelola semua rekening bank, e-wallet, dan sumber dana Anda</p>
+          </div>
+          <button id="btnOpenAddWallet" class="px-4 py-2.5 rounded-[14px] bg-[#0A84FF] hover:bg-[#0071E3] text-white font-subhead font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-[0.97] border-0">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Tambah Dompet Baru</span>
+          </button>
+        </div>
+
+        <!-- Wallets ATM Cards Grid -->
+        <div id="myWalletsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Rendered via JS -->
+        </div>
+      </section>
+
+      <!-- ================= VIEW 3: TRANSACTIONS & FINANCIAL CALENDAR ================= -->
+      <section id="viewTransactions" class="view-screen hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 class="page-title text-apple-h1 text-white">Transactions & Financial Calendar</h1>
+            <p class="text-apple-caption mt-1">Kalender bulanan dengan ringkasan pengeluaran & pemasukan harian</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnExportCsv" class="px-4 py-2 rounded-[14px] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-xs text-white flex items-center gap-2 transition-colors cursor-pointer font-subhead font-semibold active:scale-[0.97] border-0">
+              <i data-lucide="download" class="w-3.5 h-3.5 text-[#30D158]"></i>
+              <span>Export CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MONTHLY FINANCIAL CALENDAR WIDGET -->
+        <div class="dompet-card rounded-[24px] p-6 space-y-4">
+          <div class="flex items-center justify-between border-b border-white/6 pb-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="calendar" class="w-5 h-5 text-[#0A84FF]"></i>
+              <h4 id="calendarMonthLabel" class="text-apple-h2 text-white">November 2026</h4>
+            </div>
+            <span class="text-apple-caption">Pilih tanggal untuk melihat detail transaksi</span>
+          </div>
+
+          <!-- Calendar Weekday Header -->
+          <div class="grid grid-cols-7 gap-1 text-center text-xs font-medium text-[#8E8E93] py-1 border-b border-white/6">
+            <div>Min</div>
+            <div>Sen</div>
+            <div>Sel</div>
+            <div>Rab</div>
+            <div>Kam</div>
+            <div>Jum</div>
+            <div>Sab</div>
+          </div>
+
+          <!-- Calendar Days Grid -->
+          <div id="calendarDaysGrid" class="grid grid-cols-7 gap-1.5 sm:gap-2">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+        <!-- TRANSACTIONS DATA TABLE -->
+        <div class="dompet-card rounded-[24px] overflow-hidden space-y-3">
+          <div class="p-4 border-b border-black/[0.06] dark:border-white/6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#F8F8FA] dark:bg-[#1C1C1E]">
+            <div class="flex items-center gap-2">
+              <i data-lucide="table" class="w-4 h-4 text-[#0A84FF]"></i>
+              <h4 id="transactionTableTitle" class="text-apple-h2 text-slate-900 dark:text-white">Daftar Transaksi</h4>
+            </div>
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <input id="searchTransaction" type="text" placeholder="Cari transaksi..." class="font-body w-full sm:w-auto bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-black/[0.08] dark:border-white/8 rounded-[12px] px-3 py-1.5 text-xs text-[#1C1C1E] dark:text-white placeholder-[#8E8E93] focus:outline-none focus:border-[#0A84FF]" />
+              <select id="filterTableCategory" class="font-body w-full sm:w-auto bg-[#F2F2F7] dark:bg-[#2C2C2E] border border-black/[0.08] dark:border-white/8 rounded-[12px] px-2.5 py-1.5 text-xs text-[#1C1C1E] dark:text-white focus:outline-none focus:border-[#0A84FF]">
+                <option value="">Semua Kategori</option>
+                <option value="Makanan & Minuman">Makanan & Minuman</option>
+                <option value="Transportasi">Transportasi</option>
+                <option value="Belanja & Kebutuhan">Belanja</option>
+                <option value="Tagihan & Utilitas">Tagihan</option>
+                <option value="Hiburan & Rekreasi">Hiburan</option>
+                <option value="Kesehatan">Kesehatan</option>
+                <option value="Gaji & Pemasukan">Gaji</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Full Width Table -->
+          <div class="w-full overflow-x-auto custom-scroll">
+            <table class="w-full text-left text-xs whitespace-nowrap">
+              <thead class="bg-[#1C1C1E] text-[#8E8E93] border-b border-white/6 text-[13px] font-medium">
+                <tr>
+                  <th class="py-3 px-4">Tanggal & waktu</th>
+                  <th class="py-3 px-4">Deskripsi / item</th>
+                  <th class="py-3 px-4">Kategori</th>
+                  <th class="py-3 px-4">Dompet sumber</th>
+                  <th class="py-3 px-4">Tipe aliran</th>
+                  <th class="py-3 px-4 text-right">Nominal (Rp)</th>
+                  <th class="py-3 px-4 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="transactionsTableBody" class="divide-y divide-white/6">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="transactionsContainer" class="hidden"></div>
+
+          <div class="p-4 border-t border-white/6 flex items-center justify-between text-xs text-[#8E8E93]">
+            <span id="tableRecordCount" class="font-body">Menampilkan transaksi terbaru</span>
+            <span class="text-[#0A84FF] font-medium">Dompet Finance Engine</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 4: SMART SPLIT BILL (PB1 & TAX) ================= -->
+      <section id="viewSplitBill" class="view-screen hidden space-y-6">
+        <div>
+          <h1 class="page-title text-apple-h1 text-white">Smart Split Bill (PB1 & Resto Tax)</h1>
+          <p class="text-apple-caption mt-1">Bagi tagihan makan bersama secara proporsional sesuai standar pajak resto di Indonesia</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- LEFT 2 COLS: RECEIPT SCANNER & ITEM LIST -->
+          <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Struk Dropzone -->
+            <div class="dompet-card rounded-[24px] p-5 space-y-3">
+              <label for="splitBillFileInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-black/10 dark:border-white/12 hover:border-[#0A84FF] dark:hover:border-[#0A84FF] rounded-[18px] cursor-pointer bg-[#F2F2F7] dark:bg-[#2C2C2E]/40 hover:bg-[#E5E5EA] dark:hover:bg-[#2C2C2E]/70 transition-colors p-4 text-center">
+                <i data-lucide="receipt" class="w-6 h-6 text-[#0A84FF] mb-1"></i>
+                <span class="font-subhead text-xs text-[#1C1C1E] dark:text-white font-semibold">Unggah Foto Struk Kasir / PDF Tagihan</span>
+                <span class="font-body text-[11px] text-[#6C6C70] dark:text-[#8E8E93] mt-0.5">Membaca otomatis nama menu & harga</span>
+                <input id="splitBillFileInput" type="file" accept="image/*,application/pdf" class="hidden" />
+              </label>
+            </div>
+
+            <!-- Participants Chips Input -->
+            <div class="dompet-card rounded-[24px] p-5 space-y-3">
+              <div class="flex items-center justify-between">
+                <h4 class="text-apple-h2 text-white">Daftar Orang (Participants)</h4>
+                <span class="text-xs text-[#8E8E93]">Tekan Enter untuk menambah</span>
+              </div>
+              <div class="flex gap-2">
+                <input id="splitInputParticipantName" type="text" placeholder="misal: Daniel, Sarah, Budi" class="font-body flex-1 bg-[#2C2C2E] border border-white/8 rounded-[14px] px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#0A84FF]" />
+                <button id="btnAddParticipant" class="px-4 py-2 bg-[#0A84FF] text-white font-subhead font-semibold rounded-[14px] text-xs hover:bg-[#0071E3] cursor-pointer active:scale-[0.97] border-0">
+                  + Tambah
+                </button>
+              </div>
+              <div id="splitParticipantsList" class="flex flex-wrap gap-2 pt-1">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+
+            <!-- Items Table & Assignment -->
+            <div class="dompet-card rounded-[24px] p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <h4 class="text-apple-h2 text-white">Daftar Pesanan & Pembagian</h4>
+                <button id="btnAddNewSplitItem" class="font-subhead text-xs text-[#0A84FF] hover:underline font-semibold cursor-pointer">
+                  + Tambah Menu Manual
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs whitespace-nowrap">
+                  <thead class="text-[#8E8E93] border-b border-white/8 text-[13px] font-medium">
+                    <tr>
+                      <th class="py-2.5 px-3">Nama menu</th>
+                      <th class="py-2.5 px-3">Harga satuan (Rp)</th>
+                      <th class="py-2.5 px-3">Qty</th>
+                      <th class="py-2.5 px-3">Dipesan oleh</th>
+                      <th class="py-2.5 px-3 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="splitItemsTableBody" class="divide-y divide-white/6">
+                    <!-- Injected via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COL: INDONESIAN TAX SETTINGS & SUMMARY -->
+          <div class="space-y-6">
+            
+            <!-- Tax Configuration Card -->
+            <div class="dompet-card rounded-[24px] p-5 space-y-3">
+              <h4 class="text-apple-h2 text-white">Pengaturan Pajak Restoran</h4>
+              <div class="space-y-2.5 text-xs">
+                <div>
+                  <label class="font-body block text-[#8E8E93] text-[11px] mb-1">Service Charge Restoran (%)</label>
+                  <input id="splitServicePercent" type="number" value="5" min="0" max="20" class="tabular-nums w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white text-xs" />
+                </div>
+                <div>
+                  <label class="font-body block text-[#8E8E93] text-[11px] mb-1">PB1 / Pajak Daerah (%)</label>
+                  <input id="splitTaxPercent" type="number" value="10" min="0" max="15" class="tabular-nums w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white text-xs" />
+                </div>
+                <div>
+                  <label class="font-body block text-[#8E8E93] text-[11px] mb-1">Nomor Rekening Anda (Untuk Transfer)</label>
+                  <input id="splitBankAccountInput" type="text" placeholder="BCA: 1234-5678-90 a/n Daniel" class="font-body w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white text-xs" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Grand Summary & WhatsApp Export -->
+            <div class="dompet-card rounded-[24px] p-5 space-y-4">
+              <h4 class="text-apple-h2 text-white">Ringkasan Tagihan Bersih</h4>
+              
+              <div class="space-y-2 text-xs border-b border-white/8 pb-3">
+                <div class="flex justify-between text-[#8E8E93] font-body">
+                  <span>Subtotal Menu:</span>
+                  <span id="splitSummarySubtotal" class="tabular-nums text-white">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-[#8E8E93] font-body">
+                  <span>Service Charge:</span>
+                  <span id="splitSummaryService" class="tabular-nums text-white">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-[#8E8E93] font-body">
+                  <span>PB1 Resto Tax:</span>
+                  <span id="splitSummaryTax" class="tabular-nums text-white">Rp 0</span>
+                </div>
+                <div class="flex justify-between font-bold text-sm text-white pt-1 font-body">
+                  <span>Grand Total:</span>
+                  <span id="splitSummaryGrandTotal" class="text-num-md text-[#0A84FF]">Rp 0</span>
+                </div>
+              </div>
+
+              <!-- Individual Breakdown -->
+              <div id="splitIndividualBreakdown" class="space-y-2 text-xs">
+                <!-- Injected via JS -->
+              </div>
+
+              <!-- WhatsApp Share Button -->
+              <button id="btnCopyWhatsAppSplit" class="w-full py-3 rounded-[14px] bg-[#30D158] hover:bg-[#28B84D] text-white font-subhead font-semibold text-xs transition-transform active:scale-[0.97] flex items-center justify-center gap-2 cursor-pointer shadow-sm border-0">
+                <i data-lucide="share-2" class="w-4 h-4"></i>
+                <span>Salin Rincian ke WhatsApp</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 5: SETTINGS & PERSONAL PROFILE ================= -->
+      <section id="viewSettings" class="view-screen hidden space-y-6">
+        <div>
+          <h1 class="page-title text-apple-h1 text-white">Pengaturan & Cloud</h1>
+          <p class="text-apple-caption mt-1">Konfigurasi identitas pengguna, integrasi Telegram bot, dan Supabase Cloud</p>
+        </div>
+
+        <div class="max-w-2xl dompet-card rounded-[24px] p-6 space-y-6">
+          <!-- Profile Name Editor -->
+          <div class="space-y-3">
+            <h4 class="text-apple-h2 text-white">Identitas Pengguna</h4>
+            <div>
+              <label class="font-body block text-xs text-[#8E8E93] mb-1">Nama Panggilan</label>
+              <div class="flex gap-2">
+                <input id="settingInputUserName" type="text" value="Daniel" class="font-body flex-1 bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-xs text-white focus:outline-none focus:border-[#0A84FF]" />
+                <button id="btnSaveUserName" class="px-5 py-2.5 bg-[#0A84FF] text-white font-subhead font-semibold rounded-[14px] text-xs hover:bg-[#0071E3] cursor-pointer active:scale-[0.97] border-0">
+                  Simpan
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apple Theme Selector (Light / Dark) -->
+          <div class="space-y-3 pt-2 border-t border-white/6">
+            <h4 class="text-apple-h2 text-white">Tema Tampilan Apple Ecosystem</h4>
+            <div class="flex items-center justify-between p-3.5 rounded-[16px] bg-[#2C2C2E]/50 border border-white/6">
+              <div>
+                <span class="font-subhead text-xs font-semibold text-white block">Mode Gelap / Terang</span>
+                <span class="font-body text-[11px] text-[#8E8E93] block">Dark Mode (macOS) atau iOS Light Mode</span>
+              </div>
+              <button id="btnSettingsThemeToggle" class="px-4 py-2 rounded-[12px] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-white text-xs font-subhead font-semibold flex items-center gap-2 cursor-pointer transition-all active:scale-[0.97] border-0">
+                <i id="settingsThemeIcon" data-lucide="sun" class="w-4 h-4 text-[#FF9F0A]"></i>
+                <span id="settingsThemeText">Ganti ke Mode Terang</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Telegram Bot Quick Guide -->
+          <div class="p-4 rounded-[18px] bg-[#2C2C2E]/50 border border-white/6 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-subhead text-xs font-bold text-white flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#0A84FF]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+                <span>Telegram Bot Integration</span>
+              </span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#30D158]/15 text-[#30D158]">Aktif</span>
+            </div>
+            <p class="font-body text-[11px] text-[#8E8E93] leading-relaxed">
+              Catat mutasi kapan saja tanpa membuka aplikasi: ketik <code class="text-[#0A84FF] bg-black/40 px-1.5 py-0.5 rounded-[6px] tabular-nums font-medium text-xs">makan siang 35k</code> atau <code class="text-[#0A84FF] bg-black/40 px-1.5 py-0.5 rounded-[6px] tabular-nums font-medium text-xs">kopi 25rb gopay</code>.
+            </p>
+          </div>
+
+          <!-- Supabase Cloud Sync -->
+          <div class="space-y-3 pt-2 border-t border-white/6">
+            <h4 class="text-apple-h2 text-white">Supabase Cloud Sync</h4>
+            <div class="space-y-2 text-xs">
+              <input id="inputSupabaseUrl" type="text" placeholder="https://xyz.supabase.co" class="tabular-nums w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]" />
+              <input id="inputSupabaseKey" type="password" placeholder="anon key..." class="tabular-nums w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]" />
+              <button id="btnSaveCloudConfig" class="w-full py-2.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-white rounded-[14px] font-subhead font-semibold text-xs transition-colors cursor-pointer active:scale-[0.97] border-0">
+                Simpan Konfigurasi Cloud
+              </button>
+            </div>
+          </div>
+
+          <!-- Reset Data -->
+          <div class="pt-4 border-t border-white/6">
+            <button id="btnResetData" class="font-body w-full py-2 text-[#FF453A] hover:underline text-xs text-center cursor-pointer">
+              Reset Seluruh Data Lokal ke Kondisi Awal
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 6: MARKET & INVESTMENT DASHBOARD ================= -->
+      <section id="viewMarket" class="view-screen hidden space-y-6">
+        
+        <!-- Header & Live Indicators -->
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <h1 class="page-title text-apple-h1 text-white">Market & Investment Dashboard</h1>
+              <span class="px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-[#30D158]/15 text-[#30D158] flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#30D158] animate-ping"></span>
+                Live
+              </span>
+            </div>
+            <p class="text-apple-caption mt-1">Pantauan real-time IHSG, Saham BEI, Emas Antam, dan Top Crypto serta nilai portofolio Anda</p>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <div class="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-[14px] bg-[#1C1C1E] border border-white/8 text-xs text-[#8E8E93]">
+              <span>IDX: <strong class="text-[#30D158]">Buka</strong></span>
+              <span>•</span>
+              <span>USD/IDR: <strong class="text-white tabular-nums">Rp 15.850</strong></span>
+            </div>
+            <button id="btnOpenAddAsset" class="px-4 py-2.5 rounded-[14px] bg-[#0A84FF] hover:bg-[#0071E3] text-white font-subhead font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-[0.97] border-0">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>+ Catat Aset Portofolio</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Market KPI Cards (Sentence case, 13px, weight 500, 36px icon circle) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- KPI 1: Portofolio investasi -->
+          <div class="kpi-metric-card dompet-card rounded-[24px] p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[13px] font-medium text-[#8E8E93] block">Portofolio investasi</span>
+              <div class="w-9 h-9 rounded-full bg-[#0A84FF]/15 flex items-center justify-center text-[#0A84FF] shrink-0">
+                <i data-lucide="trending-up" class="w-4 h-4" stroke-width="1.8"></i>
+              </div>
+            </div>
+            <h3 id="marketKpiTotalPortfolio" class="text-num-lg text-white">Rp 0</h3>
+            <span class="font-body text-xs text-[#8E8E93] block">Valuasi harga pasar terkini</span>
+          </div>
+
+          <!-- KPI 2: Keuntungan (PnL) -->
+          <div class="kpi-metric-card dompet-card rounded-[24px] p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[13px] font-medium text-[#8E8E93] block">Keuntungan (PnL)</span>
+              <div class="w-9 h-9 rounded-full bg-[#30D158]/15 flex items-center justify-center text-[#30D158] shrink-0">
+                <i data-lucide="percent" class="w-4 h-4" stroke-width="1.8"></i>
+              </div>
+            </div>
+            <h3 id="marketKpiTotalPnl" class="text-num-lg text-[#30D158]">+Rp 0</h3>
+            <span id="marketKpiPnlPercent" class="tabular-nums text-[13px] text-[#30D158] font-semibold block mt-1">+0.00%</span>
+          </div>
+
+          <!-- KPI 3: Top gainer hari ini -->
+          <div class="kpi-metric-card dompet-card rounded-[24px] p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[13px] font-medium text-[#8E8E93] block">Top gainer hari ini</span>
+              <div class="w-9 h-9 rounded-full bg-[#FF9F0A]/15 flex items-center justify-center text-[#FF9F0A] shrink-0">
+                <i data-lucide="sparkles" class="w-4 h-4" stroke-width="1.8"></i>
+              </div>
+            </div>
+            <h3 id="marketKpiTopGainer" class="text-lg sm:text-xl font-bold font-heading tabular-nums text-[#0A84FF]">BTC +3.15%</h3>
+            <span class="font-body text-xs text-[#8E8E93] block">Kinerja tertinggi 24 jam</span>
+          </div>
+
+          <!-- KPI 4: Emas batangan Antam -->
+          <div class="kpi-metric-card dompet-card rounded-[24px] p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[13px] font-medium text-[#8E8E93] block">Emas batangan Antam</span>
+              <div class="w-9 h-9 rounded-full bg-[#FFD60A]/15 flex items-center justify-center text-[#FFD60A] shrink-0">
+                <i data-lucide="shield" class="w-4 h-4" stroke-width="1.8"></i>
+              </div>
+            </div>
+            <h3 id="marketKpiGoldRate" class="text-num-lg text-white">Rp 1.485.000/g</h3>
+            <span class="tabular-nums text-xs text-[#30D158] font-medium block">+0.68% hari ini</span>
+          </div>
+        </div>
+
+        <!-- Filter Category Pills (iOS Segmented Control) -->
+        <div class="segmented-control flex flex-wrap items-center">
+          <button id="marketFilterAll" class="market-pill-btn segmented-btn active">
+            Semua Aset
+          </button>
+          <button id="marketFilterStocks" class="market-pill-btn segmented-btn">
+            Saham IDX
+          </button>
+          <button id="marketFilterGold" class="market-pill-btn segmented-btn">
+            Emas & Logam Mulia
+          </button>
+          <button id="marketFilterCrypto" class="market-pill-btn segmented-btn">
+            Crypto Majors
+          </button>
+          <button id="marketFilterPortfolio" class="market-pill-btn segmented-btn">
+            Portofolio Saya (1B)
+          </button>
+        </div>
+
+        <!-- Real-Time Market Cards Grid -->
+        <div id="marketCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Portfolio Holdings Table -->
+        <div class="dompet-card rounded-[24px] p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-apple-h2 text-white">Portofolio Kepemilikan Daniel (1B)</h4>
+              <p class="text-apple-caption">Aset riil yang Anda miliki dengan nilai pasar terkini dan perhitungan untung/rugi</p>
+            </div>
+            <button id="btnOpenAddAssetSecondary" class="font-subhead text-xs text-[#0A84FF] hover:underline font-semibold cursor-pointer">
+              + Catat Aset Baru
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="border-b border-white/8 text-[#8E8E93] text-[13px] font-medium">
+                  <th class="py-3 px-3">Instrumen</th>
+                  <th class="py-3 px-3">Kepemilikan</th>
+                  <th class="py-3 px-3">Modal beli</th>
+                  <th class="py-3 px-3">Harga sekarang</th>
+                  <th class="py-3 px-3">Nilai pasar</th>
+                  <th class="py-3 px-3">Untung / rugi</th>
+                  <th class="py-3 px-3 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="portfolioHoldingsTableBody" class="divide-y divide-white/6">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 7: TABUNGAN & IMPIAN (SAVINGS GOALS) ================= -->
+      <section id="viewSavings" class="view-screen hidden space-y-6">
+        
+        <!-- Header & Quick Actions -->
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <h1 class="page-title text-apple-h1 text-white">Tabungan & Impian</h1>
+              <span class="px-2.5 py-0.5 rounded-full text-[12px] font-medium bg-[#0A84FF]/15 text-[#0A84FF] flex items-center gap-1.5">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-[#0A84FF]"></i>
+                Smart Lock
+              </span>
+            </div>
+            <p class="text-apple-caption mt-1">Pos dana dingin dan target impian Daniel dengan perhitungan kecepatan menabung otomatis</p>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button id="btnOpenQuickDeposit" class="px-4 py-2.5 rounded-[14px] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-white font-subhead font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer active:scale-[0.97] border-0">
+              <i data-lucide="arrow-down-right" class="w-4 h-4 text-[#30D158]"></i>
+              <span>+ Menabung</span>
+            </button>
+            <button id="btnOpenAddGoal" class="px-4 py-2.5 rounded-[14px] bg-[#0A84FF] hover:bg-[#0071E3] text-white font-subhead font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-[0.97] border-0">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>+ Buat Impian Baru</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Savings KPI Cards (Sentence case, 13px, weight 500, 36px circular icon) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <!-- KPI 1: Total tabungan -->
+          <div class="kpi-metric-card dompet-card rounded-[24px] p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[13px] font-medium text-[#8E8E93] block">Total tabungan</span>
+              <div class="w-9 h-9 rounded-full bg-[#30D158]/15 flex items-center justify-center text-[#30D158] shrink-0">
+                <i data-lucide="piggy-bank" class="w-4 h-4" stroke-width="1.8"></i>
+              </div>
+            </div>
+            <h3 id="savingsKpiTotalSaved" class="text-num-lg text-white">Rp 0</h3>
+            <span class="font-body text-xs text-[#8E8E93] block">Seluruh pos impian aktif</span>
+          </div>
+
+          <!-- KPI 2: Rata-rata capaian -->
+          <div class="kpi-metric-card dompet-card rounded-[24px] p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[13px] font-medium text-[#8E8E93] block">Rata-rata capaian</span>
+              <div class="w-9 h-9 rounded-full bg-[#0A84FF]/15 flex items-center justify-center text-[#0A84FF] shrink-0">
+                <i data-lucide="target" class="w-4 h-4" stroke-width="1.8"></i>
+              </div>
+            </div>
+            <h3 id="savingsKpiAvgProgress" class="text-num-lg text-[#0A84FF]">0%</h3>
+            <span class="font-body text-xs text-[#8E8E93] block">Dari seluruh target impian</span>
+          </div>
+
+          <!-- KPI 3: Dana darurat siaga -->
+          <div class="kpi-metric-card dompet-card rounded-[24px] p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[13px] font-medium text-[#8E8E93] block">Dana darurat siaga</span>
+              <div class="w-9 h-9 rounded-full bg-[#BF5AF2]/15 flex items-center justify-center text-[#BF5AF2] shrink-0">
+                <i data-lucide="shield-check" class="w-4 h-4" stroke-width="1.8"></i>
+              </div>
+            </div>
+            <h3 id="savingsKpiEmergencyFund" class="text-num-lg text-white">Rp 0</h3>
+            <span id="savingsKpiEmergencyFundSub" class="font-body text-xs text-[#8E8E93] font-medium block">Pos proteksi darurat</span>
+          </div>
+        </div>
+
+        <!-- Category Filter Pills (iOS Segmented Control) -->
+        <div class="segmented-control flex flex-wrap items-center">
+          <button data-savings-filter="all" class="savings-filter-btn segmented-btn active">
+            Semua Impian
+          </button>
+          <button data-savings-filter="darurat" class="savings-filter-btn segmented-btn">
+            Darurat & Proteksi
+          </button>
+          <button data-savings-filter="liburan" class="savings-filter-btn segmented-btn">
+            Liburan & Traveling
+          </button>
+          <button data-savings-filter="gadget" class="savings-filter-btn segmented-btn">
+            Gadget & Hobi
+          </button>
+          <button data-savings-filter="properti" class="savings-filter-btn segmented-btn">
+            Investasi & Properti
+          </button>
+        </div>
+
+        <!-- Savings Goals Grid -->
+        <div id="savingsGoalsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= APPLE iOS 17 MOBILE BOTTOM TAB BAR ================= -->
+  <nav id="mobileBottomNav" class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#1C1C1E]/80 backdrop-blur-2xl border-t border-white/6 px-1.5 py-1.5 flex items-center justify-between safe-area-bottom shadow-lg">
+    <button data-view="dashboard" class="mobile-tab-btn active flex-1 min-w-0 flex flex-col items-center justify-center gap-1 text-[#0A84FF] py-1 px-1 cursor-pointer active:scale-95 transition-all">
+      <i data-lucide="layout-dashboard" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="font-pill text-[10px] font-medium tracking-tight truncate max-w-full">Dashboard</span>
+    </button>
+    <button data-view="wallet" class="mobile-tab-btn flex-1 min-w-0 flex flex-col items-center justify-center gap-1 text-[#8E8E93] hover:text-white py-1 px-1 cursor-pointer active:scale-95 transition-all">
+      <i data-lucide="credit-card" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="font-pill text-[10px] font-medium tracking-tight truncate max-w-full">Wallet</span>
+    </button>
+    <button data-view="transactions" class="mobile-tab-btn flex-1 min-w-0 flex flex-col items-center justify-center gap-1 text-[#8E8E93] hover:text-white py-1 px-1 cursor-pointer active:scale-95 transition-all">
+      <i data-lucide="calendar" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="font-pill text-[10px] font-medium tracking-tight truncate max-w-full">Transaksi</span>
+    </button>
+    <button data-view="splitbill" class="mobile-tab-btn flex-1 min-w-0 flex flex-col items-center justify-center gap-1 text-[#8E8E93] hover:text-white py-1 px-1 cursor-pointer active:scale-95 transition-all">
+      <i data-lucide="receipt" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="font-pill text-[10px] font-medium tracking-tight truncate max-w-full">Split Bill</span>
+    </button>
+    <button data-view="market" class="mobile-tab-btn flex-1 min-w-0 flex flex-col items-center justify-center gap-1 text-[#8E8E93] hover:text-white py-1 px-1 cursor-pointer active:scale-95 transition-all">
+      <i data-lucide="trending-up" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="font-pill text-[10px] font-medium tracking-tight truncate max-w-full">Market</span>
+    </button>
+    <button data-view="savings" class="mobile-tab-btn flex-1 min-w-0 flex flex-col items-center justify-center gap-1 text-[#8E8E93] hover:text-white py-1 px-1 cursor-pointer active:scale-95 transition-all">
+      <i data-lucide="piggy-bank" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="font-pill text-[10px] font-medium tracking-tight truncate max-w-full">Tabungan</span>
+    </button>
+    <button data-view="settings" class="mobile-tab-btn flex-1 min-w-0 flex flex-col items-center justify-center gap-1 text-[#8E8E93] hover:text-white py-1 px-1 cursor-pointer active:scale-95 transition-all">
+      <i data-lucide="sliders-horizontal" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="font-pill text-[10px] font-medium tracking-tight truncate max-w-full">Setting</span>
+    </button>
+  </nav>
+
+  <!-- ================= MODAL: SCAN STRUK OCR ================= -->
+  <div id="modalScanner" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md apple-modal-backdrop">
+    <div class="apple-modal-card w-full sm:max-w-md bg-[#1C1C1E] rounded-t-[28px] sm:rounded-[28px] p-6 border-t sm:border border-white/8 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/8 pb-3">
+        <h3 class="font-subhead text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="camera" class="w-4 h-4 text-[#0A84FF]"></i>
+          Pindai Bukti Transfer / Resi
+        </h3>
+        <button id="btnCloseScanner" type="button" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <label id="dropzone" class="flex flex-col items-center justify-center w-full h-36 border border-dashed border-white/15 hover:border-[#0A84FF] rounded-[18px] cursor-pointer bg-[#2C2C2E]/40 hover:bg-[#2C2C2E]/70 transition-colors p-4 text-center">
+          <i data-lucide="image-plus" class="w-7 h-7 text-[#8E8E93] mb-2"></i>
+          <span class="font-subhead text-xs text-white font-medium">Buka Kamera atau Pilih Screenshot</span>
+          <span class="font-body text-[11px] text-[#8E8E93] mt-1">m-Banking BCA, Livin, GoPay, QRIS, Struk</span>
+          <input id="fileReceiptInput" type="file" accept="image/*" capture="environment" class="hidden" />
+        </label>
+
+        <div id="ocrLoading" class="hidden space-y-2 py-1">
+          <div class="flex items-center justify-between text-xs text-[#8E8E93] font-body">
+            <span>Memindai teks bukti bayar (OCR)...</span>
+            <span id="ocrProgressPercent" class="tabular-nums text-[#0A84FF]">0%</span>
+          </div>
+          <div class="w-full h-1.5 bg-[#2C2C2E] rounded-full overflow-hidden">
+            <div id="ocrProgressBar" class="h-full bg-[#0A84FF] transition-all duration-200" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div id="ocrResultBox" class="hidden space-y-2 p-3.5 rounded-[16px] bg-[#2C2C2E]/60 border border-white/8 text-xs">
+          <div class="flex justify-between font-body">
+            <span class="text-[#8E8E93]">Nominal:</span>
+            <span id="ocrDetectedAmount" class="tabular-nums font-semibold text-[#30D158]">Rp 0</span>
+          </div>
+          <div class="flex justify-between font-body">
+            <span class="text-[#8E8E93]">Catatan:</span>
+            <span id="ocrDetectedNote" class="text-white font-medium">-</span>
+          </div>
+          <button id="btnUseOcrResult" class="w-full py-2.5 bg-[#0A84FF] hover:bg-[#0071E3] text-white font-subhead font-semibold rounded-[14px] text-xs mt-2 transition-colors cursor-pointer active:scale-[0.97] border-0">
+            Gunakan Hasil Scan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: TAMBAH DOMPET ================= -->
+  <div id="modalAddWallet" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md apple-modal-backdrop">
+    <div class="apple-modal-card w-full sm:max-w-sm bg-[#1C1C1E] rounded-t-[28px] sm:rounded-[28px] p-6 border-t sm:border border-white/8 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/8 pb-3">
+        <h3 class="font-subhead text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-4 h-4 text-[#0A84FF]"></i>
+          Tambah Dompet Baru
+        </h3>
+        <button id="btnCloseAddWallet" type="button" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="formAddWallet" class="space-y-3 text-xs">
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Nama Dompet / Rekening</label>
+          <input id="walletFormName" type="text" placeholder="misal: BCA, GoPay, Tunai" required class="font-body w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]" />
+        </div>
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Tipe</label>
+          <select id="walletFormType" class="font-body w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]">
+            <option value="bank">Rekening Bank</option>
+            <option value="ewallet">E-Wallet</option>
+            <option value="cash">Uang Tunai</option>
+          </select>
+        </div>
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Saldo Awal (Rp)</label>
+          <input id="walletFormBalance" type="number" placeholder="0" min="0" required class="tabular-nums w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]" />
+        </div>
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Warna Kartu</label>
+          <div class="flex items-center gap-2 pt-1">
+            <input id="walletFormColor" type="color" value="#0A84FF" class="w-10 h-8 rounded-lg cursor-pointer bg-transparent border-0" />
+            <span class="font-body text-[11px] text-[#8E8E93]">Pilih aksen kartu</span>
+          </div>
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-[#0A84FF] hover:bg-[#0071E3] text-white font-subhead font-semibold rounded-[14px] text-xs transition-colors mt-2 cursor-pointer active:scale-[0.97] border-0">
+          Simpan Dompet
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: CATAT ASET PORTOFOLIO ================= -->
+  <div id="modalAddAsset" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md apple-modal-backdrop">
+    <div class="apple-modal-card w-full sm:max-w-md bg-[#1C1C1E] rounded-t-[28px] sm:rounded-[28px] p-6 border-t sm:border border-white/8 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/8 pb-3">
+        <h3 class="font-subhead text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-4 h-4 text-[#0A84FF]"></i>
+          Catat Kepemilikan Aset Portofolio (1B)
+        </h3>
+        <button id="btnCloseAddAsset" type="button" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="formAddAsset" class="space-y-3 text-xs">
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Pilih Instrumen Aset</label>
+          <select id="assetFormSymbol" class="font-body w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]">
+            <optgroup label="Saham Indonesia (IDX)">
+              <option value="BBCA">BBCA - Bank Central Asia</option>
+              <option value="BBRI">BBRI - Bank Rakyat Indonesia</option>
+              <option value="BMRI">BMRI - Bank Mandiri</option>
+              <option value="TLKM">TLKM - Telkom Indonesia</option>
+              <option value="ASII">ASII - Astra International</option>
+            </optgroup>
+            <optgroup label="Logam Mulia">
+              <option value="ANTAM">ANTAM - Emas Batangan Antam (gram)</option>
+              <option value="XAU">XAU - Spot Gold Dunia (oz)</option>
+            </optgroup>
+            <optgroup label="Crypto Majors">
+              <option value="BTC">BTC - Bitcoin</option>
+              <option value="ETH">ETH - Ethereum</option>
+              <option value="SOL">SOL - Solana</option>
+              <option value="BNB">BNB - BNB Chain</option>
+              <option value="XRP">XRP - Ripple</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label id="assetFormUnitsLabel" class="font-body block text-[#8E8E93] mb-1">Jumlah Lot / Gram / Unit</label>
+          <input id="assetFormUnits" type="number" step="any" min="0.000001" placeholder="misal: 10" required class="tabular-nums w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]" />
+          <p id="assetFormUnitsHelp" class="font-body text-[10px] text-[#8E8E93] mt-1">*Untuk saham: 1 lot = 100 lembar</p>
+        </div>
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Harga Beli Modal (Rp per unit/lembar/gram)</label>
+          <input id="assetFormBuyPrice" type="number" min="1" placeholder="misal: 9800 atau 1420000" required class="tabular-nums w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]" />
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-[#0A84FF] hover:bg-[#0071E3] text-white font-subhead font-semibold rounded-[14px] text-xs transition-colors mt-2 cursor-pointer active:scale-[0.97] border-0">
+          Simpan ke Portofolio
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: BUAT TABUNGAN & IMPIAN ================= -->
+  <div id="modalAddGoal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md apple-modal-backdrop">
+    <div class="apple-modal-card w-full sm:max-w-md bg-[#1C1C1E] rounded-t-[28px] sm:rounded-[28px] p-6 border-t sm:border border-white/8 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/8 pb-3">
+        <h3 class="font-subhead text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="piggy-bank" class="w-4 h-4 text-[#0A84FF]"></i>
+          <span>Buat Pos Impian Baru</span>
+        </h3>
+        <button id="btnCloseAddGoal" type="button" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="formAddGoal" class="space-y-3 text-xs">
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Nama Impian / Pos Dana</label>
+          <input id="goalFormName" type="text" placeholder="misal: DP Mobil, Liburan Jepang, MacBook M-Series" required class="font-body w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-body block text-[#8E8E93] mb-1">Kategori</label>
+            <select id="goalFormCategory" class="font-body w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]">
+              <option value="darurat">Darurat & Proteksi</option>
+              <option value="liburan">Liburan & Traveling</option>
+              <option value="gadget">Gadget & Hobi</option>
+              <option value="properti">Investasi & Properti</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-body block text-[#8E8E93] mb-1">Target Tanggal Selesai</label>
+            <input id="goalFormTargetDate" type="date" required class="font-body w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2 text-white focus:outline-none focus:border-[#0A84FF]" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-body block text-[#8E8E93] mb-1">Target Nominal (Rp)</label>
+            <input id="goalFormTarget" type="number" min="10000" step="10000" placeholder="misal: 25000000" required class="tabular-nums w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]" />
+          </div>
+          <div>
+            <label class="font-body block text-[#8E8E93] mb-1">Tabungan Awal (Rp)</label>
+            <input id="goalFormInitial" type="number" min="0" step="1000" value="0" class="tabular-nums w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]" />
+          </div>
+        </div>
+
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Sumber Rekening Tabungan Awal</label>
+          <select id="goalFormWalletSelect" class="font-body w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <!-- Smart Lock Switch -->
+        <div class="p-3.5 rounded-[16px] bg-[#2C2C2E]/50 border border-white/6 flex items-center justify-between">
+          <div class="pr-2">
+            <span class="font-subhead text-xs font-semibold text-white flex items-center gap-1.5">
+              <i data-lucide="lock" class="w-3.5 h-3.5 text-[#0A84FF]"></i>
+              Smart Lock (Anti-Khilaf)
+            </span>
+            <span class="font-body text-[10px] text-[#8E8E93] block">Kunci tabungan sampai target tanggal agar disiplin menabung</span>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input id="goalFormLocked" type="checkbox" checked class="sr-only peer" />
+            <div class="w-10 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#30D158]"></div>
+          </label>
+        </div>
+
+        <!-- Accent Color Picker -->
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Warna Aksen Kartu Impian</label>
+          <div class="flex items-center gap-2">
+            <input id="goalFormColor" type="color" value="#0A84FF" class="w-10 h-8 rounded-lg cursor-pointer bg-transparent border-0" />
+            <span class="font-body text-[11px] text-[#8E8E93]">Pilih aksen warna Apple</span>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-[#0A84FF] hover:bg-[#0071E3] text-white font-subhead font-semibold rounded-[14px] text-xs transition-colors mt-2 cursor-pointer active:scale-[0.97] border-0">
+          Simpan Pos Impian
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: MENABUNG KE IMPIAN ================= -->
+  <div id="modalDepositGoal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md apple-modal-backdrop">
+    <div class="apple-modal-card w-full sm:max-w-md bg-[#1C1C1E] rounded-t-[28px] sm:rounded-[28px] p-6 border-t sm:border border-white/8 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/8 pb-3">
+        <h3 class="font-subhead text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="arrow-down-right" class="w-4 h-4 text-[#30D158]"></i>
+          <span>Menabung ke Pos Impian</span>
+        </h3>
+        <button id="btnCloseDepositGoal" type="button" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="formDepositGoal" class="space-y-3 text-xs">
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Pilih Pos Impian Tujuan</label>
+          <select id="depositGoalSelect" required class="font-body w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Dari Rekening / Dompet Mana</label>
+          <select id="depositWalletSelect" required class="font-body w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Nominal Menabung (Rp)</label>
+          <input id="depositAmountInput" type="number" min="1000" step="1000" placeholder="misal: 1000000" required class="tabular-nums w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]" />
+        </div>
+
+        <!-- Quick nominal chips -->
+        <div class="flex flex-wrap items-center gap-1.5 pt-1">
+          <button type="button" data-chip-deposit="100000" class="chip-deposit tabular-nums px-2.5 py-1 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-[11px] text-slate-300 border-0">+100rb</button>
+          <button type="button" data-chip-deposit="500000" class="chip-deposit tabular-nums px-2.5 py-1 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-[11px] text-slate-300 border-0">+500rb</button>
+          <button type="button" data-chip-deposit="1000000" class="chip-deposit tabular-nums px-2.5 py-1 rounded-full bg-[#0A84FF]/15 text-[11px] text-[#0A84FF] font-semibold border-0">+1 Juta</button>
+          <button type="button" data-chip-deposit="2500000" class="chip-deposit tabular-nums px-2.5 py-1 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-[11px] text-slate-300 border-0">+2.5 Juta</button>
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-[#30D158] hover:bg-[#28B84D] text-white font-subhead font-semibold rounded-[14px] text-xs transition-colors mt-2 cursor-pointer active:scale-[0.97] border-0">
+          Konfirmasi Menabung
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: CAIRKAN TABUNGAN ================= -->
+  <div id="modalWithdrawGoal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md apple-modal-backdrop">
+    <div class="apple-modal-card w-full sm:max-w-md bg-[#1C1C1E] rounded-t-[28px] sm:rounded-[28px] p-6 border-t sm:border border-white/8 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/8 pb-3">
+        <h3 class="font-subhead text-sm font-semibold text-white flex items-center gap-2">
+          <i data-lucide="arrow-up-right" class="w-4 h-4 text-[#FF9F0A]"></i>
+          <span>Cairkan Dana Tabungan</span>
+        </h3>
+        <button id="btnCloseWithdrawGoal" type="button" class="w-8 h-8 rounded-full bg-[#2C2C2E] hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer" title="Tutup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="formWithdrawGoal" class="space-y-3 text-xs">
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Dari Pos Impian Mana</label>
+          <select id="withdrawGoalSelect" required class="font-body w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <div>
+          <label class="font-body block text-[#8E8E93] mb-1">Kembalikan ke Rekening / Dompet</label>
+          <select id="withdrawWalletSelect" required class="font-body w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="font-body block text-[#8E8E93]">Nominal Penarikan (Rp)</label>
+            <span id="withdrawMaxAvailable" class="tabular-nums text-[12px] text-[#0A84FF]">Tersedia: Rp 0</span>
+          </div>
+          <input id="withdrawAmountInput" type="number" min="1000" step="1000" placeholder="0" required class="tabular-nums w-full bg-[#2C2C2E] border border-white/8 rounded-[14px] p-2.5 text-white focus:outline-none focus:border-[#0A84FF]" />
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-[#FF9F0A] hover:bg-[#E08D09] text-white font-subhead font-semibold rounded-[14px] text-xs transition-colors mt-2 cursor-pointer active:scale-[0.97] border-0">
+          Cairkan Dana
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: APPLE macOS ALERT DIALOG ================= -->
+  <div id="modalAntiKhilafAlert" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md apple-modal-backdrop">
+    <div class="apple-modal-card w-full max-w-sm bg-[#1C1C1E] rounded-[28px] p-6 border border-[#FF9F0A]/30 text-center space-y-4 shadow-2xl">
+      <div class="w-14 h-14 rounded-full bg-[#FF9F0A]/15 text-[#FF9F0A] mx-auto flex items-center justify-center">
+        <i data-lucide="shield-alert" class="w-7 h-7"></i>
+      </div>
+      <div>
+        <h3 class="font-subhead text-lg font-bold text-white mb-1">Pos Impian Masih Terkunci</h3>
+        <p id="antiKhilafMessage" class="font-body text-xs text-[#8E8E93] leading-relaxed">
+          Pos impian ini dikunci sampai target tanggal. Menarik dana sebelum target tercapai dapat menghambat rencana keuanganmu. Apakah Anda yakin ini keadaan darurat?
+        </p>
+      </div>
+      <div class="space-y-2 pt-2">
+        <button id="btnAntiKhilafCancel" type="button" class="w-full py-2.5 rounded-[14px] bg-[#0A84FF] hover:bg-[#0071E3] text-white font-subhead font-semibold text-xs transition-colors cursor-pointer active:scale-[0.97] shadow-sm border-0">
+          Batal — Tetap Disiplin Menabung
+        </button>
+        <button id="btnAntiKhilafConfirmOverride" type="button" class="w-full py-2 rounded-[14px] bg-transparent hover:bg-white/5 text-[#FF453A] text-xs font-subhead font-semibold transition-colors cursor-pointer border-0">
+          Ya, Tetap Cairkan (Kebutuhan Darurat)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application Script (Self-contained, zero-CORS) -->
+  <script src="js/bundle.js"></script>
+</body>
+</html>

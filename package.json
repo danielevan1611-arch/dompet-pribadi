@@ -1,0 +1,9 @@
+{
+  "name": "dompetku",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "DompetKu - Couple & Personal Finance PWA",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  }
+}
